@@ -68,9 +68,14 @@ export const tasksRouter = Router();
 const taskInclude = { taskList: { select: { id: true, name: true, externalId: true, source: true } }, project: { select: { id: true, name: true } }, goal: { select: { id: true, title: true } }, target: { select: { id: true, title: true } } };
 async function serializeTasks(workspaceId: string, tasks: Array<Record<string, any>>) { const contexts = await organizationalContextsForEntities(workspaceId, "task", tasks.map((task) => task.id)); return tasks.map((task) => ({ ...task, organizationalContext: contexts.get(task.id) })); }
 function apiKeyTaskView(task: Record<string, any>) {
-  const { executionReadiness, executionRoleProvenance: _roleProvenance, ...rest } = task;
+  const { executionReadiness, executionRoleProvenance: _roleProvenance,
+    organizationalContext: _organizationalContext, raw: _raw,
+    taskList, project, goal, target, ...rest } = task;
   const status = executionReadiness && typeof executionReadiness === "object" && !Array.isArray(executionReadiness) ? executionReadiness.status : undefined;
-  return { ...rest, executionReadiness: { status: typeof status === "string" ? status : "draft" } };
+  return { ...rest, taskList: taskList ? { id: taskList.id } : null,
+    project: project ? { id: project.id } : null, goal: goal ? { id: goal.id } : null,
+    target: target ? { id: target.id } : null,
+    executionReadiness: { status: typeof status === "string" ? status : "draft" } };
 }
 
 async function visibleTaskRelations(workspaceId: string, input: {
@@ -95,16 +100,17 @@ tasksRouter.get("/", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
   const ids = departmentKey ? await contextualEntityIds(workspaceId, "task", departmentKey, req.query.includeCompanyWide !== "false") : null;
   const tasks = await prisma.task.findMany({
-    where: { workspaceId, ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
+    where: { workspaceId, ...(req.auth!.agentId ? { assignedWorkforceEntityId: req.auth!.agentId } : {}), ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
     orderBy: { createdAt: "desc" }
   });
-  const data = await serializeTasks(workspaceId, tasks);
-  res.json({ data: req.auth!.authType === "api_key" ? data.map(apiKeyTaskView) : data });
+  const data = req.auth!.authType === "api_key" ? tasks.map(apiKeyTaskView) : await serializeTasks(workspaceId, tasks);
+  res.json({ data });
 }));
 
 tasksRouter.get("/:id", asyncHandler(async (req, res) => {
   const task = await prisma.task.findFirst({
-    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
+    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId,
+      ...(req.auth!.agentId ? { assignedWorkforceEntityId: req.auth!.agentId } : {}) },
     include: taskInclude
   });
 
@@ -112,8 +118,9 @@ tasksRouter.get("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
-  const data = (await serializeTasks(req.auth!.workspaceId, [task]))[0];
-  res.json({ data: req.auth!.authType === "api_key" ? apiKeyTaskView(data) : data });
+  const data = req.auth!.authType === "api_key" ? apiKeyTaskView(task)
+    : (await serializeTasks(req.auth!.workspaceId, [task]))[0];
+  res.json({ data });
 }));
 
 tasksRouter.post("/", asyncHandler(async (req, res) => {

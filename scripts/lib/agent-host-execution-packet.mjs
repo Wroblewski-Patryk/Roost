@@ -101,6 +101,18 @@ export const companyInformationRuntimeContractSchema = companyInformationContrac
 export const companyInformationRuntimeModelAllowed = model => model?.schemaVersion === "roost-managed-hermes-backend-v1"
   && model.backend === "codex_responses" && model.riskClass === "low" && model.attemptPolicy?.maxTurns === 1 && model.attemptPolicy?.apiMaxRetries === 0;
 
+const provenanceSchema = z.object({
+  reviewId: id, classification: z.enum(['fact', 'observation', 'proposal', 'inference']),
+  provenance: text, environment: z.enum(['production', 'isolated_test']),
+  originSource: text, sourceStatus: z.enum(['active', 'approved', 'accepted']),
+  originKind: text.nullable(), originSystem: text.nullable(),
+  recordVerificationState: z.enum(['not_started', 'pending', 'passed']),
+  verificationLevel: z.literal('owner_attested'),
+  verificationMethod: text, verificationRef: text, inclusionReason: text,
+  contentDigest: z.string().regex(/^[a-f0-9]{64}$/), validFrom: z.string().datetime(),
+  validUntil: z.string().datetime(), reviewedAt: z.string().datetime(), reviewedByUserId: id
+}).strict();
+
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
@@ -112,19 +124,8 @@ const packetSchema = z.object({
     manager: z.object({ id, workspaceId: id, status: text, revision: text }).strict().nullable()
   }).strict(),
   sources: z.array(z.object({ id, workspaceId: id, applicationId: id.nullable(), recordType: text, title: text,
-    description: z.string().nullable(), businessPurpose: z.string().nullable(), desiredState: z.string().nullable(), expectedBehavior: z.string().nullable(), revision: text }).strict()).max(30)
-}).strict();
-
-const provenanceSchema = z.object({
-  reviewId: id, classification: z.enum(['fact', 'observation', 'proposal', 'inference']),
-  provenance: text, environment: z.enum(['production', 'isolated_test']),
-  originSource: text, sourceStatus: z.enum(['active', 'approved', 'accepted']),
-  originKind: text.nullable(), originSystem: text.nullable(),
-  recordVerificationState: z.enum(['not_started', 'pending', 'passed']),
-  verificationLevel: z.literal('owner_attested'),
-  verificationMethod: text, verificationRef: text, inclusionReason: text,
-  contentDigest: z.string().regex(/^[a-f0-9]{64}$/), validFrom: z.string().datetime(),
-  validUntil: z.string().datetime(), reviewedAt: z.string().datetime(), reviewedByUserId: id
+    description: z.string().nullable(), businessPurpose: z.string().nullable(), desiredState: z.string().nullable(), expectedBehavior: z.string().nullable(),
+    revision: text, provenance: provenanceSchema }).strict()).max(30)
 }).strict();
 
 const companyPacketSchema = packetSchema.extend({
@@ -218,9 +219,9 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
         if (!source || ![source.description, source.businessPurpose, source.desiredState, source.expectedBehavior].some((value) => typeof value === "string" && value.trim())) add(`contract.context.${category}`, "unavailable");
         else if (source.revision !== reference.revision) add(`contract.context.${category}`, "stale");
         else if (source.workspaceId !== p.identity.workspaceId || (category === "company" ? source.applicationId !== null : source.applicationId !== p.identity.applicationId)) add(`contract.context.${category}`, "mismatch");
-        else if (company && (!source.provenance || Date.parse(source.provenance.validFrom) > Date.now()
+        else if (!source.provenance || Date.parse(source.provenance.validFrom) > Date.now()
           || Date.parse(source.provenance.validUntil) <= Date.now()
-          || source.provenance.environment !== (process.env.NODE_ENV === 'test' ? 'isolated_test' : 'production')))
+          || source.provenance.environment !== (process.env.NODE_ENV === 'test' ? 'isolated_test' : 'production'))
           add(`contract.context.${category}`, "source_review_invalid");
       }
     }

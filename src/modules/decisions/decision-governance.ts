@@ -36,6 +36,32 @@ async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
 }
 export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|null,id?:string,options:{versionOnly?:boolean}={}){
  const s=await state(db,w,actor,id);if("error" in s)return s;const u=s.u;
+ if(typeof actor!=="string"&&actor?.authType==="api_key"&&s.principal?.kind!=="agent")return {error:"decision_forbidden"};
+ if(s.principal?.kind==="agent"){
+  // Issuing an exact decision_supersede grant is the owner's admission of
+  // this immutable pending proposal for this credential and impacted task.
+  // Every impacted task needs its own current grant before any proposal text
+  // is returned. Never reuse the owner catalog/history/impact projection.
+  const taskIds:string[]=s.impact?.taskIds??[];
+  const preview=s.previews[0];
+  if(!id||!s.selected||!preview||!taskIds.length||taskIds.length>200||new Set(taskIds).size!==taskIds.length)
+   return {error:"decision_forbidden"};
+  const grants=await db.$queryRaw<Array<{id:string;task_id:string}>>`SELECT id,task_id FROM task_capability_grants g
+    WHERE workspace_id=${w}::uuid AND agent_id=${s.principal.id}::uuid AND credential_id=${s.principal.credentialId}::uuid
+      AND operation='decision_supersede' AND snapshot->'decision'=jsonb_build_object('decisionId',${id}::uuid,'previewId',${preview.id}::uuid)
+      AND task_capability_status(g)='active'`;
+  const byTask=new Map(grants.map(g=>[g.task_id,g.id]));
+  if(taskIds.some(taskId=>!byTask.has(taskId)))return {error:"decision_forbidden"};
+  const body=s.selected.body;
+  const data={expectedVersion:s.expectedVersion,canAccept:!!s.authority&&"principal" in s.authority
+    &&s.authority.principal?.kind==="agent"&&s.authority.principal.id===s.principal.id,
+   selected:{decisionId:id,state:s.selected.state,body:{title:body.title,context:body.context,
+    decision:body.decision,rationale:body.rationale,consequences:body.consequences,scopeReason:body.scopeReason}},
+   previews:[{id:preview.id,version:preview.version}],grantIds:taskIds.map(taskId=>({taskId,grantId:byTask.get(taskId)})),
+   current:!!s.impact&&reviewDigest(s.impact)===reviewDigest(preview.impact)
+    &&(!preview.authority||reviewDigest(s.authority)===reviewDigest(preview.authority))};
+  requireRuntimeContent(data,"decision.agent-read",{workspaceId:w});return data;
+ }
  if(options.versionOnly){
   const data={expectedVersion:s.expectedVersion,canWrite:s.role==="owner"&&u===s.ownerUserId,
    canAccept:!!s.principal&&"principal" in (s.authority??{})&&(s.authority as any).principal?.kind===s.principal.kind&&(s.authority as any).principal?.id===s.principal.id,
@@ -112,7 +138,7 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
    const grant=await db.taskCapabilityGrant.findFirst({where:{id:item.grantId,workspaceId:w,taskId:item.taskId,agentId:principal.id,credentialId:principal.credentialId},include:{usage:true}});
    if(!grant||(await grantState(db,grant.id)).base!=="active"||grant.usage?.governedDecisionAcceptanceId!==prior.id)return {error:"decision_grant_replay_stale"};
   }
-  const result={record:{...wire(prior),...(kind==="proposal"?{id:prior.decision_id}:{})},replayed:true};requireRuntimeContent(result,"decision.replay",{workspaceId:w});return result;}
+  const result={record:principal.kind==="agent"?{id:prior.id}:{...wire(prior),...(kind==="proposal"?{id:prior.decision_id}:{})},replayed:true};requireRuntimeContent(result,"decision.replay",{workspaceId:w});return result;}
  if(input.expectedVersion!==s.expectedVersion)return {error:"decision_stale"};
  if(kind==="proposal"&&input.supersedesId&&(await db.$queryRaw<any[]>`SELECT 1 FROM decision_revisions WHERE workspace_id=${w}::uuid AND supersedes_id=${input.supersedesId}::uuid`).length)return {error:"decision_successor_exists"};
  const rid=kind==='proposal'&&input.decisionId?input.decisionId:randomUUID();

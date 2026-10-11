@@ -18,7 +18,14 @@ export function validPacketFixture() {
     task: { title: "Repair a synthetic fixture" }, application: { id: applicationId, workspaceId, slug: "demoapp", name: "DemoApp", repositories: [{ url: "https://github.com/example-org/DemoApp.git", isPrimary: true }] } };
   const sources = ["company", "product", "technical"].map((category, index) => ({ id: uuid(10 + index), workspaceId,
     applicationId: category === "company" ? null : applicationId, recordType: "requirement", title: category,
-    description: `Synthetic ${category} context`, businessPurpose: null, desiredState: null, expectedBehavior: null, revision }));
+    description: `Synthetic ${category} context`, businessPurpose: null, desiredState: null, expectedBehavior: null, revision,
+    provenance: { reviewId: uuid(30 + index), classification: "fact", provenance: "Isolated packet fixture review",
+      environment: process.env.NODE_ENV === "test" ? "isolated_test" : "production", originSource: "fixture", sourceStatus: "active", originKind: null,
+      originSystem: null, recordVerificationState: "pending", verificationLevel: "owner_attested",
+      verificationMethod: "Fixture assertion", verificationRef: "isolated-packet", inclusionReason: "Exact task source",
+      contentDigest: "a".repeat(64), validFrom: new Date(Date.now() - 60000).toISOString(),
+      validUntil: new Date(Date.now() + 3600000).toISOString(), reviewedAt: new Date().toISOString(),
+      reviewedByUserId: uuid(22) } }));
   const contract = {
     taskRoles: { schemaVersion: "roost-task-roles-v1", requester: { id: uuid(22), revision }, accountableManager: { id: uuid(21), revision }, executor: { id: agentId, revision }, verifier: { id: uuid(23), revision }, releaser: { id: uuid(24), revision } },
     version: "1", objective: { outcome: "Repair the synthetic fixture", goalId },

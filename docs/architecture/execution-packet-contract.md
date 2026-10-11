@@ -341,7 +341,11 @@ The packet has `schemaVersion: roost-execution-packet-v1`, `identity`,
 `taskRevision`, `contract`, `scopeAuthorities`, `sources`, and `revision`. Its revision is SHA-256
 over the JSON envelope before the revision field is added. This detects a changed
 snapshot; it is not an approval signature or an immutable governance ledger.
-Lease tokens and source metadata are not included in this envelope.
+Lease tokens are not included in this envelope. Reviewed source provenance is
+included with each admitted source and covered by the packet revision; the
+Worker checks its task, digest, environment and validity again at admission.
+The additional G9 task/application source families and ordinary agent reads
+follow [Task source trust for agent reads](task-source-trust.md).
 
 ## Required Contract Fields
 

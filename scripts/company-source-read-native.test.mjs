@@ -117,12 +117,15 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
         '/v1/company-intelligence/graph', `/v1/company-intelligence/entities/company_record/${approved.id}`,
         `/v1/company-intelligence/tasks/${task.id}/agent-context`, '/v1/entity-relations',
         `/v1/agent-runtime/tasks/${task.id}/interviews`, `/v1/agent-runtime/tasks/${task.id}/execution-readiness`,
-        '/v1/agent-runtime/executions', '/v1/decisions/governance', `/v1/decisions/${approved.id}/governance`, '/v1/events', '/v1/dashboard/attention', '/v1/dashboard/command'
+        '/v1/agent-runtime/executions', '/v1/decisions/governance', '/v1/events', '/v1/dashboard/attention', '/v1/dashboard/command'
       ];
       for (const path of paths) {
         assert.equal((await request(path, generalKey)).status, 403, path);
         assert.equal((await request(path, agentKey)).status, 403, path);
       }
+      const missingDecision=`/v1/decisions/${approved.id}/governance`;
+      assert.equal((await request(missingDecision,generalKey)).status,403);
+      assert.equal((await request(missingDecision,agentKey)).status,404);
       const ownerRead = await request(`/v1/company-records/${approved.id}`, owner);
       assert.equal(ownerRead.status, 200);
       assert.equal(ownerRead.body.data.currentState, 'Not reviewed field');

@@ -24,14 +24,16 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
   }
 
   // Principal discovery is read-only and cannot bootstrap organizational records.
-  if (req.auth!.agentId) return res.json({ data: {
+  if (req.auth!.authType === "api_key") return res.json({ data: {
     service: "companycore", apiVersion: "v1", status: "ok",
-    workspace: { id: workspace.id, name: workspace.name },
-    auth: { type: "api_key", workspaceId: workspace.id, principal: { kind: "agent", id: req.auth!.agentId },
+    workspace: { id: workspace.id },
+    auth: { type: "api_key", workspaceId: workspace.id, principal: req.auth!.agentId ? { kind: "agent", id: req.auth!.agentId } : { kind: "unbound_key" },
       apiKeyId: req.auth!.apiKeyId, credentialPrefix: req.auth!.credentialPrefix },
     capabilities: req.auth!.scopes, scopeMode: "scoped", commandBoundary: "task_review",
-    routes: ["GET /v1/connection", "GET /v1/tasks", "GET /v1/tasks/:id", "GET /v1/workforce",
-      "GET /v1/agent-runtime/tasks/:id/review", "POST /v1/agent-runtime/tasks/:id/actions/review", "POST /v1/agent-runtime/tasks/:id/actions/review-return"]
+    routes: req.auth!.agentId ? ["GET /v1/connection", "GET /v1/tasks", "GET /v1/tasks/:id",
+      "GET /v1/agent-runtime/tasks/:id/company-sources", "GET /v1/agent-runtime/tasks/:id/sources",
+      "GET /v1/agent-runtime/tasks/:id/review", "POST /v1/agent-runtime/tasks/:id/actions/review",
+      "POST /v1/agent-runtime/tasks/:id/actions/review-return"] : ["GET /v1/connection", "GET /v1/mcp/manifest"]
   } });
 
   await ensureOperatingModelForWorkspace(prisma, workspace.id);
@@ -126,7 +128,7 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
       capabilities: effectiveCapabilities(req.auth!.scopes),
       scopeMode: scopesAreBroad(req.auth!.scopes ?? []) ? "broad" : "scoped",
       adapterManifest,
-      mcpManifest: createMcpManifest(req.auth!.scopes),
+      mcpManifest: createMcpManifest(req.auth!.scopes, Boolean(req.auth!.agentId)),
       agentAccess: {
         api: {
           baseUrl: publicApiBaseUrl,

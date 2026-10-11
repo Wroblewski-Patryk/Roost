@@ -912,6 +912,48 @@ model CompanySourceReview {
   @@map("company_source_reviews")
 }
 
+// Exact, task-scoped owner attestations for non-CompanyRecord source families.
+// No source body is copied here: the current canonical projection must still
+// match its digest. Prospective prior bodies are held by source_body_history.
+model TaskSourceReview {
+  id                 String   @id @default(uuid()) @db.Uuid
+  ordinal            Int      @unique @default(autoincrement())
+  workspaceId        String   @map("workspace_id") @db.Uuid
+  taskId             String   @map("task_id") @db.Uuid
+  sourceType         String   @map("source_type")
+  sourceId           String   @map("source_id") @db.Uuid
+  sourceRevision     DateTime @map("source_revision")
+  contentDigest      String   @map("content_digest")
+  requestHash        String   @map("request_hash")
+  action             String
+  classification     String
+  provenance         String
+  environment        String
+  verificationMethod String   @map("verification_method")
+  verificationRef    String   @map("verification_ref")
+  inclusionReason    String   @map("inclusion_reason")
+  validFrom          DateTime @map("valid_from")
+  validUntil         DateTime @map("valid_until")
+  actorUserId        String   @map("actor_user_id") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([workspaceId, taskId, sourceType, sourceId, ordinal])
+  @@map("task_source_reviews")
+}
+
+model SourceBodyHistory {
+  ordinal      BigInt   @id @default(autoincrement())
+  sourceTable  String   @map("source_table")
+  sourceId     String   @map("source_id") @db.Uuid
+  workspaceId  String?  @map("workspace_id") @db.Uuid
+  operation    String
+  body         Json
+  recordedAt   DateTime @default(now()) @map("recorded_at")
+
+  @@index([workspaceId, sourceTable, sourceId, ordinal])
+  @@map("source_body_history")
+}
+
 model EvidenceRecord {
   id                 String                     @id @default(uuid()) @db.Uuid
   workspaceId        String                     @map("workspace_id") @db.Uuid

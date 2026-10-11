@@ -18,6 +18,17 @@ test("a complete packet passes without changing its contents", () => {
   const f = validPacketFixture(); const before = JSON.stringify(f);
   assert.equal(validate(f), f.packet); assert.equal(JSON.stringify(f), before);
 });
+test("application packet refuses a context source without owner review provenance", () => {
+  const f = validPacketFixture(); delete f.packet.sources[0].provenance; sealPacket(f.packet);
+  assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
+    && error.details.issues.some(issue => issue.field === "sources.0.provenance"));
+});
+test("application packet refuses source approval expired before Worker validation", () => {
+  const f = validPacketFixture(); f.packet.sources[0].provenance.validUntil = new Date(Date.now() - 1000).toISOString();
+  sealPacket(f.packet);
+  assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
+    && error.details.issues.some(issue => issue.field === "contract.context.company" && issue.reason === "source_review_invalid"));
+});
 
 for (const category of ["version", "objective", "scope", "assignment", "modelSelection", "context", "procedures", "skills", "access", "dependencies", "decisions", "budgets", "acceptance", "recovery"]) {
   test(`missing ${category} is rejected with a safe field diagnostic`, () => {

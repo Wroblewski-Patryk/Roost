@@ -28,6 +28,12 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
     verificationMethod: 'Native fixture inspection', verificationRef: 'isolated-postgresql-http-proof',
     inclusionReason: 'Explicit source selected for this task', validUntil: new Date(Date.now() + 86400000).toISOString()
   });
+  const approveTaskSource = async (sourceType, row, taskId, ownerToken) => request('/v1/agent-runtime/source-reviews', ownerToken, {
+    requestId: randomUUID(), taskId, sourceType, sourceId: row.id, expectedRevision: row.updatedAt.toISOString(), action: 'approve',
+    classification: 'fact', provenance: 'Isolated native test owner review', environment: 'isolated_test',
+    verificationMethod: 'Native fixture inspection', verificationRef: 'isolated-postgresql-http-proof',
+    inclusionReason: 'Explicit source selected for this task', validUntil: new Date(Date.now() + 86400000).toISOString()
+  });
   let token, workspaceId, contract, task, source, execution;
   try {
     await t.test('existing Task needs neither project, Application nor repository; explicit current company source and roles', async () => {
@@ -197,6 +203,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const signer = generateKeyPairSync('ed25519'); const installationId = randomUUID();
       await prisma.trustedProviderTicketKey.create({ data: { workspaceId, installationId, keyId: 'ephemeral-native-test', epoch: 1, publicKeyDigest: createHash('sha256').update(signer.publicKey.export({ format: 'der', type: 'spki' })).digest('hex') } });
       const procedure = await prisma.procedure.create({ data: { workspaceId, name: 'Synthetic company information check', purpose: 'Check selected source before one information task', status: 'active', steps: { create: { stepOrder: 1, instruction: 'Compare the selected source with the exact proposed summary' } } } });
+      assert.equal((await approveTaskSource('procedure', procedure, runtimeTask.id, token)).status, 201);
       c.procedures = { items: [{ id: procedure.id, revision: String(procedure.version) }], noneReason: null };
       c.executionClass = 'roost-company-information-runtime-v1'; c.modelSelection = selection;
       const root = `/v1/agent-runtime/tasks/${runtimeTask.id}`;
@@ -309,6 +316,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.ok(!acceptedAttention.body.data.priorityItems.some(item => item.kind === 'decision' && item.id === decisionId));
       assert.equal(await prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id='${decisionId}'`).then(rows => rows[0].n), 1);
       const acceptedDecision = await prisma.decision.findUniqueOrThrow({ where: { id: decisionId } });
+      assert.equal((await approveTaskSource('decision', acceptedDecision, runtimeTask.id, token)).status, 201);
       const runtimeContract = structuredClone(c);
       runtimeContract.decisions = { items: [ref(acceptedDecision)], noneReason: null };
       const renewedRisk = await request(`${root}/risk`, token);

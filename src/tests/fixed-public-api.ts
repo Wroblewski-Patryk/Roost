@@ -50,11 +50,18 @@ export function registerFixedPublicTests(h: any) {
       const reviewerAuth={Authorization:`Bearer ${createAuthToken({workspaceId,userId:reviewer.id})}`};
       const submit=route+"/actions/submit-for-execution",ready=await post(submit,await h.submissionInput(submit,f.input,auth));assert.equal(ready.status,200,JSON.stringify(ready.body));
       const queued=await post("/v1/agent-runtime/executions",{taskId:task.id});assert.equal(queued.status,201,JSON.stringify(queued.body));const executionId=queued.body.data.id;
-      const key=await post("/v1/api-keys",{name:"Fixed synthetic worker",profileId:"mcp_codex_worker"});assert.equal(key.status,201,JSON.stringify(key.body));
+      const {ownerTicketFixture}=await import("./owner-ticket-fixture"),{hashApiKey}=await import("../auth/api-key");
+      const ticketKey=(await ownerTicketFixture()).state().key;
+      await prisma.trustedProviderTicketKey.create({data:{workspaceId,...ticketKey}});
+      const host=await prisma.agentHost.create({data:{workspaceId,name:"Synthetic host",slug:"fixed-host",platform:"win32"}});
+      const workerKey=randomUUID();
+      await prisma.apiKey.create({data:{workspaceId,name:"Fixed synthetic worker ticket",keyHash:hashApiKey(workerKey),
+        scopes:["agent-runtime:claim"],active:true,expiresAt:new Date(Date.now()+600000),
+        workerHostId:host.id,workerInstallationId:ticketKey.installationId,workerBindingEpoch:1}});
       const config=path.join(root,"config.json");fs.writeFileSync(config,JSON.stringify({host:{name:"Synthetic host",slug:"fixed-host"},workspaceRoot:root,executionProvider:fixed.declaration,repositories:{demoapp:{directory:"DemoApp",originUrl:"https://github.com/example-org/DemoApp.git"}}}));
       const injection=fault?`import fs from 'node:fs';import{syncBuiltinESMExports}from'node:module';const open=fs.openSync;fs.openSync=(file,...args)=>{if(String(file).endsWith('resume-authorized.json'))throw Error('synthetic_publication_crash');return open(file,...args);};syncBuiltinESMExports();`:"";
       const script=`${injection}const{runHost}=await import('./scripts/roost-codex-agent-host.mjs');const{acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs');process.on('message',()=>{process.emit('SIGTERM');process.disconnect();});await runHost({acquireLock:options=>acquireWriterLock(${JSON.stringify(state)},options)});process.exit(0);`;
-      const child=spawn(process.execPath,["--input-type=module","-e",script],{windowsHide:true,stdio:["ignore","pipe","pipe","ipc"],env:{...process.env,ROOST_BASE_URL:h.getBaseUrl(),ROOST_AGENT_API_KEY:key.body.data.key,ROOST_AGENT_HOST_CONFIG:config}});
+      const child=spawn(process.execPath,["--input-type=module","-e",script],{windowsHide:true,stdio:["ignore","pipe","pipe","ipc"],env:{...process.env,ROOST_BASE_URL:h.getBaseUrl(),ROOST_AGENT_API_KEY:workerKey,ROOST_AGENT_HOST_CONFIG:config}});
       const closed=once(child,"close");let logs="";child.stdout!.on("data",b=>logs+=b);child.stderr!.on("data",b=>logs+=b);
       let result:any;
       try {
@@ -72,7 +79,7 @@ export function registerFixedPublicTests(h: any) {
           await h.prepareRiskFixture(route+"/risk",f.input,auth);
           await h.prepareAdmissionFixture(route+"/risk-admission",f.input,auth);
           const v=(await h.request(route+"/review",{headers:reviewerAuth})).body.data;
-          const reviewed=await post(route+"/actions/review",{requestId:randomUUID(),expectedVersion:v.expectedVersion,executionId,materialVersion:v.materialVersion,decision:"approve",summary:"Exact fixed effect and cleanup verified independently",evidence:[{kind:"test",reference:evidence.reviewDigest,result:"22 expected bytes; durable resume receipt; zero remaining processes and fixture"}]},reviewerAuth);
+          const reviewed=await post(route+"/actions/review",{requestId:randomUUID(),expectedVersion:v.expectedVersion,executionId,materialVersion:v.materialVersion,decision:"approve",reviewedCommit:commit,summary:"Exact fixed effect and cleanup verified independently",evidence:[{kind:"test",reference:evidence.reviewDigest,result:"22 expected bytes; durable resume receipt; zero remaining processes and fixture",verdict:"pass"}]},reviewerAuth);
           assert.equal(reviewed.status,200,JSON.stringify(reviewed.body));
         }
         assert.equal((await post(`/v1/agent-runtime/executions/${executionId}/actions/retry`,{})).status,409);

@@ -92,19 +92,35 @@ companyRecordsRouter.get("/:id/context-reviews", asyncHandler(async (req, res) =
 }));
 
 companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
-  const auth = req.auth!, workspaceId = auth.workspaceId;
+  const auth = req.auth!, workspaceId = auth.workspaceId, recordId = z.string().uuid().parse(req.params.id);
   if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner") return res.status(403).json({ error: "source_audit_owner_required" });
   const [owner, record] = await Promise.all([
     prisma.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId }, select: { id: true } }),
-    prisma.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId } })
+    prisma.companyRecord.findFirst({ where: { id: recordId, workspaceId } })
   ]);
-  if (!owner || !record) return res.status(404).json({ error: "source_audit_scope_invalid" });
-  const page = z.object({ limit: z.coerce.number().int().min(1).max(100).default(100), beforeOrdinal: z.coerce.number().int().positive().optional() }).parse(req.query);
-  const reviews = await prisma.companySourceReview.findMany({ where: { workspaceId, recordId: record.id, ...(page.beforeOrdinal ? { ordinal: { lt: page.beforeOrdinal } } : {}) }, orderBy: { ordinal: "desc" }, take: page.limit + 1 });
+  if (!owner) return res.status(403).json({ error: "source_audit_owner_required" });
+  const page = z.object({ limit: z.coerce.number().int().min(1).max(100).default(100),
+    beforeOrdinal: z.coerce.number().int().positive().optional(),
+    beforeHistoryOrdinal: z.coerce.bigint().positive().optional() }).parse(req.query);
+  const [reviews, history, priorBody] = await Promise.all([
+    prisma.companySourceReview.findMany({ where: { workspaceId, recordId,
+      ...(page.beforeOrdinal ? { ordinal: { lt: page.beforeOrdinal } } : {}) }, orderBy: { ordinal: "desc" }, take: page.limit + 1 }),
+    prisma.sourceBodyHistory.findMany({ where: { workspaceId, sourceTable: "company_records", sourceId: recordId,
+      ...(page.beforeHistoryOrdinal ? { ordinal: { lt: page.beforeHistoryOrdinal } } : {}) },
+      orderBy: { ordinal: "desc" }, take: page.limit + 1 }),
+    prisma.sourceBodyHistory.findFirst({ where: { workspaceId, sourceTable: "company_records", sourceId: recordId,
+      operation: { in: ["before_update", "delete"] } }, select: { ordinal: true } })
+  ]);
+  if (!record && !reviews.length && !history.length) return res.status(404).json({ error: "source_audit_scope_invalid" });
   const currentPage = reviews.slice(0, page.limit);
   const hasMore = reviews.length > page.limit;
-  res.json({ data: { currentRecord: record, currentRevision: record.updatedAt.toISOString(), reviews: currentPage,
-    reviewHistoryTruncated: hasMore, nextBeforeOrdinal: hasMore ? currentPage.at(-1)?.ordinal : null, priorBodiesAvailable: false } });
+  const bodyPage = history.slice(0, page.limit);
+  res.json({ data: { currentRecord: record, currentRevision: record?.updatedAt.toISOString() ?? null, reviews: currentPage,
+    reviewHistoryTruncated: hasMore, nextBeforeOrdinal: hasMore ? currentPage.at(-1)?.ordinal : null,
+    history: bodyPage.map(row => ({ ...row, ordinal: row.ordinal.toString() })),
+    nextBeforeHistoryOrdinal: history.length > page.limit ? bodyPage.at(-1)?.ordinal.toString() : null,
+    priorBodiesAvailable: Boolean(priorBody),
+    historyStartsAtMigration: true, overwrittenBeforeMigrationAvailable: false } });
 }));
 
 // A source review is an owner assertion for one exact record revision and one

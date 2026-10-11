@@ -3,6 +3,7 @@ import { prisma } from "../../db/prisma";
 import { gapsFor, loadCapabilities, procedureInclude, projectInclude, readinessInput } from "./application-graph-projection.service";
 import { calculateApplicationReadiness } from "./readiness";
 import { companySourceApprovedContent, companySourceEligible, companySourceProvenance, companySourceReviews } from "../agent-runtime/company-source-trust";
+import { projectTaskSource, taskSourceEligible, taskSourceProvenance, taskSourceReviews, type TaskSourceType } from "../agent-runtime/task-source-trust";
 type AgentContextRecord = {
   id: string;
   parentId: string | null;
@@ -130,7 +131,21 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
     }
   });
   if (!application) return null;
-  const capabilities = await loadCapabilities(application.id, db);
+  const otherReviews = taskId ? await taskSourceReviews(db, workspaceId, taskId) : null;
+  const taskScope = taskId ? await db.task.findFirst({ where: { id: taskId, workspaceId }, select: { projectId: true } }) : null;
+  const taskProjectId = taskScope?.projectId ?? null;
+  const scopedApplications = new Set(taskProjectId && application.projects.some(link => link.projectId === taskProjectId) ? [application.id] : []);
+  const approved = <T extends { id: string }>(type: TaskSourceType, rows: T[]) => !otherReviews ? rows : rows.filter(row => {
+    if (type === "application_capability" && (row as any).capabilityDefinition?.workspaceId !== workspaceId) return false;
+    const source = projectTaskSource(type, row, workspaceId);
+    return taskSourceEligible(source, otherReviews.get(`${type}:${row.id}`), workspaceId, taskId!, scopedApplications, taskProjectId);
+  });
+  const allCapabilities = await loadCapabilities(application.id, db);
+  const eligibleCapabilities = approved("application_capability", allCapabilities);
+  const eligibleCapabilityIds = new Set(eligibleCapabilities.map(item => item.id));
+  const capabilities = eligibleCapabilities.map(item => ({ ...item,
+    evidence: approved("application_evidence", item.evidence),
+    dependenciesFrom: item.dependenciesFrom.filter(link => !taskId || eligibleCapabilityIds.has(link.toCapabilityId)) }));
   const [candidateRecords, genericEvidence, entityRelations] = await Promise.all([
     db.companyRecord.findMany({ where: { workspaceId: workspaceId, applicationId: application.id, status: { not: "archived" } }, orderBy: [{ recordType: "asc" }, { priority: "asc" }] }),
     db.evidenceRecord.findMany({ where: { workspaceId: workspaceId, OR: [{ entityType: "application", entityId: application.id }, { entityId: { in: await db.companyRecord.findMany({ where: { workspaceId: workspaceId, applicationId: application.id }, select: { id: true } }).then((items) => items.map((item) => item.id)) } }] } }),
@@ -138,91 +153,88 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
   ]);
   const reviews = taskId ? await companySourceReviews(db, workspaceId, taskId, candidateRecords.map(record => record.id)) : null;
   const records = reviews ? candidateRecords.filter(record => companySourceEligible(record, reviews.get(record.id), taskId!, application.id)) : candidateRecords;
-  const gaps = gapsFor(capabilities);
-  const readiness = calculateApplicationReadiness(readinessInput(capabilities));
+  // Derived graph prose and relationship metadata have no independent source
+  // review. Keep those views for humans; the Worker receives source projections.
+  const gaps = taskId && executionProfile ? [] : gapsFor(capabilities);
+  const readiness = taskId && executionProfile ? null : calculateApplicationReadiness(readinessInput(capabilities));
   const executionContext = executionProfile && !taskId
     ? executionRecordSelection(records, contextQuery.slice(0, 4000))
     : null;
   const approvedSelection = taskId && executionProfile ? records.slice().sort((a, b) => a.title.localeCompare(b.title) || a.id.localeCompare(b.id)).slice(0, 8) : null;
   const executionApplication = executionProfile ? {
-    ...application,
-    // Installation metadata can contain machine-local paths and transport
-    // configuration. The execution contract uses the repository relation.
-    metadata: undefined,
-    architecture: undefined,
-    technologies: undefined,
-    interfaces: undefined,
-    offerings: undefined,
-    procedures: undefined,
-    projects: undefined
+    id: application.id, workspaceId: application.workspaceId, name: application.name,
+    slug: application.slug, status: application.status, repositories: taskId
+      ? application.repositories.filter(repository => repository.isPrimary || application.repositories.length === 1)
+        .map(repository => ({ id: repository.id, url: repository.url, isPrimary: repository.isPrimary }))
+      : application.repositories,
+    updatedAt: application.updatedAt
   } : application;
   // A task-scoped execution receives its pinned component, rather than every
   // historical architecture import (which may contain unrelated sensitive data).
   const architectureSource = executionProfile && targetComponentId
     ? application.architecture.filter(component => component.id === targetComponentId)
     : application.architecture;
-  const executionArchitecture = executionProfile ? architectureSource.map((component) => {
-    const metadata = component.metadata && typeof component.metadata === "object" && !Array.isArray(component.metadata) ? component.metadata as Record<string, unknown> : {};
-    return {
-      id: component.id,
-      type: component.type,
-      name: component.name,
-      description: component.description?.slice(0, 1000) ?? null,
-      status: component.status,
-      technology: component.technologyDefinition ? { id: component.technologyDefinition.id, name: component.technologyDefinition.name } : null,
-      metadata: {
-        sourceSystem: metadata.sourceSystem ?? null,
-        sourceKind: metadata.sourceKind ?? null,
-        sourceId: metadata.sourceId ?? null,
-        parentSourceId: metadata.parentSourceId ?? null,
-        atomType: metadata.atomType ?? null,
-        layer: metadata.layer ?? null,
-        module: metadata.module ?? null,
-        feature: metadata.feature ?? null,
-        completionPercent: metadata.completionPercent ?? null,
-        verificationStatus: metadata.verificationStatus ?? null,
-        riskLevel: metadata.riskLevel ?? null,
-        filePath: metadata.filePath ?? null,
-        relations: metadata.relations ?? []
-      }
-    };
+  const executionArchitecture = executionProfile ? approved("application_architecture", architectureSource).map((component) => {
+    const source = projectTaskSource("application_architecture", component, workspaceId);
+    return { ...source.content, type: source.content.componentType, name: source.content.title,
+      provenance: otherReviews ? taskSourceProvenance(source, otherReviews.get(`application_architecture:${component.id}`)!) : null };
   }) : application.architecture;
   // The task compiler provides the selected task and its pinned requirements.
   // Project membership is useful context, but embedding every task in a linked
   // project can exhaust the Worker's sealed input before the bounded task and
   // repository evidence are added. Keep the project identity and status.
-  const executionProjects = executionProfile ? application.projects.map((link) => ({
+  const executionProjects = executionProfile ? application.projects.filter(link => !taskId || link.projectId === taskProjectId).map((link) => ({
     applicationId: link.applicationId,
     projectId: link.projectId,
     relationType: link.relationType,
-    project: {
-      id: link.project.id,
-      name: link.project.name,
-      description: link.project.description,
-      status: link.project.status
-    }
+      project: taskId ? { id: link.project.id } : {
+        id: link.project.id, name: link.project.name, status: link.project.status
+      }
   })) : application.projects;
   return {
       schemaVersion: "application-agent-context-v2",
       generatedAt: new Date().toISOString(),
       application: executionApplication,
       lifecycle: { innovation: application.innovationStage, product: application.productStage, status: application.status },
-      targetCapabilities: capabilities.filter((item) => item.applicability !== "not_applicable").map((item) => ({ id: item.id, definition: item.capabilityDefinition, applicability: item.applicability, targetState: item.targetState })),
-      observedCapabilities: capabilities.map((item) => ({ id: item.id, definitionKey: item.capabilityDefinition.key, observedState: item.observedState, observedSummary: item.observedSummary, evidence: item.evidence })),
+      targetCapabilities: capabilities.filter((item) => item.applicability !== "not_applicable").map((item) => {
+        const source = taskId ? projectTaskSource("application_capability", item, workspaceId) : null;
+        return { id: item.id,
+          definition: source ? { id: source.content.definitionId, key: source.content.definitionKey, name: source.content.title } : item.capabilityDefinition,
+          applicability: source ? source.content.applicability : item.applicability,
+          targetState: source ? source.content.targetState : item.targetState,
+          ...(source && otherReviews ? { provenance: taskSourceProvenance(source, otherReviews.get(`application_capability:${item.id}`)!) } : {}) };
+      }),
+      observedCapabilities: capabilities.map((item) => {
+        const source = taskId ? projectTaskSource("application_capability", item, workspaceId) : null;
+        return { id: item.id, definitionKey: source ? source.content.definitionKey : item.capabilityDefinition.key,
+          observedState: source ? source.content.observedState : item.observedState,
+          observedSummary: source ? source.content.observedSummary : item.observedSummary,
+          evidence: taskId ? item.evidence.map(row => {
+            const evidenceSource = projectTaskSource("application_evidence", row, workspaceId);
+            return { ...evidenceSource.content, provenance: taskSourceProvenance(evidenceSource, otherReviews!.get(`application_evidence:${row.id}`)!) };
+          }) : item.evidence,
+          ...(source && otherReviews ? { provenance: taskSourceProvenance(source, otherReviews.get(`application_capability:${item.id}`)!) } : {}) };
+      }),
       gaps,
       blockers: gaps.filter((gap) => gap.blocked),
-      dependencies: capabilities.flatMap((item) => item.dependenciesFrom),
+      dependencies: taskId && executionProfile ? [] : capabilities.flatMap((item) => item.dependenciesFrom),
       companyRecords: approvedSelection ? approvedSelection.map(record => ({ ...companySourceApprovedContent(record), provenance: companySourceProvenance(reviews!.get(record.id)!, record) })) : executionContext?.records ?? records,
       documentationIndex: approvedSelection ? approvedSelection.flatMap(record => {
         const content = companySourceApprovedContent(record);
         return content.recordType === "architecture_document" && typeof content.filePath === "string" ? [{ id: content.id, title: content.title, filePath: content.filePath, sourceSystem: content.sourceSystem, sourceKind: content.sourceKind }] : [];
       }) : executionContext?.documentationIndex ?? undefined,
       contextSelection: approvedSelection ? { profile: "execution", totalRecordCount: records.length, selectedRecordCount: approvedSelection.length, omittedRecordCount: records.length - approvedSelection.length, approvalBound: true } : executionContext?.selection ?? { profile: "complete", totalRecordCount: records.length, selectedRecordCount: records.length, omittedRecordCount: 0 },
-      genericEvidence: taskId && executionProfile ? genericEvidence.filter(item => item.entityType === "application" && item.entityId === application.id) : genericEvidence,
-      entityRelations,
+      genericEvidence: taskId && executionProfile ? approved("evidence", genericEvidence.filter(item => item.entityType === "application" && item.entityId === application.id)).map(row => {
+        const source = projectTaskSource("evidence", row, workspaceId);
+        return { ...source.content, provenance: taskSourceProvenance(source, otherReviews!.get(`evidence:${row.id}`)!) };
+      }) : genericEvidence,
+      entityRelations: taskId && executionProfile ? [] : entityRelations,
       operatingModel: {
-        applicationProcedures: application.procedures,
-        capabilityProcedures: capabilities.flatMap((item) => item.capabilityDefinition.procedures.map((link) => ({
+        applicationProcedures: taskId && executionProfile ? application.procedures.filter(link => approved("procedure", [link.procedure]).length)
+          .map(link => { const source = projectTaskSource("procedure", link.procedure, workspaceId);
+            return { procedureId: link.procedureId, procedure: { ...source.content,
+              provenance: taskSourceProvenance(source, otherReviews!.get(`procedure:${link.procedureId}`)!) } }; }) : application.procedures,
+        capabilityProcedures: taskId && executionProfile ? [] : capabilities.flatMap((item) => item.capabilityDefinition.procedures.map((link) => ({
           capabilityId: item.id,
           capabilityKey: item.capabilityDefinition.key,
           ...link
@@ -230,9 +242,12 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
         projects: executionProjects
       },
       architecture: executionArchitecture,
-      technologies: application.technologies,
-      interfaces: application.interfaces,
-      evidenceSummary: {
+      technologies: taskId && executionProfile ? [] : application.technologies,
+      interfaces: taskId && executionProfile ? approved("application_interface", application.interfaces).map(row => {
+        const source = projectTaskSource("application_interface", row, workspaceId);
+        return { ...source.content, provenance: taskSourceProvenance(source, otherReviews!.get(`application_interface:${row.id}`)!) };
+      }) : application.interfaces,
+      evidenceSummary: taskId && executionProfile ? null : {
         total: capabilities.reduce((sum, item) => sum + item.evidence.length, 0),
         verified: capabilities.reduce((sum, item) => sum + item.evidence.filter((evidence) => evidence.verificationStatus === "verified").length, 0),
         requiredWithoutEvidence: capabilities.filter((item) => item.applicability === "required" && item.evidence.length === 0).map((item) => item.capabilityDefinition.key)

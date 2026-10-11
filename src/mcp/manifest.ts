@@ -1,4 +1,5 @@
 import { adapterManifest, effectiveCapabilities, type Capability, type ManifestRoute } from "../auth/capabilities";
+import { ordinaryApiKeyReadAllowed } from "../auth/company-source-read-boundary";
 
 type McpTool = {
   name: string;
@@ -262,11 +263,13 @@ function routeDescription(route: ManifestRoute) {
   return "Call a workspace-scoped CompanyCore API route through the MCP bridge.";
 }
 
-export function createMcpManifest(scopes: string[] | undefined) {
+export function createMcpManifest(scopes: string[] | undefined, boundAgent = false) {
   const allowedCapabilities = new Set(effectiveCapabilities(scopes));
   const routes = Object.values(adapterManifest.routes).flat() as ManifestRoute[];
   const tools = routes
-    .filter((route) => allowedCapabilities.has(route.capability))
+    .filter((route) => allowedCapabilities.has(route.capability)
+      && ordinaryApiKeyReadAllowed(route.method,
+        route.path.replace(/:[A-Za-z][A-Za-z0-9]*/g, "00000000-0000-4000-8000-000000000000"), boundAgent))
     .map((route): McpTool => {
       const riskLevel = riskForRoute(route);
       return {

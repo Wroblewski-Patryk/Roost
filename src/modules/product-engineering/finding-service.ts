@@ -7,6 +7,8 @@ import { authorityState } from "../decisions/decision-authority";
 import { resolveDecisionAuthority } from "../decisions/decision-authority-policy";
 import { findingBody, findingCreate, findingRevise, findingOccurrence, findingCommand, findingFingerprint, findingGrant, findingRoute, findingTransition, type FindingBody } from "./finding-contract";
 import { inspectReady } from "../agent-runtime/task-execution-readiness";
+import { companySourceEligible, companySourceReviews } from "../agent-runtime/company-source-trust";
+import { taskSourceCandidate, taskSourceEligible, taskSourceReviews, taskSourceScope } from "../agent-runtime/task-source-trust";
 
 export type FindingDb = Prisma.TransactionClient;
 type Principal = NonNullable<Awaited<ReturnType<typeof resolveReviewPrincipal>>>;
@@ -81,15 +83,65 @@ export async function findingState(db: FindingDb,w:string,f:string,actor:ReviewA
   return {version,body,principal,head,context,verifyAuthority,triageAuthority,verification,verificationCurrent,output,expectedVersion};
 }
 
+// A finding grant approves one immutable finding version for one task and
+// credential. Its referenced records still require their own G9 source review.
+async function agentFindingSourcesApproved(db:FindingDb,w:string,s:Exclude<Awaited<ReturnType<typeof findingState>>,{error:string}>,extra:FindingBody["evidence"]=[]) {
+  const taskId=s.body.taskId;
+  if(!taskId)return false;
+  const scope=await taskSourceScope(db,w,taskId);
+  if(!scope||!scope.applicationIds.has(s.version.application_id))return false;
+  const refs=[...s.body.sources,...s.body.evidence,...extra];
+  if(refs.some(ref=>ref.type==="run"||ref.type==="audit"
+    ||ref.type==="task"&&ref.id!==taskId
+    ||ref.type==="project"&&ref.id!==scope.task.projectId
+    ||ref.type==="application"&&ref.id!==s.version.application_id))return false;
+  const recordIds=refs.filter(ref=>ref.type==="company_record").map(ref=>ref.id);
+  const records=recordIds.length?await db.companyRecord.findMany({where:{workspaceId:w,id:{in:recordIds}}}):[];
+  const companyReviews=await companySourceReviews(db,w,taskId,recordIds);
+  if(recordIds.some(id=>!records.some(record=>record.id===id&&companySourceEligible(record,companyReviews.get(id),taskId,s.version.application_id))))return false;
+  const sourceReviews=await taskSourceReviews(db,w,taskId);
+  for(const ref of refs){
+    if(ref.type!=="application_evidence"&&ref.type!=="procedure")continue;
+    const source=await taskSourceCandidate(db,w,ref.type,ref.id);
+    if(!source||!taskSourceEligible(source,sourceReviews.get(`${ref.type}:${ref.id}`),w,taskId,scope.applicationIds,scope.task.projectId))return false;
+  }
+  return true;
+}
+
+async function agentFindingGrant(db:FindingDb,w:string,f:string,s:Exclude<Awaited<ReturnType<typeof findingState>>,{error:string}>) {
+  if(s.principal?.kind!=="agent"||!s.body.taskId)return null;
+  const rows=await db.$queryRaw<Array<{id:string;operation:string}>>`SELECT id,operation FROM task_capability_grants g
+    WHERE workspace_id=${w}::uuid AND task_id=${s.body.taskId}::uuid AND application_id=${s.version.application_id}::uuid
+      AND agent_id=${s.principal.id}::uuid AND credential_id=${s.principal.credentialId}::uuid
+      AND operation IN ('finding_verify','finding_triage')
+      AND snapshot->'finding'->>'observationId'=${f} AND snapshot->'finding'->>'versionId'=${s.version.id}
+      AND task_capability_status(g)='active' ORDER BY created_at DESC LIMIT 1`;
+  return rows[0]??null;
+}
+function currentVerificationEvidence(s:Exclude<Awaited<ReturnType<typeof findingState>>,{error:string}>):FindingBody["evidence"] {
+  const evidence=s.verification?.body?.verification?.evidence;
+  return Array.isArray(evidence)?evidence:[];
+}
+
 export async function findingView(db: FindingDb,w:string,f:string,actor:ReviewActor) {
   const s=await findingState(db,w,f,actor);if("error" in s)return s;
+  if(typeof actor!=="string"&&actor?.authType==="api_key"&&s.principal?.kind!=="agent")return {error:"finding_forbidden"};
+  if(s.principal?.kind==="agent"){
+    const grant=await agentFindingGrant(db,w,f,s);
+    if(!grant||!await agentFindingSourcesApproved(db,w,s,currentVerificationEvidence(s)))return {error:"finding_forbidden"};
+    const value={expectedVersion:s.expectedVersion,state:s.head?.state??"observed",verificationCurrent:s.verificationCurrent,
+      version:{id:s.version.id,version:s.version.version,body:s.body},
+      verification:s.verification?{action:s.verification.action,body:s.verification.body}:null,
+      grant:{id:grant.id,operation:grant.operation}};
+    requireRuntimeContent(value,"finding.agent-read",{workspaceId:w});return value;
+  }
   const [history,versions,occurrences,candidates]=await Promise.all([
     db.$queryRaw<any[]>`SELECT * FROM finding_journal WHERE observation_id=${f}::uuid ORDER BY sequence DESC LIMIT 101`,
     db.$queryRaw<any[]>`SELECT * FROM finding_versions WHERE observation_id=${f}::uuid ORDER BY version DESC LIMIT 51`,
     db.$queryRaw<any[]>`SELECT * FROM finding_occurrences WHERE observation_id=${f}::uuid ORDER BY created_at DESC,id DESC LIMIT 101`,
     db.$queryRaw<any[]>`SELECT j.* FROM finding_journal j JOIN finding_versions v ON v.id=j.version_id WHERE j.workspace_id=${w}::uuid AND v.application_id=${s.version.application_id}::uuid AND j.action IN ('propose_merge','resolve_merge') AND (j.observation_id=${f}::uuid OR j.body->>'otherId'=${f}) ORDER BY j.created_at DESC LIMIT 51`
   ]);
-  const grants=s.principal?await db.$queryRaw<any[]>`SELECT id,operation,valid_until,task_capability_status(g) AS status FROM task_capability_grants g WHERE workspace_id=${w}::uuid AND snapshot->'finding'->>'observationId'=${f} AND (grantee_user_id=${s.principal.kind==="user"?s.principal.id:null}::uuid OR agent_id=${s.principal.kind==="agent"?s.principal.id:null}::uuid AND credential_id=${s.principal.credentialId}::uuid) ORDER BY created_at DESC LIMIT 51`:[];
+  const grants=s.principal?await db.$queryRaw<any[]>`SELECT id,operation,valid_until,task_capability_status(g) AS status FROM task_capability_grants g WHERE workspace_id=${w}::uuid AND snapshot->'finding'->>'observationId'=${f} AND grantee_user_id=${s.principal.id}::uuid ORDER BY created_at DESC LIMIT 51`:[];
   const canManageGrants=s.principal?.kind==="user"&&!!await db.workspaceMembership.findFirst({where:{workspaceId:w,userId:s.principal.id,role:{in:["owner","admin"]}}});
   const credentials=canManageGrants?await db.apiKey.findMany({where:{workspaceId:w,active:true,revokedAt:null,boundAgentId:{not:null},expiresAt:{gt:new Date()}},select:{id:true,name:true,boundAgentId:true},take:101}):[];
   const deferrals=await db.$queryRaw<any[]>`SELECT d.id,d.condition,d.explanation,d.version,(SELECT e.id FROM decision_reopening_events e WHERE e.deferral_id=d.id LIMIT 1) AS event_id FROM decision_deferrals d WHERE d.workspace_id=${w}::uuid AND d.target_type='finding' AND d.target_id=${f}::uuid ORDER BY version DESC LIMIT 51`;
@@ -183,6 +235,13 @@ export async function commandFinding(db:FindingDb,w:string,f:string,actor:Review
   const command=findingCommand.parse(input);requireRuntimeContent(command,"finding.command",{workspaceId:w});
   const s=await findingState(db,w,f,actor);if("error" in s)return s;if(!s.principal)return {error:"finding_forbidden"};
   const p=s.principal,hash=reviewDigest({command,f,principal:p});
+  const action=command.action==="verify"?command.verification.verdict:command.action==="adjudicate"?`adjudicate_${command.verification.verdict}`:command.action;
+  const passive=["queue_deduplication","deduplicate","propose_merge"].includes(action);
+  if(p.kind==="agent"){
+    if(passive||!command.grantId)return {error:"finding_forbidden"};
+    const extra=command.action==="verify"||command.action==="challenge"||command.action==="adjudicate"?command.verification.evidence:command.action==="prepare_task"?command.task.context:[];
+    if(!await agentFindingSourcesApproved(db,w,s,[...currentVerificationEvidence(s),...extra]))return {error:"finding_forbidden"};
+  }
   const prior=(await db.$queryRaw<any[]>`SELECT * FROM finding_journal WHERE workspace_id=${w}::uuid AND request_id=${command.requestId}::uuid`)[0];
   if(prior){
     if(prior.request_hash!==hash)return {error:"finding_request_conflict"};
@@ -190,8 +249,6 @@ export async function commandFinding(db:FindingDb,w:string,f:string,actor:Review
     return {record:{id:prior.id,outputId:prior.body.outputId??null},replayed:true};
   }
   if(command.expectedVersion!==s.expectedVersion)return {error:"finding_stale"};
-  const action=command.action==="verify"?command.verification.verdict:command.action==="adjudicate"?`adjudicate_${command.verification.verdict}`:command.action;
-  const passive=["queue_deduplication","deduplicate","propose_merge"].includes(action);
   const operation=["verify","challenge","adjudicate"].includes(command.action)?"finding_verify":"finding_triage";
   const authority=operation==="finding_verify"?s.verifyAuthority:s.triageAuthority;
   let grant:any=null;
@@ -199,6 +256,13 @@ export async function commandFinding(db:FindingDb,w:string,f:string,actor:Review
     if(authority.status!=="delegated"||!same(authority.principal,p))return {error:"finding_authority_required"};
     grant=command.grantId?await db.taskCapabilityGrant.findFirst({where:{id:command.grantId,workspaceId:w,operation}}):null;
     if(!grant)return {error:"finding_grant_required"};
+    if(p.kind==="agent"){
+      const snapshot=grant.snapshot as any;
+      if(grant.agentId!==p.id||grant.credentialId!==p.credentialId||grant.taskId!==s.body.taskId
+        ||grant.applicationId!==s.version.application_id||snapshot?.finding?.observationId!==f||snapshot?.finding?.versionId!==s.version.id
+        ||(await db.$queryRaw<Array<{status:string}>>`SELECT task_capability_status(g) AS status FROM task_capability_grants g WHERE id=${grant.id}::uuid`)[0]?.status!=="active")
+        return {error:"finding_forbidden"};
+    }
     if(operation==="finding_triage"&&!["reopen","prepare_adjudication"].includes(action)&&!s.verificationCurrent)return {error:"finding_verification_stale"};
   }
   const prepare=["prepare_task","prepare_decision","prepare_interview"].includes(action);

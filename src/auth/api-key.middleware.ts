@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma";
 import { agentPrincipalRoute } from "./agent-principal";
-import { unboundCompanySourceRead } from "./company-source-read-boundary";
+import { ordinaryApiKeyReadAllowed, unboundCompanySourceRead } from "./company-source-read-boundary";
 import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
@@ -105,7 +105,11 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
   }
   const workerIdentity = workerTicketPrincipal(record);
   const requestPath=`${req.baseUrl}${req.path}`.replace(/\/+$/, "");
-  if (unboundCompanySourceRead(req.method, requestPath) && !workerIdentity)
+  if (!workerIdentity && !ordinaryApiKeyReadAllowed(req.method, requestPath, Boolean(record.boundAgentId)))
+    return sendApiError(res, 403, "task_bound_source_read_required");
+  const grantScopedDecisionRead = Boolean(record.boundAgentId) && req.method === "GET"
+    && /^\/v1\/decisions\/[a-f0-9-]{36}\/governance$/.test(requestPath);
+  if (unboundCompanySourceRead(req.method, requestPath) && !workerIdentity && !grantScopedDecisionRead)
     return sendApiError(res, 403, "task_bound_source_read_required");
   if ((record.workerHostId || record.workerInstallationId || record.workerBindingEpoch) && (!workerIdentity
     || !record.workerHost || record.workerHost.workspaceId !== record.workspaceId || record.workerHost.status === "disabled"

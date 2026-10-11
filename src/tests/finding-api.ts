@@ -76,7 +76,7 @@ export function registerFindingTests(helpers:any) {
     const ref=async(type:string,id:string)=>(await prisma.$queryRaw<any[]>`SELECT finding_reference(${w}::uuid,${type},${id}::uuid) AS revision`)[0].revision;
     const body={title:"Parser needs typed validation",classification:"defect",language:"en",taskId:f.task.id,componentId:component.id,departmentKey:"09-technologia",requesterId:f.verifier.id,recipientId:pm.id,scope:"One parser validation result",excluded:"Other application components",observed:"Empty input throws",expected:"Empty input returns typed validation",reproducibility:{status:"reproduced",steps:["Call parser with empty input"],limitations:"Synthetic local evidence"},sources:[{type:"task",id:f.task.id,revision:await ref("task",f.task.id)}],evidence:[{type:"company_record",id:record.id,revision:await ref("company_record",record.id)}],environment:{key:"fixture",build:"fixture-build",applicationRevision:await ref("application",f.app.id),componentRevision:await ref("component",component.id),contextRevision:"b".repeat(64)},impact:"Parser result is missing",knownRisk:"low",requiredCompetencies:["javascript"],decisionNeed:"none",procedureId:null};
     let conflict:{root:string;decisionId:string}|undefined;
-    for(const kind of ["self_author","fix_author","rejected","inconclusive"]){
+    for(const kind of agentMode?["rejected","inconclusive"]:["self_author","fix_author","rejected","inconclusive"]){
       const fixRecord=kind==="fix_author"?await prisma.companyRecord.create({data:{workspaceId:w,applicationId:f.app.id,title:"Distinct fix authorship evidence",key:randomUUID(),recordType:"audit",source:"manual",status:"active"}}):null;
       const variantBody={...body,evidence:fixRecord?[{type:"company_record",id:fixRecord.id,revision:await ref("company_record",fixRecord.id)}]:body.evidence,environment:{...body.environment,build:`fixture-${kind}`}},created=data(await f.post(`/v1/product-engineering/applications/${f.app.id}/findings`,{requestId:randomUUID(),body:variantBody},kind==="self_author"?f.reviewerAuth:f.auth)),variantRoot=`/v1/product-engineering/findings/${created.record.id}`;
       const read=async()=>data(await request(variantRoot,{headers:f.auth}));
@@ -87,8 +87,8 @@ export function registerFindingTests(helpers:any) {
       if(kind.endsWith("author")){assert.equal(issued.status,409,kind);continue;}
       data(await act({action:"verify",grantId:data(issued).record.id,verification:{verdict:kind,method:"Direct local reproduction",environment:variantBody.environment.build,evidence:body.evidence,observed:body.observed,limitations:"Synthetic local evidence"}},f.reviewerAuth));
       assert.equal((await read()).state,kind);
-      assert.equal((await act({action:"queue_triage"},pmAuth)).status,409);
-      assert.equal((await act({action:"convert_task"},pmAuth)).status,409);
+      assert.equal((await act({action:"queue_triage"},pmAuth)).status,agentMode?403:409);
+      assert.equal((await act({action:"convert_task"},pmAuth)).status,agentMode?403:409);
       if(kind==="inconclusive"){
         const grant=async()=>data(await f.post(variantRoot+"/grants",{requestId:randomUUID(),expectedVersion:(await read()).expectedVersion,operation:"finding_triage",principal:{kind:principalKind,id:pmPrincipalId},credentialId:agentMode?f.managerKey.id:null,validUntil:new Date(Date.now()+600000).toISOString(),reason:"Escalate contradictory verification"})).record.id;
         const command={action:"prepare_adjudication",principal:{kind:principalKind,id:pmPrincipalId},statement:"Assign an independent adjudicator",rationale:"The evidence remains inconclusive",consequences:"Execution remains blocked pending independent evidence",grantId:await grant()};
@@ -171,12 +171,29 @@ export function registerFindingTests(helpers:any) {
     }
     const created=data(await f.post(`/v1/product-engineering/applications/${f.app.id}/findings`,{requestId:randomUUID(),body})),id=created.record.id,root=`/v1/product-engineering/findings/${id}`;
     const read=async(headers=f.auth)=>data(await request(root,{headers}));
-    const act=async(action:any,headers=f.auth)=>f.post(root+"/actions",{requestId:randomUUID(),expectedVersion:(await read(headers)).expectedVersion,reason:"Exact scoped synthetic finding action",...action},headers);
+    const act=async(action:any,headers=f.auth)=>f.post(root+"/actions",{requestId:randomUUID(),expectedVersion:(await read()).expectedVersion,reason:"Exact scoped synthetic finding action",...action},headers);
+    if(agentMode){
+      const {findingView}=await import("../modules/product-engineering/finding-service");
+      const unresolved=await prisma.$transaction(db=>findingView(db,w,id,{authType:"api_key",workspaceId:w,agentId:f.verifier.id,apiKeyId:randomUUID(),credentialVersion:1}));
+      assert.deepEqual(unresolved,{error:"finding_forbidden"});
+      assert.equal((await request(root,{headers:f.reviewerAuth})).status,403);
+      assert.equal((await request(`/v1/product-engineering/applications/${f.app.id}/findings`,{headers:f.reviewerAuth})).status,403);
+      assert.equal((await request(`/v1/product-engineering/applications/${f.app.id}/findings/catalog`,{headers:f.reviewerAuth})).status,403);
+      for(const path of [`/v1/product-engineering/applications/${f.app.id}/findings`,root+"/versions",root+"/occurrences"])
+        assert.equal((await f.post(path,{},f.reviewerAuth)).status,403);
+      assert.equal((await act({action:"queue_deduplication"},f.reviewerAuth)).status,403);
+    }
     data(await act({action:"queue_deduplication"}));data(await act({action:"deduplicate"}));
     const receipt={verdict:"confirmed",method:"Direct parser reproduction",environment:"fixture-build",evidence:body.evidence,observed:body.observed,limitations:"Synthetic local test"};
-    assert.equal((await act({action:"verify",verification:receipt},f.reviewerAuth)).status,409);
+    assert.equal((await act({action:"verify",verification:receipt},f.reviewerAuth)).status,agentMode?403:409);
     const grant=async(operation:string,principalId:string)=>data(await f.post(root+"/grants",{requestId:randomUUID(),expectedVersion:(await read()).expectedVersion,operation,principal:{kind:principalKind,id:principalId},credentialId:agentMode?(principalId===pmPrincipalId?f.managerKey.id:f.verifierKey.id):null,validUntil:new Date(Date.now()+600000).toISOString(),reason:"One exact Finding operation"})).record.id;
     let grantId=await grant("finding_verify",verifierPrincipalId);
+    if(agentMode){
+      const scoped=await read(f.reviewerAuth);
+      assert.equal(scoped.grant.id,grantId);
+      assert.equal(scoped.version.body.title,body.title);
+      assert.equal(scoped.history,undefined);
+    }
     assert.equal((await act({action:"verify",verification:receipt,grantId},f.auth)).status,409);
     const verified=data(await act({action:"verify",verification:receipt,grantId},f.reviewerAuth));assert.ok(verified.record.id);
     assert.equal((await read()).state,"verified");assert.equal((await read()).verificationCurrent,true);
@@ -185,13 +202,27 @@ export function registerFindingTests(helpers:any) {
     const task={title:"Repair empty parser input",outcome:f.input.contract.objective.outcome,scope:f.input.contract.scope.allowed[0],excluded:f.input.contract.scope.forbidden[0],projectId:f.task.projectId,executorId:f.input.contract.assignment.agentId,procedureId:f.input.contract.procedures.items[0].id,acceptanceCriteria:f.input.contract.acceptance.criteria,requiredTests:f.input.contract.acceptance.tests,dependencies:[],context:body.evidence};
     const prepared=data(await act({action:"prepare_task",task,grantId},pmAuth)),child=prepared.record.outputId;
     assert.equal((await read()).state,"triage_pending");assert.equal((await prisma.task.findUniqueOrThrow({where:{id:child}})).executionReadiness&&((await prisma.task.findUniqueOrThrow({where:{id:child}})).executionReadiness as any).status,"draft");
-    assert.equal((await act({action:"prepare_task",task,grantId},pmAuth)).status,409);
+    assert.equal((await act({action:"prepare_task",task,grantId},pmAuth)).status,agentMode?403:409);
     assert.equal((await act({action:"convert_task",grantId:await grant("finding_triage",pmPrincipalId)},pmAuth)).status,409);
     assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS n FROM finding_outputs WHERE observation_id=${id}::uuid`)[0].n,1);
     const readyInput=structuredClone(f.input),verifier=await prisma.workforceEntity.findUniqueOrThrow({where:{id:f.verifier.id}});
     readyInput.contract.singleTask.contractId=`roost-task:${child}`;readyInput.contract.singleTask.branch=`codex/task-${child}`;
     readyInput.contract.singleTask.accountableManager={id:pm.id,revision:pm.updatedAt.toISOString()};readyInput.contract.taskRoles.accountableManager=readyInput.contract.singleTask.accountableManager;
     readyInput.contract.taskRoles.verifier={id:verifier.id,revision:verifier.updatedAt.toISOString()};
+    const reviewChildSource=async(path:string,sourceId:string,expectedRevision:string,sourceType?:string)=>{
+      const reviewed=await f.post(path,{requestId:randomUUID(),taskId:child,
+        ...(sourceType?{sourceType,sourceId}:{}),expectedRevision,action:"approve",classification:"fact",
+        provenance:"Isolated finding conversion fixture",environment:"isolated_test",
+        verificationMethod:"Fixture source inspection",verificationRef:"disposable-postgresql-test",
+        inclusionReason:"Exact context for converted Task",validUntil:new Date(Date.now()+86400000).toISOString()});
+      assert.equal(reviewed.status,201,JSON.stringify(reviewed.body));
+    };
+    for(const source of Object.values(readyInput.contract.context).flat() as Array<{id:string;revision:string}>)
+      await reviewChildSource(`/v1/company-records/${source.id}/context-reviews`,source.id,source.revision);
+    for(const source of readyInput.contract.procedures.items as Array<{id:string}>) {
+      const row=await prisma.procedure.findUniqueOrThrow({where:{id:source.id}});
+      await reviewChildSource("/v1/agent-runtime/source-reviews",row.id,row.updatedAt.toISOString(),"procedure");
+    }
     const submitRoute=`/v1/agent-runtime/tasks/${child}/actions/submit-for-execution`;
     const submitted=await f.post(submitRoute,await submissionInput(submitRoute,readyInput,f.auth));assert.equal(submitted.status,200,JSON.stringify(submitted.body));
     assert.equal((await prisma.$queryRaw<any[]>`SELECT finding_task_current(${child}::uuid) AS current`)[0].current,false);
@@ -217,7 +248,7 @@ export function registerFindingTests(helpers:any) {
     }
     await prisma.workforceEntity.update({where:{id:f.verifier.id},data:{skillIndex:[]}});
     assert.equal((await read()).verificationCurrent,false);
-    assert.equal((await act({action:"convert_task",grantId},pmAuth)).status,409);
+    assert.equal((await act({action:"convert_task",grantId},pmAuth)).status,agentMode?403:409);
     const invalidatedQueue=await prisma.agentExecution.findUniqueOrThrow({where:{id:queued.id}});assert.equal(invalidatedQueue.status,"cancelled");assert.ok(invalidatedQueue.contextInvalidatedAt);
     assert.ok(conflict);
     await prisma.workforceEntity.update({where:{id:pm.id},data:{authorityScope:["task_accountability","task_verification"]}});
@@ -231,6 +262,49 @@ export function registerFindingTests(helpers:any) {
     const conflictGrant=data(await f.post(conflict.root+"/grants",{requestId:randomUUID(),expectedVersion:(await conflictRead()).expectedVersion,operation:"finding_verify",principal:{kind:principalKind,id:pmPrincipalId},credentialId:agentMode?f.managerKey.id:null,validUntil:new Date(Date.now()+600000).toISOString(),reason:"One independent adjudication"})).record.id;
     const adjudication={requestId:randomUUID(),expectedVersion:(await conflictRead()).expectedVersion,action:"adjudicate",grantId:conflictGrant,decisionId:conflict.decisionId,reason:"Owner appointed an independent adjudicator",verification:{...receipt,evidence:[{...body.evidence[0],revision:await ref("company_record",record.id)}]}};
     data(await f.post(conflict.root+"/actions",adjudication,pmAuth));assert.equal((await conflictRead()).state,"verified");
-    assert.equal((await f.post(conflict.root+"/actions",{...adjudication,requestId:randomUUID(),expectedVersion:(await conflictRead()).expectedVersion},pmAuth)).status,409);
+    assert.equal((await f.post(conflict.root+"/actions",{...adjudication,requestId:randomUUID(),expectedVersion:(await conflictRead()).expectedVersion},pmAuth)).status,agentMode?403:409);
+    if(agentMode){
+      const second=await prisma.companyRecord.create({data:{workspaceId:w,applicationId:f.app.id,title:"SECOND_VERIFICATION_SOURCE_MARKER",key:randomUUID(),recordType:"audit",source:"manual",status:"active"}});
+      const reviewPath=`/v1/company-records/${second.id}/context-reviews`;
+      const reviewInput={requestId:randomUUID(),taskId:f.task.id,expectedRevision:second.updatedAt.toISOString(),action:"approve",classification:"fact",
+        provenance:"Synthetic independent verification source",environment:"isolated_test",verificationMethod:"Fixture inspection",verificationRef:"disposable-postgresql-test",
+        inclusionReason:"Exact verification evidence",validUntil:new Date(Date.now()+600000).toISOString()};
+      data(await f.post(reviewPath,reviewInput));
+      const currentBody={...body,sources:[{...body.sources[0],revision:await ref("task",f.task.id)}],evidence:[{...body.evidence[0],revision:await ref("company_record",record.id)}],
+        environment:{...body.environment,build:"second-verification",applicationRevision:await ref("application",f.app.id),componentRevision:await ref("component",component.id)}};
+      const extra=data(await f.post(`/v1/product-engineering/applications/${f.app.id}/findings`,{requestId:randomUUID(),body:currentBody}));
+      const extraRoot=`/v1/product-engineering/findings/${extra.record.id}`;
+      const extraRead=async()=>data(await request(extraRoot,{headers:f.auth}));
+      for(const action of ["queue_deduplication","deduplicate"])
+        data(await f.post(extraRoot+"/actions",{requestId:randomUUID(),expectedVersion:(await extraRead()).expectedVersion,action,reason:"Exact verification setup"}));
+      const verifyGrant=data(await f.post(extraRoot+"/grants",{requestId:randomUUID(),expectedVersion:(await extraRead()).expectedVersion,operation:"finding_verify",
+        principal:{kind:"agent",id:pmPrincipalId},credentialId:f.managerKey.id,validUntil:new Date(Date.now()+600000).toISOString(),reason:"Verify with separate approved evidence"})).record.id;
+      const secondEvidence=[{type:"company_record",id:second.id,revision:await ref("company_record",second.id)}];
+      data(await f.post(extraRoot+"/actions",{requestId:randomUUID(),expectedVersion:(await extraRead()).expectedVersion,action:"verify",grantId:verifyGrant,
+        reason:"Direct independent check",verification:{...receipt,evidence:secondEvidence,observed:"SECOND_VERIFICATION_SOURCE_MARKER"}},pmAuth));
+      const triageGrant=data(await f.post(extraRoot+"/grants",{requestId:randomUUID(),expectedVersion:(await extraRead()).expectedVersion,operation:"finding_triage",
+        principal:{kind:"agent",id:pmPrincipalId},credentialId:f.managerKey.id,validUntil:new Date(Date.now()+600000).toISOString(),reason:"Triage current verified finding"})).record.id;
+      const visible=data(await request(extraRoot,{headers:pmAuth}));assert.equal(visible.grant.id,triageGrant);
+      assert.match(JSON.stringify(visible),/SECOND_VERIFICATION_SOURCE_MARKER/);
+      data(await f.post(reviewPath,{...reviewInput,requestId:randomUUID(),action:"withdraw"}));
+      const denied=await request(extraRoot,{headers:pmAuth});assert.equal(denied.status,403);
+      assert.doesNotMatch(JSON.stringify(denied.body),/SECOND_VERIFICATION_SOURCE_MARKER/);
+      assert.equal((await request(extraRoot,{headers:f.auth})).status,200);
+
+      const foreignTask=await prisma.task.create({data:{workspaceId:w,projectId:f.task.projectId,title:"Foreign same-application task marker"}});
+      const foreignBody={...currentBody,title:"Foreign task evidence must stay private",observed:"FOREIGN_TASK_SOURCE_MARKER",
+        sources:[{type:"task",id:foreignTask.id,revision:await ref("task",foreignTask.id)}],environment:{...currentBody.environment,build:"foreign-task"}};
+      const foreign=data(await f.post(`/v1/product-engineering/applications/${f.app.id}/findings`,{requestId:randomUUID(),body:foreignBody}));
+      const foreignRoot=`/v1/product-engineering/findings/${foreign.record.id}`;
+      const foreignRead=async()=>data(await request(foreignRoot,{headers:f.auth}));
+      for(const action of ["queue_deduplication","deduplicate"])
+        data(await f.post(foreignRoot+"/actions",{requestId:randomUUID(),expectedVersion:(await foreignRead()).expectedVersion,action,reason:"Foreign reference setup"}));
+      const foreignGrant=data(await f.post(foreignRoot+"/grants",{requestId:randomUUID(),expectedVersion:(await foreignRead()).expectedVersion,operation:"finding_verify",
+        principal:{kind:"agent",id:pmPrincipalId},credentialId:f.managerKey.id,validUntil:new Date(Date.now()+600000).toISOString(),reason:"Probe exact task source boundary"})).record.id;
+      const foreignDenied=await request(foreignRoot,{headers:pmAuth});assert.equal(foreignDenied.status,403);
+      assert.doesNotMatch(JSON.stringify(foreignDenied.body),/FOREIGN_TASK_SOURCE_MARKER/);
+      assert.equal((await f.post(foreignRoot+"/actions",{requestId:randomUUID(),expectedVersion:(await foreignRead()).expectedVersion,
+        action:"verify",grantId:foreignGrant,reason:"Probe source boundary",verification:{...receipt,evidence:foreignBody.evidence}},pmAuth)).status,403);
+    }
   });
 }

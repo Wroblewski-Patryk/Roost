@@ -27,6 +27,8 @@ import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
 import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
 import { taskCompanySources } from "./company-source-read";
+import { taskSourceCandidate, taskSourceDigest, taskSourceEligible, taskSourceProvenance, taskSourceScope,
+  taskSourceTypes, taskSourcesForAgent, type TaskSourceType } from "./task-source-trust";
 import { companyRuntimeClass, isInformationRuntime, informationApprovalCandidate, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
@@ -274,6 +276,127 @@ agentRuntimeRouter.get("/tasks/:id/company-sources/:recordId", asyncHandler(asyn
   res.json({ data: source });
 }));
 
+const taskSourceReviewSchema = z.object({
+  requestId: z.string().uuid(), taskId: z.string().uuid(), sourceType: z.enum(taskSourceTypes),
+  sourceId: z.string().uuid(), expectedRevision: z.string().datetime(),
+  action: z.enum(["approve", "withdraw"]), classification: z.enum(["fact", "observation", "proposal", "inference"]),
+  provenance: z.string().trim().min(1).max(500), environment: z.enum(["production", "isolated_test"]),
+  verificationMethod: z.string().trim().min(1).max(500), verificationRef: z.string().trim().min(1).max(1000),
+  inclusionReason: z.string().trim().min(1).max(1000), validUntil: z.string().datetime()
+}).strict();
+
+agentRuntimeRouter.post("/source-reviews", asyncHandler(async (req, res) => {
+  const auth = req.auth!, input = taskSourceReviewSchema.parse(req.body);
+  if (auth.authType !== "user" || auth.workspaceRole !== "owner" || !auth.userId)
+    return sendApiError(res, 403, "source_review_owner_required");
+  if (input.environment !== (process.env.NODE_ENV === "test" ? "isolated_test" : "production"))
+    return sendApiError(res, 400, "source_review_environment_invalid");
+  const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
+  const result = await prisma.$transaction(async db => {
+    const prior = await db.taskSourceReview.findUnique({ where: { id: input.requestId } });
+    if (prior) return prior.workspaceId === auth.workspaceId && prior.taskId === input.taskId &&
+      prior.sourceType === input.sourceType && prior.sourceId === input.sourceId && prior.requestHash === requestHash
+      ? { status: 200, review: prior } : { status: 409, error: "source_review_request_conflict" };
+    const owner = await db.workspace.findFirst({ where: { id: auth.workspaceId, ownerUserId: auth.userId }, select: { id: true } });
+    const scope = await taskSourceScope(db, auth.workspaceId, input.taskId);
+    const source = await taskSourceCandidate(db, auth.workspaceId, input.sourceType, input.sourceId);
+    if (!owner || !scope || !source) return { status: 404, error: "source_review_scope_invalid" };
+    if (source.revision.toISOString() !== input.expectedRevision) return { status: 409, error: "source_review_revision_changed" };
+    const now = new Date(), validUntil = new Date(input.validUntil);
+    if (validUntil <= now || validUntil.getTime() - now.getTime() > 366 * 86400000)
+      return { status: 400, error: "source_review_validity_invalid" };
+    const base = { id: input.requestId, workspaceId: auth.workspaceId, taskId: input.taskId,
+      sourceType: input.sourceType, sourceId: input.sourceId, sourceRevision: source.revision,
+      contentDigest: taskSourceDigest(source), requestHash, action: input.action,
+      classification: input.classification, provenance: input.provenance, environment: input.environment,
+      verificationMethod: input.verificationMethod, verificationRef: input.verificationRef,
+      inclusionReason: input.inclusionReason, validFrom: now, validUntil, actorUserId: auth.userId! };
+    if (input.action === "approve" && !taskSourceEligible(source, { ...base, createdAt: now } as any,
+      auth.workspaceId, input.taskId, scope.applicationIds, scope.task.projectId))
+      return { status: 400, error: "source_review_record_ineligible" };
+    const review = await db.taskSourceReview.create({ data: base });
+    await db.event.create({ data: { workspaceId: auth.workspaceId, taskId: input.taskId,
+      type: "task_source_reviewed", source: "roost", resourceType: input.sourceType,
+      resourceId: input.sourceId, payload: { reviewId: review.id, action: review.action,
+        sourceRevision: review.sourceRevision.toISOString(), contentDigest: review.contentDigest,
+        actorUserId: auth.userId } } });
+    return { status: 201, review };
+  }).catch(async error => {
+    if ((error as { code?: string })?.code !== "P2002") throw error;
+    const prior = await prisma.taskSourceReview.findUnique({ where: { id: input.requestId } });
+    return prior?.workspaceId === auth.workspaceId && prior.taskId === input.taskId &&
+      prior.sourceType === input.sourceType && prior.sourceId === input.sourceId && prior.requestHash === requestHash
+      ? { status: 200, review: prior } : { status: 409, error: "source_review_request_conflict" };
+  });
+  if ("error" in result) return sendApiError(res, result.status, result.error!);
+  res.status(result.status).json({ data: result.review });
+}));
+
+agentRuntimeRouter.get("/source-audit/:type/:sourceId", asyncHandler(async (req, res) => {
+  const auth = req.auth!, type = z.enum(taskSourceTypes).parse(req.params.type), sourceId = z.string().uuid().parse(req.params.sourceId);
+  if (auth.authType !== "user" || auth.workspaceRole !== "owner" || !auth.userId)
+    return sendApiError(res, 403, "source_audit_owner_required");
+  const owner = await prisma.workspace.findFirst({ where: { id: auth.workspaceId, ownerUserId: auth.userId }, select: { id: true } });
+  if (!owner) return sendApiError(res, 403, "source_audit_owner_required");
+  const page = z.object({ limit: z.coerce.number().int().min(1).max(100).default(50),
+    beforeReviewOrdinal: z.coerce.number().int().positive().optional(),
+    beforeHistoryOrdinal: z.coerce.bigint().positive().optional() }).parse(req.query);
+  const current = await taskSourceCandidate(prisma, auth.workspaceId, type, sourceId);
+  const currentDriveFile = type === "drive_snapshot" ? await prisma.googleDriveContentSnapshot.findFirst({
+    where: { id: sourceId, workspaceId: auth.workspaceId }, select: { googleDriveFileId: true } }) : null;
+  const table = { procedure: "procedures", policy: "policies", decision: "decisions", evidence: "evidence_records",
+    note: "notes", knowledge_item: "knowledge_items", application_evidence: "application_evidence",
+    application_architecture: "application_architecture_components", application_interface: "application_interfaces",
+    application_capability: "application_capabilities", drive_snapshot: "google_drive_content_snapshots" }[type];
+  const [reviews, history] = await Promise.all([
+    prisma.taskSourceReview.findMany({ where: { workspaceId: auth.workspaceId, sourceType: type, sourceId,
+      ...(page.beforeReviewOrdinal ? { ordinal: { lt: page.beforeReviewOrdinal } } : {}) }, orderBy: { ordinal: "desc" }, take: page.limit + 1 }),
+    prisma.sourceBodyHistory.findMany({ where: { workspaceId: auth.workspaceId, sourceTable: table, sourceId,
+      ...(page.beforeHistoryOrdinal ? { ordinal: { lt: page.beforeHistoryOrdinal } } : {}) }, orderBy: { ordinal: "desc" }, take: page.limit + 1 })
+  ]);
+  const historicalField = (key: string) => history.map(row => row.body).find(body => body && typeof body === "object" && !Array.isArray(body) && typeof (body as Record<string, unknown>)[key] === "string") as Record<string, unknown> | undefined;
+  const relatedId = type === "application_capability" ? current?.content.definitionId ?? historicalField("capability_definition_id")?.capability_definition_id
+    : type === "drive_snapshot" ? currentDriveFile?.googleDriveFileId ?? historicalField("google_drive_file_id")?.google_drive_file_id : null;
+  const relatedWhere = type === "procedure" ? { sourceTable: "procedure_steps", body: { path: ["procedure_id"], equals: sourceId } }
+    : type === "application_capability" && typeof relatedId === "string" ? { sourceTable: "capability_definitions", sourceId: relatedId }
+    : type === "drive_snapshot" && typeof relatedId === "string" ? { sourceTable: "google_drive_files", sourceId: relatedId } : null;
+  const relatedHistory = relatedWhere ? await prisma.sourceBodyHistory.findMany({ where: { workspaceId: auth.workspaceId,
+    ...relatedWhere, ...(page.beforeHistoryOrdinal ? { ordinal: { lt: page.beforeHistoryOrdinal } } : {}) },
+    orderBy: { ordinal: "desc" }, take: page.limit + 1 }) : [];
+  if (!current && !reviews.length && !history.length && !relatedHistory.length) return sendApiError(res, 404, "source_audit_not_found");
+  res.json({ data: { current: current?.content ?? null, reviews: reviews.slice(0, page.limit),
+    history: history.slice(0, page.limit).map(row => ({ ...row, ordinal: row.ordinal.toString() })),
+    relatedHistory: relatedHistory.slice(0, page.limit).map(row => ({ ...row, ordinal: row.ordinal.toString() })),
+    reviewNextBeforeOrdinal: reviews.length > page.limit ? reviews[page.limit - 1]!.ordinal : null,
+    historyNextBeforeOrdinal: history.length > page.limit ? history[page.limit - 1]!.ordinal.toString() : null,
+    relatedNextBeforeOrdinal: relatedHistory.length > page.limit ? relatedHistory[page.limit - 1]!.ordinal.toString() : null,
+    historyStartsAtMigration: true, earlierOverwrittenBodiesAvailable: false } });
+}));
+
+agentRuntimeRouter.get("/tasks/:id/sources", asyncHandler(async (req, res) => {
+  const auth = req.auth!;
+  if (auth.authType !== "api_key" || !auth.agentId) return sendApiError(res, 403, "task_bound_source_read_required");
+  const taskId = z.string().uuid().parse(req.params.id);
+  const q = z.string().max(240).optional().parse(req.query.q)?.trim().toLowerCase();
+  const sources = await prisma.$transaction(db => taskSourcesForAgent(db, auth.workspaceId, taskId, auth.agentId!),
+    { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  if (!sources) return sendApiError(res, 404, "task_source_scope_invalid");
+  res.json({ data: { taskId, sources: q ? sources.filter(item => JSON.stringify(item.content).toLowerCase().includes(q)) : sources } });
+}));
+
+agentRuntimeRouter.get("/tasks/:id/sources/:type/:sourceId", asyncHandler(async (req, res) => {
+  const auth = req.auth!;
+  if (auth.authType !== "api_key" || !auth.agentId) return sendApiError(res, 403, "task_bound_source_read_required");
+  const taskId = z.string().uuid().parse(req.params.id), type = z.enum(taskSourceTypes).parse(req.params.type) as TaskSourceType;
+  const sourceId = z.string().uuid().parse(req.params.sourceId);
+  const sources = await prisma.$transaction(db => taskSourcesForAgent(db, auth.workspaceId, taskId, auth.agentId!),
+    { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  if (!sources) return sendApiError(res, 404, "task_source_scope_invalid");
+  const source = sources.find(item => item.content.id === sourceId && item.content.sourceType === type);
+  if (!source) return sendApiError(res, 404, "task_source_not_found");
+  res.json({ data: source });
+}));
+
 agentRuntimeRouter.get("/tasks/:id/interviews",asyncHandler(async(req,res)=>{
  const result=await reviewTransaction(db=>interviewView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,z.string().uuid().optional().parse(req.query.caseId)));
  if("error" in result)return sendApiError(res,result.error?.endsWith("not_found")?404:result.error==="interview_forbidden"?403:409,result.error!);
@@ -342,8 +465,16 @@ agentRuntimeRouter.post("/tasks/:id/capability-grants/:grantId/actions/revoke", 
 }));
 agentRuntimeRouter.get("/tasks/:id/review", asyncHandler(async (req, res) => {
   const taskId = z.string().uuid().parse(req.params.id), cursor = z.string().uuid().optional().parse(req.query.cursor);
+  if (req.auth!.agentId) {
+    const task = await prisma.task.findFirst({ where: { id: taskId, workspaceId: req.auth!.workspaceId },
+      select: { assignedWorkforceEntityId: true } });
+    if (!task) return sendApiError(res, 404, "task_not_found");
+    if (task.assignedWorkforceEntityId !== req.auth!.agentId && !await prisma.agentExecution.findFirst({
+      where: { workspaceId: req.auth!.workspaceId, taskId }, select: { id: true } }))
+      return sendApiError(res, 403, "task_review_forbidden");
+  }
   const result = await readyTransaction(tx => taskReviewView(tx, req.auth!.workspaceId, taskId, req.auth!, cursor));
-  if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : 409, result.error!);
+  if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "task_review_forbidden" ? 403 : 409, result.error!);
   res.json({ data: result });
 }));
 agentRuntimeRouter.post("/tasks/:id/actions/review", asyncHandler(async (req, res) => {

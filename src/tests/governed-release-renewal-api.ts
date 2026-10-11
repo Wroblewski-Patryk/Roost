@@ -28,6 +28,6 @@ export function registerReleaseRenewalTests({request,registerOwner}:any) {
   await assert.rejects(prisma.$executeRaw`INSERT INTO governed_release_renewals(id,release_id,workspace_id,sequence,issuer_user_id,owner_authenticated_at,previous_expires_at,expires_at,expected_version,request_id,request_hash)
    VALUES(${randomUUID()}::uuid,${randomUUID()}::uuid,${workspaceId}::uuid,1,${user.userId}::uuid,now(),now()-interval '1 minute',now()+interval '30 minutes',${"a".repeat(64)},${randomUUID()}::uuid,${"b".repeat(64)})`,/governed_release_renewal_invalid/);
   const triggers=await prisma.$queryRaw<any[]>`SELECT tgname,tgenabled FROM pg_trigger WHERE tgrelid='governed_release_renewals'::regclass AND NOT tgisinternal ORDER BY tgname`;
-  assert.deepEqual(triggers.map(t=>[t.tgname,t.tgenabled]),[["governed_release_renewal_guard","O"],["governed_release_renewal_immutable","O"]]);
+  assert.deepEqual(triggers.map(t=>[t.tgname,t.tgenabled]),[["governed_release_compatible_renewal_guard","O"],["governed_release_renewal_guard","O"],["governed_release_renewal_immutable","O"]]);
  });
 }

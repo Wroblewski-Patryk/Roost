@@ -20,3 +20,32 @@ export function unboundCompanySourceRead(method: string, path: string) {
     || /^\/organizational-context\/(?:company_record|requirement)\/[^/]+$/.test(route)
     || route === "/entity-relations";
 }
+
+// A capability is a permission to use an adapter, not authority to browse
+// company source material. The ordinary API/MCP key has no authenticated task
+// identity. The deliberately small read surface below is shared by HTTP auth
+// and the advertised MCP manifest. Worker tickets have a separate transport.
+export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAgent: boolean) {
+  const route = path.replace(/\/+$/, "").toLowerCase().replace(/^\/v1(?=\/)/, "");
+  // A workspace key can write an existing row with an empty PATCH and receive
+  // its entire previous body. No unbound key has a task principal. Keep only
+  // commands whose handlers authenticate the bound agent against that task or
+  // a separately governed release; all other commands use human auth.
+  if (method !== "GET") return boundAgent && method === "POST" && (
+    /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/actions\/review(?:-return)?$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/handoffs(?:\/actions\/(?:accept|reject))?$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/clarifications(?:\/actions\/(?:reply|read))?$/.test(route)
+    || /^\/agent-runtime\/releases\/[a-f0-9-]{36}\/operations(?:\/[a-f0-9-]{36}\/outcome)?$/.test(route)
+    || /^\/product-engineering\/findings\/[a-f0-9-]{36}\/actions$/.test(route)
+    || /^\/decisions\/[a-f0-9-]{36}\/governance\/actions$/.test(route));
+  if (route === "/connection" || route === "/mcp/manifest") return true;
+  if (!boundAgent) return false;
+  return /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/.test(route)
+    || route === "/tasks" || /^\/tasks\/[a-f0-9-]{36}$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/review$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/(?:handoffs|clarifications)$/.test(route)
+    || /^\/agent-runtime\/releases(?:\/[a-f0-9-]{36})?$/.test(route)
+    || /^\/product-engineering\/findings\/[a-f0-9-]{36}$/.test(route)
+    || /^\/decisions\/[a-f0-9-]{36}\/governance$/.test(route);
+}

@@ -6,6 +6,6 @@ export const mcpRouter = Router();
 
 mcpRouter.get("/manifest", asyncHandler(async (req, res) => {
   res.json({
-    data: createMcpManifest(req.auth!.scopes)
+    data: createMcpManifest(req.auth!.scopes, Boolean(req.auth!.agentId))
   });
 }));

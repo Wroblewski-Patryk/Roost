@@ -36,6 +36,8 @@ async function allowed(db:Db,s:any,workspaceId:string,operation:string) {
 export async function taskHandoffView(db:Db,workspaceId:string,taskId:string,actor:ReviewActor,cursor?:string) {
   const s=await handoffState(db,workspaceId,taskId,actor);
   if("error" in s)return {error:s.error!};
+  if(s.principal?.kind==="agent"&&s.task.assignedWorkforceEntityId!==s.principal.id
+    &&!s.roles.some(role=>same(role.principal,s.principal)))return {error:"task_handoff_forbidden"};
   let history=s.history;
   if(cursor) {
     const anchor=(await db.$queryRaw<any[]>`SELECT version FROM task_handoffs WHERE id=${cursor}::uuid AND workspace_id=${workspaceId}::uuid AND task_id=${taskId}::uuid`)[0];

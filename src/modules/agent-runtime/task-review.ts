@@ -55,14 +55,18 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
 export async function taskReviewView(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, cursor?: string) {
   const s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
+  if (s.principal?.kind === "agent" && s.task.assignedWorkforceEntityId !== s.principal.id
+    && !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager))
+    return { error: "task_review_forbidden" } as const;
   if (cursor && !await db.taskReviewDecision.findFirst({ where: { id: cursor, workspaceId, taskId } })) return { error: "task_review_cursor_invalid" };
   const history = await db.taskReviewDecision.findMany({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { action: true } });
-  const specialists = await db.workforceEntity.findMany({ where: { workspaceId, type: "agent", status: "active", source: { not: "user" } }, select: { id: true, name: true, role: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 });
   const grantAccess = await agentGrantAccess(db, workspaceId, taskId, s.principal);
   const blocked = async(operation:string)=>Boolean(s.execution && (!s.execution.applicationId || await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId)));
   const reviewBlocked=await blocked("review_decision"), returnBlocked=await blocked("return_to_executor"), specialistBlocked=await blocked("create_specialist_task");
   const canReview = s.canReview && !reviewBlocked && (!grantAccess || grantAccess.review_decision.status === "active");
   const canManage = s.canManage && ((!returnBlocked&&(!grantAccess||grantAccess.return_to_executor.status==="active")) || (!specialistBlocked&&(!grantAccess||grantAccess.create_specialist_task.status==="active")));
+  const specialists = s.principal?.kind === "agent" && !canManage ? []
+    : await db.workforceEntity.findMany({ where: { workspaceId, type: "agent", status: "active", source: { not: "user" } }, select: { id: true, name: true, role: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 });
   const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
   return { task: { id: taskId, title: s.task.title, workspaceId: s.task.workspaceId }, decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
     // Transport witness only: keep the SQL material and both CAS hashes intact.

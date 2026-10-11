@@ -1859,6 +1859,17 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
   const f = validPacketFixture();
   const admissionResources=await admissionFixtureResources(applicationId);
   if(admissionResources) f.packet.contract.procedures={items:[{id:admissionResources.procedure.id,revision:String(admissionResources.procedure.version)}],noneReason:null};
+  const approveSource = async (path: string, row: {id: string; updatedAt: Date}, sourceType?: string) => {
+    const reviewed = await request(path, { method: "POST", headers: auth, body: JSON.stringify({
+      requestId: randomUUID(), taskId, ...(sourceType ? { sourceType, sourceId: row.id } : {}),
+      expectedRevision: row.updatedAt.toISOString(), action: "approve", classification: "fact",
+      provenance: "Isolated API fixture owner review", environment: "isolated_test",
+      verificationMethod: "API fixture inspection", verificationRef: "disposable-postgresql-test",
+      inclusionReason: "Exact synthetic fixture source", validUntil: new Date(Date.now() + 86400000).toISOString()
+    }) });
+    assert.equal(reviewed.status, 201, JSON.stringify(reviewed.body));
+  };
+  if(admissionResources) await approveSource("/v1/agent-runtime/source-reviews", admissionResources.procedure, "procedure");
   const goal = await prisma.goal.create({ data: { workspaceId, title: "Synthetic accepted goal" } });
   const agent = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic engineer", slug: `fixture-${taskId}`, type: "agent", role: "engineer", skillIndex: ["javascript"], toolIndex: f.packet.contract.access.tools, authorityScope: f.packet.contract.access.permissions } });
   await prisma.task.update({ where: { id: taskId }, data: { goalId: goal.id, assignedWorkforceEntityId: agent.id } });
@@ -1868,6 +1879,7 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
     const source = await prisma.companyRecord.create({ data: { workspaceId, applicationId: category === "company" ? null : applicationId, recordType: "requirement", key: `${category}-${taskId}`, title: `Synthetic ${category}`, description: "Synthetic accepted context" } });
     sources.push(source);
     f.packet.contract.context[category] = [{ id: source.id, revision: source.updatedAt.toISOString() }];
+    await approveSource(`/v1/company-records/${source.id}/context-reviews`, source);
   }
   f.packet.contract.objective.goalId = goal.id;
   f.packet.contract.assignment.agentId = agent.id;
@@ -1888,6 +1900,40 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
   assert.equal(ready.status, 200, JSON.stringify(ready.body));
   return { input, sources, goal, agent, manager, component, verifier, releaser, readiness: (await fixtureExecutionMetadata(taskId)).readyContextPin };
 }
+
+test("G9 Ready source watches ignore Drive telemetry and invalidate changed source bodies", async () => {
+  const owner = await registerOwner(`g9-watch-${randomUUID()}@example.test`, "G9 watch fixture"), workspaceId = owner.workspace.id;
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const app = await prisma.application.create({ data: { workspaceId, name: "G9 watch app", slug: randomUUID() } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "G9 watch project" } });
+  await prisma.applicationProject.create({ data: { applicationId: app.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Watch selected source material" } });
+  await prepareReadyFixture(workspaceId, task.id, app.id, auth);
+  const note = await prisma.note.create({ data: { workspaceId, taskId: task.id, content: "Reviewed note" } });
+  const knowledge = await prisma.knowledgeItem.create({ data: { workspaceId, itemType: "document", title: "Reviewed knowledge" } });
+  const file = await prisma.googleDriveFile.create({ data: { workspaceId, externalId: randomUUID(),
+    name: "Reviewed Drive file", mimeType: "text/plain", headRevisionId: "one" } });
+  const snapshot = await prisma.googleDriveContentSnapshot.create({ data: { workspaceId, googleDriveFileId: file.id,
+    sourceRevisionId: "one", contentKind: "text", extractedText: "Reviewed body",
+    metadata: { readAt: "2026-01-01T00:00:00.000Z" } } });
+  for (const [table, id] of [["notes", note.id], ["knowledge_items", knowledge.id],
+    ["google_drive_files", file.id], ["google_drive_content_snapshots", snapshot.id]])
+    await prisma.$executeRaw`INSERT INTO task_ready_source_watches(task_id, source_table, predicate)
+      VALUES (${task.id}::uuid, ${table}, ${JSON.stringify({ op: "eq", column: "id", value: id })}::jsonb)`;
+  const pin = async () => (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
+  assert.equal((await pin()).status, "ready");
+  await prisma.googleDriveContentSnapshot.update({ where: { id: snapshot.id },
+    data: { metadata: { readAt: "2026-01-02T00:00:00.000Z" } } });
+  await prisma.googleDriveFile.update({ where: { id: file.id }, data: { lastScannedAt: new Date() } });
+  assert.equal((await pin()).status, "ready");
+  await prisma.googleDriveContentSnapshot.update({ where: { id: snapshot.id }, data: { extractedText: "Changed body" } });
+  assert.equal((await pin()).status, "needs_revalidation");
+  await prisma.googleDriveFile.update({ where: { id: file.id }, data: { name: "Changed Drive title" } });
+  await prisma.note.update({ where: { id: note.id }, data: { content: "Changed note" } });
+  await prisma.knowledgeItem.update({ where: { id: knowledge.id }, data: { summary: "Changed knowledge" } });
+  assert.deepEqual(new Set((await pin()).changedSources.map((source: any) => source.table)),
+    new Set(["google_drive_content_snapshots", "google_drive_files", "notes", "knowledge_items"]));
+});
 
 test("explicit task roles enforce identity, provenance and independent admission", async t => {
   const owner = await registerOwner("role-owner@example.test", "Role admission fixture"), workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
@@ -1991,7 +2037,15 @@ test("explicit task roles enforce identity, provenance and independent admission
     process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
     try {
       const queued = await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id }); assert.equal(queued.status, 201, JSON.stringify(queued.body));
-      const key = await post("/v1/api-keys", { name: "Role test host", profileId: "mcp_codex_worker" }); const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
+      const {ownerTicketFixture}=await import("./owner-ticket-fixture"),{hashApiKey}=await import("../auth/api-key");
+      const ticketKey=(await ownerTicketFixture()).state().key;
+      await prisma.trustedProviderTicketKey.create({data:{workspaceId,...ticketKey}});
+      const roleHost=await prisma.agentHost.create({data:{workspaceId,name:"Role host",slug:"role-host",platform:"win32",metadata:validHostMetadata,capabilities:protocol.requiredHostCapabilities}});
+      const workerKey=randomUUID();
+      await prisma.apiKey.create({data:{workspaceId,name:"Role test host ticket",keyHash:hashApiKey(workerKey),
+        scopes:["agent-runtime:claim"],active:true,expiresAt:new Date(Date.now()+600000),
+        workerHostId:roleHost.id,workerInstallationId:ticketKey.installationId,workerBindingEpoch:1}});
+      const worker = { "X-API-Key": workerKey, ...hostProtocolHeaders };
       await post("/v1/agent-runtime/hosts/register", { name: "Role host", slug: "role-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
       await prisma.workforceEntity.update({ where: { id: f.releaser.id }, data: { status: "inactive" } });
       assert.equal(((await read()).executionReadiness as any).status, "needs_revalidation");
@@ -14493,7 +14547,7 @@ test("decision authority issues owner-backed mandates and preserves delegated ac
  const pm=await worker("Application PM","11-innowacje",innovation.id),developer=await worker("Frontend developer","09-technologia",technology.id);
  const authority={domain:"mandate_change",departmentKey:"09-technologia",requesterId:pm.id,recipientId:developer.id,entities:[{type:"task",id:f.task.id}]};
  async function read(id:string,headers=f.auth){const r=await request(`/v1/decisions/${id}/governance`,{headers});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;}
- async function accept(id:string,headers=f.auth){const v=await read(id,headers);const input={requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id};const response=await f.post(`/v1/decisions/${id}/governance/actions`,input,headers);
+ async function accept(id:string,headers=f.auth){const v=await read(id);const input={requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id};const response=await f.post(`/v1/decisions/${id}/governance/actions`,input,headers);
   return response;}
  async function source(domain="mandate_change"){await refreshCompositionRisk(f.task.id,f.auth);const p=await decisionFixtureProposal(f,{authority:{...authority,domain}});assert.equal(p.response.status,201,JSON.stringify(p.response.body));await decisionFixtureProof(f);
   let v=await read(p.id);if(!v.current||JSON.stringify(v.authority)!==JSON.stringify(v.previews[0].authority)){const refresh=await f.post(`/v1/decisions/${p.id}/governance/actions`,{requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"review_impact"});assert.equal(refresh.status,201,JSON.stringify(refresh.body));await decisionFixtureProof(f);}
@@ -14550,13 +14604,23 @@ test("decision authority issues owner-backed mandates and preserves delegated ac
  for(const reservedId of [...reservedIds,sourceId])assert.equal((await accept(reservedId,agentAuth as any)).status,403);
  const agentIssued=await f.post('/v1/decisions/mandates',{requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId:null,body:{...body,holder:{kind:"agent",id:innovation.id},departmentKey:"11-innowacje",sourceDecisionId:agentSource}});assert.equal(agentIssued.status,201,JSON.stringify(agentIssued.body));
  const agentProposal=await decisionFixtureProposal(f,{authority:{...authority,domain:"ordinary_domain",departmentKey:"11-innowacje"}});assert.equal(agentProposal.response.status,201,JSON.stringify(agentProposal.response.body));
- await decisionFixtureProof(f);const agentView=await read(agentProposal.id,agentAuth as any);assert.equal(agentView.canAccept,true);
- const agentInput={requestId:randomUUID(),expectedVersion:agentView.expectedVersion,action:"accept",previewId:agentView.previews[0].id};
+ await decisionFixtureProof(f);const ownerProposalView=await read(agentProposal.id);
+ const {decisionGovernanceView}=await import("../modules/decisions/decision-governance");
+ const unresolvedAgent=await prisma.$transaction(db=>decisionGovernanceView(db,w,{authType:"api_key",workspaceId:w,agentId:innovation.id,apiKeyId:randomUUID(),credentialVersion:1},agentProposal.id));
+ assert.deepEqual(unresolvedAgent,{error:"decision_forbidden"});
+ assert.equal((await request(`/v1/decisions/${agentProposal.id}/governance`,{headers:agentAuth})).status,403);
+ assert.equal((await request(`/v1/decisions/${agentProposal.id}/governance?version=1`,{headers:agentAuth})).status,403);
+ assert.equal((await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,{requestId:randomUUID(),expectedVersion:ownerProposalView.expectedVersion,action:"review_impact"},agentAuth)).status,403);
+ const agentInput={requestId:randomUUID(),expectedVersion:ownerProposalView.expectedVersion,action:"accept",previewId:ownerProposalView.previews[0].id};
  const noGrant=await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,agentInput,agentAuth);assert.equal(noGrant.status,409);
  const catalog=(await request(f.root+'/capability-grants',{headers:f.auth})).body as any;
  assert.ok(catalog.data.options.some((o:any)=>o.operation==="decision_supersede"&&o.decision.decisionId===agentProposal.id));
- const grant=await f.post(f.root+'/capability-grants',{requestId:randomUUID(),expectedVersion:catalog.data.expectedVersion,credentialId:agentKey.id,operation:"decision_supersede",decision:{decisionId:agentProposal.id,previewId:agentView.previews[0].id},validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+600000).toISOString(),reason:"Accept this exact decision preview"});assert.equal(grant.status,201,JSON.stringify(grant.body));
- const inputWithGrant={...agentInput,expectedVersion:(await read(agentProposal.id,agentAuth as any)).expectedVersion,grantIds:[{taskId:f.task.id,grantId:(grant.body as any).data.grant.id}]};
+ const grant=await f.post(f.root+'/capability-grants',{requestId:randomUUID(),expectedVersion:catalog.data.expectedVersion,credentialId:agentKey.id,operation:"decision_supersede",decision:{decisionId:agentProposal.id,previewId:ownerProposalView.previews[0].id},validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+600000).toISOString(),reason:"Accept this exact decision preview"});assert.equal(grant.status,201,JSON.stringify(grant.body));
+ const agentView=await read(agentProposal.id,agentAuth as any);assert.equal(agentView.canAccept,true);
+ assert.equal(agentView.revisions,undefined);assert.equal(agentView.impact,undefined);assert.equal(agentView.authorityCatalog,undefined);
+ const agentVersion=(await request(`/v1/decisions/${agentProposal.id}/governance?version=1`,{headers:agentAuth})).body as any;
+ assert.equal(agentVersion.data.impact,undefined);assert.equal(agentVersion.data.selected.body.title,agentView.selected.body.title);
+ const inputWithGrant={...agentInput,expectedVersion:agentView.expectedVersion,grantIds:[{taskId:f.task.id,grantId:(grant.body as any).data.grant.id}]};
  const agentAccepted=await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth);
  assert.equal(agentAccepted.status,201,JSON.stringify(agentAccepted.body));
  assert.equal((await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth)).status,200);

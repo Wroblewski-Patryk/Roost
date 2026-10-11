@@ -7,12 +7,13 @@ export const agentPrincipalScopes = ["connection:read", "tasks:read", "workforce
 export function agentPrincipalRoute(method: string, path: string) {
   const route = path.replace(/^\/v1(?=\/)/, "");
   if (method === "GET" && (route === "/mcp/manifest" || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/i.test(route))) return true;
+  if (method === "GET" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/i.test(route)) return true;
   if (method === "GET" && (route === "/agent-runtime/releases" || /^\/agent-runtime\/releases\/[a-f0-9-]{36}$/.test(route))
     || method === "POST" && /^\/agent-runtime\/releases\/[a-f0-9-]{36}\/operations(?:\/[a-f0-9-]{36}\/outcome)?$/.test(route)) return true;
-  if(method==="GET"&&/^\/product-engineering\/(?:applications\/[a-f0-9-]+\/findings(?:\/catalog)?|findings\/[a-f0-9-]+)$/i.test(route)||method==="POST"&&/^\/product-engineering\/(?:applications\/[a-f0-9-]+\/findings|findings\/[a-f0-9-]+\/(?:versions|occurrences|actions))$/i.test(route))return true;
+  if(method==="GET"&&/^\/product-engineering\/findings\/[a-f0-9-]+$/i.test(route)||method==="POST"&&/^\/product-engineering\/findings\/[a-f0-9-]+\/actions$/i.test(route))return true;
   if (method === "GET" && /^\/decisions\/[a-f0-9-]+\/governance$/i.test(route) || method === "POST" && /^\/decisions\/[a-f0-9-]+\/governance\/actions$/i.test(route)) return true;
-  return method === "GET" && (route === "/connection" || route === "/tasks" || /^\/tasks\/[a-f0-9-]+$/i.test(route) || route === "/workforce" || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/(?:review|handoffs|clarifications|interviews)$/i.test(route)) ||
-    method === "POST" && (/^\/agent-runtime\/tasks\/[a-f0-9-]+\/interviews$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/actions\/review(?:-return)?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/handoffs(?:\/actions\/(?:accept|reject))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/clarifications(?:\/actions\/(?:reply|read))?$/i.test(route));
+  return method === "GET" && (route === "/connection" || route === "/tasks" || /^\/tasks\/[a-f0-9-]+$/i.test(route) || route === "/workforce" || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/(?:review|handoffs|clarifications)$/i.test(route)) ||
+    method === "POST" && (/^\/agent-runtime\/tasks\/[a-f0-9-]+\/actions\/review(?:-return)?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/handoffs(?:\/actions\/(?:accept|reject))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/clarifications(?:\/actions\/(?:reply|read))?$/i.test(route));
 }
 export type ReviewActor = string | AuthContext | undefined;
 export async function resolveReviewPrincipal(db: Prisma.TransactionClient, workspaceId: string, actor: ReviewActor) {
