@@ -185,6 +185,23 @@ isolated restore remains 2026-10-10; this check does not claim a fresh recovery
 copy of intervening production changes. No VPS cleanup or deployment occurred
 during this preflight.
 
+The normal GitHub push of implementation commit
+`a616b4df565c077c75211953407b5b85d6f2b27f` fast-forwarded `main`.
+Coolify webhook deployment 6375 finished on 2026-10-11. Public API `/health`
+and `/v1/health` and web `/health` returned `ok` with that exact commit;
+the web root returned 200. Unauthenticated specialist-offer GET returned 401.
+The replacement backend ran beside healthy PostgreSQL on the retained
+`rnqqkhl3o3dut4qv56mlxly2_companycore-postgres` volume. Migration
+`20261011200000_sequential_specialist_offer` finished without rollback;
+there were zero unfinished migrations and zero specialist decision rows.
+The prior backend image remained available and root free space was 13 GB.
+The signed-in owner task board loaded after deployment. No live specialist
+offer existed, so this read-only smoke did not exercise its positive console
+flow, Worker execution or production result return. The disposable native
+journey and focused browser tests provide those bounded proofs, with the
+synthetic-completion limit stated above. G15 is complete at this approved
+boundary; G16 and a real specialist attempt need separate authority.
+
 ## History and UI
 
 TaskReviewDecision and TaskReviewAction are append-only, with request hashes,
