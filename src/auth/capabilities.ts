@@ -555,6 +555,7 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/bootstrap/proof-key", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/bootstrap/proof-authority", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/agent-runtime/executions/:id", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/agent-runtime/executions/:id/critical-preemption-candidates", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/agent-runtime/executions", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/executions/claim", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/managed-admission", capability: "agent-runtime:claim" },
@@ -565,6 +566,8 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/revalidate-result-basis", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/fail", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/cancelled", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/preemption-stopped", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/request-critical-preemption", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/cancel", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/retry", capability: "agent-runtime:write" }
     ],

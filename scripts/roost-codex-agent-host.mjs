@@ -10,7 +10,9 @@ import { fileURLToPath } from "node:url";
 import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 import { safeExecutionDiagnostic, leaseRecoveryReason } from "./lib/agent-host-recovery-diagnostics.mjs";
-import { acquireWriterLock, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
+import { acquireWriterLock, writerRecoveryEvidence, writerStateDirectory } from "./lib/agent-host-writer-lock.mjs";
+import { observeSchedulerResources } from "./lib/agent-host-scheduler-resources.mjs";
+import { confirmPreemptionStopped, recoverPreemptionStopped, retireConfirmedPreemptionIntent } from "./lib/agent-host-preemption.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
 import { runObserver } from "./lib/agent-host-observer.mjs";
@@ -96,6 +98,7 @@ if (config.executionMode === "supervised") {
 }
 let protocolHalted = false;
 let retainWriterLock = false;
+let confirmedPreemption = false;
 let registeredHost = null;
 let providerAdmission = providerAdmissionReason;
 
@@ -121,6 +124,8 @@ async function api(route, options = {}) {
     if (["task_ready_pin_required", "task_ready_revalidation_required", "task_ready_context_conflict"].includes(body.error)) throw readyContext.readyAdmissionError();
     const error = new Error(`roost_http_${response.status}`);
     error.status = response.status;
+    if (response.status === 409 && ["agent_execution_cancel_requested", "agent_execution_preemption_requested"].includes(body.error))
+      error.body = { error: body.error };
     if (typeof body.error === "string" && /^[a-z][a-z0-9_]{2,80}$/.test(body.error)) error.details = { reason: body.error };
     throw error;
   }
@@ -129,6 +134,7 @@ async function api(route, options = {}) {
 
 async function refreshAdmission(freshAttestation = false) {
   host.metadata.executionProvider = await inspectExecutionProvider(config, { freshAttestation });
+  host.metadata.schedulerResources = await observeSchedulerResources(path.parse(writerStateDirectory).root);
   registeredHost = await api(registeredHost ? `/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat` : "/v1/agent-runtime/hosts/register",
     { method: "POST", body: JSON.stringify(registeredHost ? { metadata: host.metadata, applicationSlugs: host.applicationSlugs, capabilities: host.capabilities } : host) });
   const reason = providerAdmission(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
@@ -218,7 +224,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   if (claimed?.metadata?.executionContract?.executionClass === "roost-company-information-v1") throw protocolAdmissionError("company_information_execution_unqualified");
   if (claimed?.metadata?.executionContract?.executionClass === "roost-company-information-runtime-v1") {
     if (resumeCheckpoint) throw protocolAdmissionError("information_automatic_resume_forbidden");
-    return executeInformationTask({ claimed, api, writerLock, provider: config.executionProvider, secrets: [apiKey], shutdownRequested: () => shutdownRequested || stopping });
+    const result = await executeInformationTask({ claimed, api, writerLock, provider: config.executionProvider,
+      secrets: [apiKey], shutdownRequested: () => shutdownRequested || stopping });
+    if (result?.preemptionStopped) { stopping = true; confirmedPreemption = true; }
+    return result;
   }
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
@@ -240,6 +249,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let codeReviewerView, codeReviewerKey;
   let preparedCommit;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
+  let managedHermesStarted = false;
   let readonlyAdmissionEvidenceDigest;
   let executionPhase = "context";
   function stopWorker() {
@@ -249,7 +259,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     stopRequested = true;
     if (hermesCollection) {
       hermesAbort.abort();
-      stopPromise = hermesCollection.then(() => {}, error => { if (error.leaseLost) stopError = error; });
+      stopPromise = hermesCollection.then(() => {}, error => {
+        if (error.leaseLost && !isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt)) stopError = error;
+      });
       return;
     }
     stopPromise = terminateWindowsProcessTree(child).catch((error) => {
@@ -533,6 +545,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     } else if (launch.kind === "hermes_codex") {
       // One stdin write; quiet output is not parsed as tool events or usage.
       hermesAbort = new AbortController();
+      managedHermesStarted = true;
       const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
         cwd: launch.cwd, environment: launch.candidateEnvironment, attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
         signal: hermesAbort.signal, budgetReceipt: launch.budgetReceipt, nativeToolReceipt: launch.nativeToolReceipt,
@@ -762,6 +775,20 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     // Report only closed, bounded diagnostic fields after observing cleanup.
     // This append-only observation grants no authority and cannot revive a lease.
     const observedStop = hermesStopReceipt ?? hermesCompletedReceipt ?? error.details?.ownedTreeReceipt;
+    if (lease.failure?.preemptionRequested) {
+      try {
+        if (!managedHermesStarted) throw new Error("agent_preemption_managed_job_required");
+        await stopPromise;
+        if (stopError) throw stopError;
+        await confirmPreemptionStopped({ execution: claimed, writerLock, ownedTreeReceipt: observedStop, api });
+        confirmedPreemption = true;
+        retainWriterLock = false;
+        return;
+      } catch (stopOrAckError) {
+        retainWriterLock = true;
+        throw Object.assign(stopOrAckError, { leaseLost: true, preemptionRequested: true });
+      }
+    }
     if (nativeInput?.contract.nativeBoundary?.profile === "inspect-readonly"
       && readonlyAdmissionEvidenceDigest && isWindowsJobCleanupReceipt(observedStop)
       && executionPhase !== "terminal_completion") {
@@ -821,7 +848,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     if (hermesCollection) {
       hermesAbort.abort();
       await hermesCollection.catch(error => {
-        if (error.leaseLost) { retainWriterLock = true; stopping = true; hermesCleanupError = error; }
+        if (error.leaseLost && !isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt)) {
+          retainWriterLock = true; stopping = true; hermesCleanupError = error;
+        }
       });
     }
     await stopPromise;
@@ -884,7 +913,11 @@ process.on("SIGTERM", () => { stopping = true; shutdownRequested = true; });
 // Process tests inject a private lock, branch reader and synthetic post-turn budget guard.
 // The CLI always uses the fixed lock, Git branch reader and fail-closed Codex guard. No
 // dependency can be selected by configuration, environment or an API packet.
-export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths, providerAdmissionForTest = providerAdmissionReason } = {}) {
+const acquireNativeWriterLock = options => acquireWriterLock(undefined, options);
+export async function runHost({ acquireLock = acquireNativeWriterLock, preemptionStateDirectory = acquireLock === acquireNativeWriterLock ? writerStateDirectory : null,
+  onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch,
+  readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths,
+  providerAdmissionForTest = providerAdmissionReason } = {}) {
   // Synthetic process tests can exercise later fences. CLI/config/env/packets
   // cannot select this dependency; production always uses the shared denial.
   providerAdmission = providerAdmissionForTest;
@@ -897,6 +930,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
   if (config.executionProvider?.kind === "hermes_codex" && config.executionProvider.enabled === true
       && config.executionProvider.profile) config = await validateAgentHostWorkspace(config);
   if (!await waitForAdmission()) return;
+  if (preemptionStateDirectory) await recoverPreemptionStopped(preemptionStateDirectory, api);
   let recovery;
   try { recovery = await api(`/v1/agent-runtime/recovery?hostSlug=${encodeURIComponent(host.slug)}`); }
   catch (error) {
@@ -979,7 +1013,10 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         if (error.providerFailure) stopping = true;
         if (error.readyAdmission || error.redaction) { stopping = true; if (execution) retainWriterLock = true; }
         process.stderr.write("Agent Host operation failed; inspect safe execution diagnostics.\n");
-        if (error.recoveryReason || error.leaseLost) {
+        if (error.preemptionRequested) {
+          stopping = true; retainWriterLock = true;
+          process.stderr.write("Preemption stop or acknowledgement unconfirmed; Writer retained for reconciliation.\n");
+        } else if (error.recoveryReason || error.leaseLost) {
           stopping = true; retainWriterLock = true;
           await reportRecovery(execution, recoveryReason(error));
         } else if (!error.terminalCompletionUncertain) await reportFailure(execution, error, writerLock);
@@ -1001,7 +1038,11 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
     throw error;
   } finally {
     if (retainWriterLock) process.stderr.write("Writer lock retained: reconcile the interrupted execution before restarting.\n");
-    else await writerLock?.release();
+    else {
+      const preemptionDirectory = confirmedPreemption && writerLock ? writerRecoveryEvidence(writerLock).directory : null;
+      await writerLock?.release();
+      if (preemptionDirectory) await retireConfirmedPreemptionIntent(preemptionDirectory);
+    }
     if (protocolHalted && !shutdownRequested) await waitForAdmission(true);
   }
   process.stdout.write("Roost Agent Host stopped.\n");

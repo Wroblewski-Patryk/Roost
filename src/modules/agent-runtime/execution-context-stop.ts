@@ -26,6 +26,8 @@ export async function acknowledgeContextStop(db: Prisma.TransactionClient, execu
   await lockReadyTask(db, execution.workspaceId, execution.taskId);
   const current = await db.agentExecution.findFirst({ where: { id: execution.id, workspaceId: execution.workspaceId, leaseToken: execution.leaseToken } });
   if (!current?.contextInvalidatedAt) return { error: "agent_context_stop_not_requested" };
+  if (await db.criticalPreemption.findUnique({ where: { incumbentExecutionId: current.id }, select: { id: true } }))
+    return { error: "critical_preemption_stop_ack_required" };
   if (!current.contextStoppedAt) {
     const stopped = await db.agentExecution.updateMany({ where: { id: current.id, contextStoppedAt: null, leaseToken: current.leaseToken },
       data: { contextStoppedAt: new Date(), status: "waiting_for_approval" } });

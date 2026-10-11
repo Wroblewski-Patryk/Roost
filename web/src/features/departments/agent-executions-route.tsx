@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
+import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal } from "../../components/cc-record-editor";
+import { CcSelect } from "../../components/cc-select";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
@@ -16,7 +19,7 @@ import { ExecutionContinuationReview } from "./company-information-result";
 type Host = { id: string; name: string; slug: string; status: string; platform: string; lastSeenAt?: string | null; applicationSlugs: string[] };
 type ExecutionEvent = { id: string; type: string; level: string; message: string; payload: Record<string, unknown>; createdAt: string };
 type Execution = {
-  id: string; status: string; attempt?: number; summary?: string | null; finalResponse?: string | null; createdAt: string; startedAt?: string | null; completedAt?: string | null;
+  id: string; status: string; attempt?: number; summary?: string | null; finalResponse?: string | null; createdAt: string; startedAt?: string | null; completedAt?: string | null; cancelRequestedAt?: string | null;
   changedFiles: string[]; verification: Record<string, unknown>; usage: Record<string, unknown>; errorState?: { code?: string; message?: string; retryable?: boolean; details?: unknown } | null;
   checkpoint?: { stage?: string; contextRevision?: string | null; headCommit?: string } | null; checkpointVersion?: number;
   metadata?: { resultRevision?: { commit: string; branch: string; workingTree: string; observedAt: string } | null; refusedTrackedRecoveries?: unknown } | null;
@@ -40,11 +43,123 @@ const activeStatuses = new Set(["queued", "claimed", "running", "waiting_for_app
 function tone(status: string) { return status === "completed" ? "badge-success" : status === "failed" ? "badge-error" : status === "cancelled" ? "badge-ghost" : status === "waiting_for_approval" ? "badge-warning" : "badge-info"; }
 function date(value?: string | null) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—"; }
 
+type CriticalPreemptionCandidates = {
+  canRequest: boolean;
+  expectedVersion: number;
+  incidents: Array<{ id: string; title: string; updatedAt: string }>;
+  incoming: Array<{ id: string; createdAt: string; task: { id: string; title: string; priority: string } }>;
+  request: { id: string; status: string; incidentRecordId: string; incomingExecutionId: string; requestedAt: string; stoppedAt: string | null; incidentTitleCurrent: string | null; incomingTaskTitleCurrent: string | null } | null;
+};
+type PreparedPreemption = { path: string; body: string; incidentTitle: string; taskTitle: string; reason: string };
+
+async function actionBodyDigest(body: string) {
+  const bytes = new TextEncoder().encode(JSON.stringify(JSON.parse(body)));
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function CriticalPreemptionControl({ execution, polish, onRequested }: { execution: Execution; polish: boolean; onRequested: () => void }) {
+  const [packet, setPacket] = useState<CriticalPreemptionCandidates | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error" | "forbidden">("loading");
+  const [refresh, setRefresh] = useState(0);
+  const [incidentId, setIncidentId] = useState("");
+  const [incomingId, setIncomingId] = useState("");
+  const [reason, setReason] = useState("");
+  const [prepared, setPrepared] = useState<PreparedPreemption | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [notice, setNotice] = useState<"invalid_password" | "changed" | "uncertain" | null>(null);
+  const clearSubmittedAfterRead = useRef(false);
+
+  useEffect(() => {
+    let live = true;
+    setLoadState("loading");
+    void api<{ data: CriticalPreemptionCandidates }>(`/v1/agent-runtime/executions/${execution.id}/critical-preemption-candidates`)
+      .then(response => { if (live) { setPacket(response.data); setLoadState("ready"); if (clearSubmittedAfterRead.current && !response.data.request) { setSubmitted(false); setNotice(null); } clearSubmittedAfterRead.current = false; } })
+      .catch(error => { if (live) { clearSubmittedAfterRead.current = false; setLoadState(error instanceof AppApiError && error.status === 403 ? "forbidden" : "error"); } });
+    return () => { live = false; };
+  }, [execution.id, refresh]);
+
+  useEffect(() => {
+    if (packet?.request?.status !== "requested") return;
+    const timer = window.setInterval(() => { if (!document.hidden) setRefresh(value => value + 1); }, 5000);
+    return () => window.clearInterval(timer);
+  }, [packet?.request?.status]);
+
+  function prepare(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || submitted || prepared || loadState !== "ready" || !packet?.canRequest || packet.request || packet.expectedVersion < 1) return;
+    const incident = packet.incidents.find(item => item.id === incidentId);
+    const incoming = packet.incoming.find(item => item.id === incomingId);
+    const explanation = reason.trim();
+    if (!incident || !incoming || explanation.length < 12 || explanation.length > 1000) return;
+    const path = `/v1/agent-runtime/executions/${execution.id}/actions/request-critical-preemption`;
+    const body = JSON.stringify({ requestId: crypto.randomUUID(), incidentRecordId: incident.id, incidentRevision: incident.updatedAt, incomingExecutionId: incoming.id, expectedVersion: packet.expectedVersion, reason: explanation });
+    setNotice(null);
+    setPrepared({ path, body, incidentTitle: incident.title, taskTitle: incoming.task.title, reason: explanation });
+  }
+
+  async function confirm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!prepared || busy) return;
+    const password = String(new FormData(event.currentTarget).get("reauthPassword") || "");
+    setBusy(true); setNotice(null);
+    try {
+      const proof = await api<{ data: { proof: string } }>("/v1/auth/reauth", {
+        method: "POST", body: JSON.stringify({ password, method: "POST", path: prepared.path, bodyDigest: await actionBodyDigest(prepared.body) })
+      });
+      await api(prepared.path, { method: "POST", body: prepared.body, headers: { "X-Owner-Action-Proof": proof.data.proof } });
+      setSubmitted(true); setPrepared(null); setReason(""); setIncidentId(""); setIncomingId("");
+      onRequested(); setRefresh(value => value + 1);
+    } catch (error) {
+      if (error instanceof AppApiError && error.code === "invalid_credentials") setNotice("invalid_password");
+      else {
+        setPrepared(null);
+        setNotice(error instanceof AppApiError && error.status === 409 ? "changed" : "uncertain");
+        if (!(error instanceof AppApiError && error.status === 409)) setSubmitted(true);
+        setRefresh(value => value + 1);
+      }
+    } finally { setBusy(false); }
+  }
+
+  if (loadState === "forbidden") return null;
+  if (loadState === "loading" && !packet) return execution.status === "running" ? <CcNotice tone="loading" title={polish ? "Sprawdzanie możliwości wyparcia" : "Checking preemption availability"} /> : null;
+  if (loadState === "error" && !packet) return execution.status === "running" ? <CcNotice tone="error" title={polish ? "Nie udało się sprawdzić incydentów i zadań critical" : "Could not check incidents and critical tasks"} /> : null;
+  if (!packet || (execution.status !== "running" && !packet.request)) return null;
+  const activeRequest = packet.request;
+  const canPrepare = loadState === "ready" && packet.canRequest && !activeRequest && !submitted && packet.incidents.some(item => item.id === incidentId)
+    && packet.incoming.some(item => item.id === incomingId) && reason.trim().length >= 12 && reason.trim().length <= 1000;
+
+  return <section className="mt-4 border-t border-base-300 pt-4" aria-labelledby="critical-preemption-heading">
+    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-black" id="critical-preemption-heading">{polish ? "Incydent critical i wyparcie" : "Critical incident and preemption"}</h3><CcButton size="xs" variant="outline" className="min-h-11" disabled={busy} onClick={() => { clearSubmittedAfterRead.current = submitted; setRefresh(value => value + 1); }}>{polish ? "Odśwież stan" : "Refresh status"}</CcButton></div>
+    {notice === "changed" ? <CcNotice live tone="warning" title={polish ? "Stan zadania, incydentu lub checkpointu zmienił się. Sprawdź aktualną listę przed nową decyzją." : "The task, incident, or checkpoint changed. Review the current list before a new decision."} /> : null}
+    {notice === "uncertain" ? <CcNotice live tone="warning" title={polish ? "Nie udało się potwierdzić wyniku żądania. Odczytuję aktualny stan; sprawdź go przed ponowną decyzją." : "The command result could not be confirmed. The current state is being refreshed; review it before another decision."} /> : null}
+    {loadState === "error" ? <CcNotice tone="error" title={polish ? "Nie udało się odświeżyć stanu wyparcia" : "Could not refresh preemption state"} /> : null}
+    {activeRequest ? <div className="mt-3 grid gap-2">
+      <CcNotice tone={activeRequest.status === "stopped" ? "success" : "warning"} title={activeRequest.status === "stopped" ? (polish ? "Natywne zatrzymanie i checkpoint potwierdzone" : "Native stop and checkpoint confirmed") : (polish ? "Żądanie wyparcia oczekuje na potwierdzony stop" : "Preemption request awaits confirmed stop")} detail={activeRequest.status === "stopped" ? (polish ? "To wykonanie jest zamknięte. Wznowienie wymaga zmienionego planu, zgody właściciela i nowego Ready." : "This execution is closed. Continuation requires a changed plan, owner approval, and a new Ready.") : (polish ? "Worker musi potwierdzić zatrzymanie procesu. Blokada Writera pozostaje zajęta do tego potwierdzenia; nowe zadanie nie startuje automatycznie." : "The Worker must confirm process termination. The Writer remains held until then; the new task does not start automatically.")} />
+      <dl className="grid gap-2 text-sm sm:grid-cols-2"><div><dt className="text-company-muted">{polish ? "Incydent" : "Incident"}</dt><dd>{activeRequest.incidentTitleCurrent || (polish ? "Nazwa niedostępna" : "Name unavailable")}</dd></div><div><dt className="text-company-muted">{polish ? "Zadanie critical" : "Critical task"}</dt><dd>{activeRequest.incomingTaskTitleCurrent || (polish ? "Nazwa niedostępna" : "Name unavailable")}</dd></div><div><dt className="text-company-muted">{polish ? "Żądanie" : "Requested"}</dt><dd>{date(activeRequest.requestedAt)}</dd></div><div><dt className="text-company-muted">{polish ? "Potwierdzony stop" : "Confirmed stop"}</dt><dd>{date(activeRequest.stoppedAt)}</dd></div></dl>
+    </div> : submitted ? <p className="mt-2 text-sm text-company-muted">{polish ? "Sprawdź aktualny stan przed kolejną decyzją. Żądanie mogło zostać zapisane, nawet jeśli odpowiedź nie dotarła." : "Check the current state before another decision. The request may have been recorded even if its response was lost."}</p> : packet.canRequest ? <>
+      <p className="mt-2 text-sm text-company-muted">{polish ? "Wskaż aktywny incydent i oczekujące zadanie critical. Sama decyzja nie kończy bieżącej pracy: Worker musi potwierdzić natywne zatrzymanie i checkpoint." : "Select an active incident and a queued critical task. The decision alone does not stop current work: the Worker must confirm native termination and a checkpoint."}</p>
+      {!packet.incidents.length || !packet.incoming.length ? <CcNotice tone="info" title={polish ? "Brak kwalifikującego się incydentu lub zadania critical" : "No eligible incident or critical task"} detail={polish ? "Wyparcie wymaga obu aktualnych rekordów. Odśwież szczegóły po ich przygotowaniu." : "Preemption requires both current records. Refresh the details once they are available."} /> : <form className="mt-3 grid gap-3" onSubmit={prepare}>
+        <CcField label={polish ? "Potwierdzany incydent" : "Incident to confirm"} required>{({ id }) => <CcSelect id={id} value={incidentId} onChange={event => setIncidentId(event.target.value)} required disabled={busy}><option value="">{polish ? "Wybierz incydent" : "Choose an incident"}</option>{packet.incidents.map(item => <option value={item.id} key={item.id}>{item.title} · {date(item.updatedAt)}</option>)}</CcSelect>}</CcField>
+        <CcField label={polish ? "Oczekujące zadanie critical" : "Queued critical task"} required>{({ id }) => <CcSelect id={id} value={incomingId} onChange={event => setIncomingId(event.target.value)} required disabled={busy}><option value="">{polish ? "Wybierz zadanie" : "Choose a task"}</option>{packet.incoming.map(item => <option value={item.id} key={item.id}>{item.task.title} · {date(item.createdAt)}</option>)}</CcSelect>}</CcField>
+        <CcField label={polish ? "Uzasadnienie decyzji" : "Decision reason"} hint={polish ? "Opisz, dlaczego ten incydent wymaga przerwania bieżącej pracy (12–1000 znaków)." : "Explain why this incident requires interrupting current work (12–1000 characters)."} required>{({ id, describedBy }) => <textarea id={id} aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" value={reason} onChange={event => setReason(event.target.value)} minLength={12} maxLength={1000} disabled={busy} required />}</CcField>
+        <div><CcButton type="submit" size="sm" variant="warning" disabled={!canPrepare || busy}>{polish ? "Przejrzyj wyparcie" : "Review preemption"}</CcButton></div>
+      </form>}
+    </> : <p className="mt-2 text-sm text-company-muted">{polish ? "Wyparcie nie jest dostępne dla tego wykonania. Stan zadania, hosta lub checkpointu może wymagać odświeżenia." : "Preemption is unavailable for this execution. The task, host, or checkpoint state may need refreshing."}</p>}
+    {prepared ? <CcRecordEditorModal titleId="critical-preemption-confirm-title" eyebrow={polish ? "Decyzja właściciela" : "Owner decision"} title={polish ? "Potwierdź wyparcie" : "Confirm preemption"} description={polish ? "Hasło potwierdzi dokładnie to żądanie. Worker musi jeszcze zatrzymać proces i zapisać checkpoint." : "Your password confirms this exact request. The Worker must still stop the process and seal a checkpoint."} closeLabel={polish ? "Zamknij" : "Close"} onClose={() => { if (!busy) { setPrepared(null); setNotice(null); } }} onSubmit={event => void confirm(event)} maxWidthClassName="max-w-xl" actions={<><CcButton onClick={() => { setPrepared(null); setNotice(null); }} disabled={busy} variant="ghost">{polish ? "Wróć" : "Back"}</CcButton><CcButton type="submit" variant="warning" loading={busy}>{polish ? "Potwierdź i zażądaj stopu" : "Confirm and request stop"}</CcButton></>}>
+      <dl className="grid gap-2 text-sm"><div><dt className="text-company-muted">{polish ? "Przerywana praca" : "Current work"}</dt><dd>{execution.task.title}</dd></div><div><dt className="text-company-muted">{polish ? "Incydent" : "Incident"}</dt><dd>{prepared.incidentTitle}</dd></div><div><dt className="text-company-muted">{polish ? "Zadanie critical" : "Critical task"}</dt><dd>{prepared.taskTitle}</dd></div><div><dt className="text-company-muted">{polish ? "Uzasadnienie" : "Reason"}</dt><dd className="whitespace-pre-wrap">{prepared.reason}</dd></div></dl>
+      {notice === "invalid_password" ? <CcNotice live tone="error" title={polish ? "Hasło jest niepoprawne. Przygotowana decyzja nadal czeka." : "Password was incorrect. The prepared decision is still pending."} /> : null}
+      <CcField label={polish ? "Obecne hasło" : "Current password"} required>{({ id }) => <input id={id} name="reauthPassword" type="password" autoComplete="current-password" className="input input-bordered w-full" required disabled={busy} />}</CcField>
+    </CcRecordEditorModal> : null}
+  </section>;
+}
+
 export function AgentExecutionsRoute() {
   const { locale, t } = useLanguage(); const polish = locale === "pl"; const labels = useTranslatedTableLabels();
   const [readyTaskId, setReadyTaskId] = useState<string | null>(null);
   const executionLabel = (execution: Pick<Execution, "status" | "contextInvalidatedAt" | "contextStoppedAt">) => execution.contextInvalidatedAt ? t(execution.status === "cancelled" ? "ready.contextAttemptClosed" : execution.contextStoppedAt ? "ready.contextStoppedStatus" : "ready.contextStoppingStatus") : humanizeBusinessValue(execution.status, undefined, locale);
-  const [executionRefresh, setExecutionRefresh] = useState(0); const [detailRefresh, setDetailRefresh] = useState(0); const [executionPage, setExecutionPage] = useState(0); const [hostRefresh, setHostRefresh] = useState(0); const [logRefresh, setLogRefresh] = useState(0); const [selectedId, setSelectedId] = useState(""); const [notice, setNotice] = useState<string | null>(null); const [busy, setBusy] = useState(false); const refreshTick = useRef(0);
+  const [executionRefresh, setExecutionRefresh] = useState(0); const [detailRefresh, setDetailRefresh] = useState(0); const [executionPage, setExecutionPage] = useState(0); const [hostRefresh, setHostRefresh] = useState(0); const [logRefresh, setLogRefresh] = useState(0); const [selectedId, setSelectedId] = useState(""); const [preemptionRequestedId, setPreemptionRequestedId] = useState<string | null>(null); const [notice, setNotice] = useState<string | null>(null); const [busy, setBusy] = useState(false); const refreshTick = useRef(0);
   const packet = useOwnerPacket<ExecutionRow[]>(`/v1/agent-runtime/executions?page=${executionPage}&refresh=${executionRefresh}`, true, t);
   const detailPacket = useOwnerPacket<Execution>(selectedId ? `/v1/agent-runtime/executions/${selectedId}?refresh=${detailRefresh}` : "", Boolean(selectedId), t);
   const hosts = useOwnerPacket<Host[]>(`/v1/agent-runtime/hosts?refresh=${hostRefresh}`, true, t);
@@ -83,7 +198,7 @@ export function AgentExecutionsRoute() {
     { key: "started", header: polish ? "Uruchomiono" : "Started", sortable: true, sortValue: (row) => row.startedAt || row.createdAt, cell: (row) => <span className="text-sm text-company-muted">{date(row.startedAt || row.createdAt)}</span> },
     { key: "actions", header: labels.actions, cell: (row) => <CcButton ariaLabel="Open execution" iconLeft="ph-arrow-right" onClick={() => setSelectedId(row.id)} size="xs" variant="ghost"><span className="sr-only">Open</span></CcButton> }
   ], [labels.actions, locale, polish]);
-  async function action(name: "cancel") { if (!selected) return; setBusy(true); setNotice(null); try { await api(`/v1/agent-runtime/executions/${selected.id}/actions/${name}`, { method: "POST", body: "{}" }); setExecutionRefresh((value) => value + 1); setDetailRefresh((value) => value + 1); } catch (error) { setNotice(error instanceof AppApiError ? error.code : "request_failed"); } finally { setBusy(false); } }
+  async function action(name: "cancel") { if (!selected || selected.cancelRequestedAt || preemptionRequestedId === selected.id) return; setBusy(true); setNotice(null); try { await api(`/v1/agent-runtime/executions/${selected.id}/actions/${name}`, { method: "POST", body: "{}" }); setExecutionRefresh((value) => value + 1); setDetailRefresh((value) => value + 1); } catch (error) { setNotice(error instanceof AppApiError ? error.code : "request_failed"); } finally { setBusy(false); } }
   return <>
     <CcPageHeader actions={<><CcButton href="/workspace/settings#agent-connections" iconLeft="ph-plugs" size="sm" variant="outline">{polish ? "Połączenia" : "Connections"}</CcButton><CcButton href="/areas?area=06-kadry&view=directory" iconLeft="ph-users-three" size="sm" variant="outline">{polish ? "Ludzie i agenci" : "People and agents"}</CcButton></>} description={polish ? "Zapisane zdarzenia wykonania i dzienniki agentów. Roost przechowuje kontekst, heartbeat, dowody i wynik; wewnętrzny postęp Hermes pozostaje nieobserwowalny." : "Recorded execution events and agent logs. Roost keeps context, heartbeats, evidence, and results; Hermes internal progress remains unobserved."} eyebrow="06 People / Agents" title={polish ? "Praca agentów" : "Agent activity"} />
     {readiness.data && !readiness.data.executionEnabled ? <CcNotice tone="warning" title={polish ? "Tryb fundamentu — wykonywanie wyłączone" : "Foundation mode — execution disabled"} detail={polish ? "Struktura aplikacji, projektów, repozytoriów i triggerów jest dostępna, ale Roost nie może jeszcze kolejkować ani przydzielać pracy Codex." : "Application, project, repository and trigger structure is available, but Roost cannot queue or assign Codex work yet."} /> : null}
@@ -106,7 +221,8 @@ export function AgentExecutionsRoute() {
     {selectedId && !selected ? <div className="fixed inset-0 z-40 flex justify-end bg-neutral/55" role="dialog" aria-modal="true" aria-label="Codex execution details"><aside className="h-full w-full max-w-2xl overflow-y-auto bg-base-100 p-5 shadow-2xl"><div className="flex justify-between gap-3"><h2 className="font-black">{polish ? "Szczegóły wykonania" : "Execution details"}</h2><CcButton ariaLabel="Close" iconLeft="ph-x" onClick={() => setSelectedId("")} size="sm" variant="ghost"><span className="sr-only">Close</span></CcButton></div><CcNotice title={detailPacket.status === "error" ? (polish ? "Nie udało się wczytać wykonania" : "Could not load execution") : (polish ? "Wczytywanie wykonania" : "Loading execution")} detail={detailPacket.status === "error" ? detailPacket.error : undefined} tone={detailPacket.status === "error" ? "error" : "info"} /></aside></div> : null}
     {selected ? <div className="fixed inset-0 z-40 flex justify-end bg-neutral/55" role="dialog" aria-modal="true" aria-label="Codex execution details"><aside className="h-full w-full max-w-2xl overflow-y-auto bg-base-100 p-5 shadow-2xl">
       <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase text-primary">{selected.application?.name || (polish ? "Praca firmowa" : "Company work")}</p><h2 className="text-xl font-black">{selected.task.title}</h2><p className="mt-1 text-sm text-company-muted">{selected.agentHost?.name || "Local host not claimed"} · {date(selected.startedAt || selected.createdAt)}</p></div><CcButton ariaLabel="Close" iconLeft="ph-x" onClick={() => setSelectedId("")} size="sm" variant="ghost"><span className="sr-only">Close</span></CcButton></div>
-      <div className="mt-4 flex flex-wrap items-center gap-2"><span className={`badge ${tone(selected.status)}`}>{executionLabel(selected)}</span>{activeStatuses.has(selected.status) && (!selected.contextInvalidatedAt || selected.contextStoppedAt) ? <CcButton loading={busy} onClick={() => void action("cancel")} className="min-h-11" size="sm" variant="outline">{selected.contextStoppedAt ? t("ready.closeStoppedAttempt") : polish ? "Anuluj" : "Cancel"}</CcButton> : null}</div>
+      <div className="mt-4 flex flex-wrap items-center gap-2"><span className={`badge ${tone(selected.status)}`}>{executionLabel(selected)}</span>{activeStatuses.has(selected.status) && !selected.cancelRequestedAt && preemptionRequestedId !== selected.id && (!selected.contextInvalidatedAt || selected.contextStoppedAt) ? <CcButton loading={busy} onClick={() => void action("cancel")} className="min-h-11" size="sm" variant="outline">{selected.contextStoppedAt ? t("ready.closeStoppedAttempt") : polish ? "Anuluj" : "Cancel"}</CcButton> : null}</div>
+      <CriticalPreemptionControl key={selected.id} execution={selected} polish={polish} onRequested={() => { setPreemptionRequestedId(selected.id); setExecutionRefresh(value => value + 1); setDetailRefresh(value => value + 1); }} />
       {selected.contextInvalidatedAt ? <section className="mt-4 grid gap-3"><CcNotice tone="warning" title={t(selected.contextStoppedAt ? "ready.contextStopped" : "ready.contextStopRequested")} detail={t(selected.contextStoppedAt ? "ready.contextStoppedHint" : "ready.contextStopRequestedHint")} /><ChangedContextSources sources={selected.contextInvalidation?.changedSources} /></section> : null}
       {selected.events.some(event => event.type === "runtime_redaction") || JSON.stringify(selected).includes("[REDACTED]") ? <RuntimeRedactionNotice incidents={selected.events.filter(event => event.type === "runtime_redaction").map(event => event.payload as RedactionIncident)} /> : null}
       {selected.summary || selected.finalResponse ? <section className="roost-work-panel mt-4 rounded-company p-4"><h3 className="font-black">{polish ? "Wynik" : "Result"}</h3><p className="mt-2 whitespace-pre-wrap text-sm text-company-muted">{selected.finalResponse || selected.summary}</p></section> : null}

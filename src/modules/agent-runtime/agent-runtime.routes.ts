@@ -45,6 +45,8 @@ import { sendApiError } from "../../middleware/api-error";
 import { createEvent } from "../events/event.service";
 import { nextCheckpointStage, recoveryCheckpoint, recoveryMessage, recoveryReasons } from "./execution-recovery";
 import { protocol, hostCompatibility, requestCompatibility } from "./host-protocol";
+import { hasSchedulerCapacity, orderSchedulerQueue, schedulerResources, taskDependenciesComplete } from "./execution-scheduler";
+import { acknowledgeCriticalPreemption, preemptionStoppedSchema, requestCriticalPreemption, requestCriticalPreemptionSchema } from "./critical-preemption";
 import type { Request, Response } from "express";
 
 const jsonRecord = z.record(z.unknown());
@@ -1117,7 +1119,7 @@ agentRuntimeRouter.get("/executions/:id", asyncHandler(async (req, res) => {
   const execution = await prisma.agentExecution.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
     select: {
-      id: true, status: true, attempt: true, createdAt: true, startedAt: true, completedAt: true,
+      id: true, status: true, attempt: true, createdAt: true, startedAt: true, completedAt: true, cancelRequestedAt: true,
       summary: true, finalResponse: true, changedFiles: true, usage: true, errorState: true,
       checkpoint: true, checkpointVersion: true, metadata: true,
       contextInvalidatedAt: true, contextStoppedAt: true, contextInvalidation: true,
@@ -1135,6 +1137,50 @@ agentRuntimeRouter.get("/executions/:id", asyncHandler(async (req, res) => {
   res.json({ data: { ...execution, leaseToken: null,
     metadata: { resultRevision: metadata.resultRevision ?? null, refusedTrackedRecoveries: metadata.refusedTrackedRecoveries ?? null },
     events: [...execution.events].reverse(), eventTotalCount } });
+}));
+
+agentRuntimeRouter.get("/executions/:id/critical-preemption-candidates", asyncHandler(async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const auth = req.auth!;
+  if (auth.authType !== "user" || auth.workspaceRole !== "owner" || !auth.userId
+    || !await prisma.workspace.findFirst({ where: { id: auth.workspaceId, ownerUserId: auth.userId }, select: { id: true } }))
+    return sendApiError(res, 403, "critical_preemption_owner_required");
+  const execution = await prisma.agentExecution.findFirst({ where: { id: z.string().uuid().parse(req.params.id), workspaceId: auth.workspaceId },
+    include: { agentHost: true, criticalPreemption: true } });
+  if (!execution) return sendApiError(res, 404, "agent_execution_not_found");
+  const checkpoint = recoveryCheckpoint.safeParse(execution.checkpoint);
+  const informationCheckpoint = checkpoint.success && checkpoint.data.stage === "claimed"
+    && (execution.metadata as any)?.executionContract?.executionClass === companyRuntimeClass
+    && await prisma.agentExecutionEvent.count({ where: { workspaceId: auth.workspaceId, executionId: execution.id, type: "information_admitted" } }) > 0;
+  const host = execution.agentHost;
+  const resources = host ? schedulerResources(host) : null;
+  const canRequest = execution.status === "running" && !execution.cancelRequestedAt && !execution.contextInvalidatedAt
+    && !!execution.leaseToken && !!execution.leaseExpiresAt && execution.leaseExpiresAt > new Date()
+    && !execution.criticalPreemption && checkpoint.success && (["running", "effect_possible"].includes(checkpoint.data.stage) || informationCheckpoint)
+    && !!host && hostCompatibility(host).compatible && resources?.ok === true;
+  const [incidents, incoming] = canRequest ? await Promise.all([
+    prisma.companyRecord.findMany({ where: { workspaceId: auth.workspaceId, recordType: "technical_incident", status: "active", priority: "critical" },
+      select: { id: true, title: true, updatedAt: true }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], take: 100 }),
+    prisma.agentExecution.findMany({ where: { workspaceId: auth.workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null,
+      task: { priority: "critical", status: { in: ["todo", "in_progress"] } } },
+      select: { id: true, createdAt: true, applicationId: true, application: { select: { slug: true } }, task: { select: { id: true, title: true, priority: true } } },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 100 })
+  ]) : [[], []];
+  const slugs = host && Array.isArray(host.applicationSlugs) ? host.applicationSlugs : [];
+  const capabilities = host && Array.isArray(host.capabilities) ? host.capabilities : [];
+  const eligible = incoming.filter(item => resources?.ok && hasSchedulerCapacity(resources.resources, item)
+    && (item.applicationId ? !!item.application && slugs.includes(item.application.slug)
+      : capabilities.includes("company_information_runtime_v1")));
+  const request = execution.criticalPreemption;
+  const [incidentLabel, taskLabel] = request ? await Promise.all([
+    prisma.companyRecord.findFirst({ where: { id: request.incidentRecordId, workspaceId: auth.workspaceId }, select: { title: true } }),
+    prisma.task.findFirst({ where: { id: request.criticalTaskId, workspaceId: auth.workspaceId }, select: { title: true } })
+  ]) : [null, null];
+  res.json({ data: { canRequest, expectedVersion: execution.checkpointVersion,
+    incidents, incoming: eligible.map(({ applicationId: _applicationId, application: _application, ...item }) => item),
+    request: request ? { id: request.id, status: request.status, incidentRecordId: request.incidentRecordId,
+      incomingExecutionId: request.incomingExecutionId, requestedAt: request.requestedAt, stoppedAt: request.stoppedAt,
+      incidentTitleCurrent: incidentLabel?.title ?? null, incomingTaskTitleCurrent: taskLabel?.title ?? null } : null } });
 }));
 
 agentRuntimeRouter.post("/executions/:id/actions/prior-coding-refusal", asyncHandler(async (req, res) => {
@@ -1288,29 +1334,39 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   const companyEnabled = Array.isArray(host.capabilities) && host.capabilities.includes("company_information_runtime_v1")
     && (host.metadata as any)?.executionProvider?.kind === "hermes_codex";
   const now = new Date();
+  const observed = schedulerResources(host, now);
+  if (!observed.ok) return sendApiError(res, 409, observed.reason);
   // Expiry is not proof that an old worker stopped. Keep ownership and identity.
   if (await prisma.agentExecution.count({ where: { workspaceId, agentHostId: host.id, status: { in: ["claimed", "running", "waiting_for_approval"] } } })) return sendApiError(res, 409, "agent_host_recovery_required");
   if (!applicationSlugs.length && !companyEnabled) return res.status(204).send();
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(String((host.metadata as any)?.executionProvider?.kind) === "synthetic_fixed" ? { metadata: { path: ["executionContract", "executionClass"], equals: "roost-fixed-effect-v1" } } : {}), OR: [...(applicationSlugs.length ? [{ application: { slug: { in: applicationSlugs } } }] : []), ...(companyEnabled ? [{ applicationId: null, metadata: { path: ["executionContract", "executionClass"], equals: companyRuntimeClass } }] : [])] }, orderBy: { createdAt: "asc" } });
-    if (!candidate) return res.status(204).send();
+  const queue = await prisma.agentExecution.findMany({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(String((host.metadata as any)?.executionProvider?.kind) === "synthetic_fixed" ? { metadata: { path: ["executionContract", "executionClass"], equals: "roost-fixed-effect-v1" } } : {}), OR: [...(applicationSlugs.length ? [{ application: { slug: { in: applicationSlugs } } }] : []), ...(companyEnabled ? [{ applicationId: null, metadata: { path: ["executionContract", "executionClass"], equals: companyRuntimeClass } }] : [])] }, include: { task: { select: { id: true, status: true, priority: true } } }, orderBy: [{ createdAt: "asc" }, { id: "asc" }] });
+  for (const candidate of orderSchedulerQueue(queue, now)) {
+    if (!hasSchedulerCapacity(observed.resources, candidate)) continue;
     if((candidate.metadata as any)?.executionContract?.nativeBoundary?.releaseInspection
       &&(!Array.isArray(host.capabilities)||!host.capabilities.includes("governed_release_inspection_v1")))
-      return sendApiError(res,409,"release_inspection_host_required");
+      continue;
     const leaseToken = randomUUID();
     const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId ?? randomUUID(), packetRevision: null, workspaceDigest: null };
     const admitted = await readyTransaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM agent_hosts WHERE id=${host.id}::uuid FOR UPDATE`;
+      const currentHost = await tx.agentHost.findUniqueOrThrow({ where: { id: host.id } });
+      const fresh = schedulerResources(currentHost);
+      if (!fresh.ok) return { error: fresh.reason };
+      if (!hasSchedulerCapacity(fresh.resources, candidate)) return { skip: true };
+      if (await tx.agentExecution.count({ where: { workspaceId, agentHostId: host.id, status: { in: ["claimed", "running", "waiting_for_approval"] } } })) return { error: "agent_host_recovery_required" };
       if (req.auth!.workerTicketIdentity && !await workerClaimAllowed(tx, req.auth!, host.id)) return { error: "worker_credential_forbidden" };
+      if (!await taskDependenciesComplete(tx, workspaceId, candidate.taskId)) return { skip: true };
       const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
-      if (ready.error) return { error: ready.error };
+      if (ready.error) return { skip: true };
       const continuation = await assertBoundExecutionContinuation(tx, candidate, ready.pin);
-      if (continuation.error) return { error: continuation.error };
-      if (!candidate.applicationId && !isInformationRuntime((candidate.metadata as any)?.executionContract)) return { error: "company_information_execution_unqualified" };
-      if (candidate.applicationId && await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };
-    const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + executionLeaseMs), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
+      if (continuation.error) return { skip: true };
+      if (!candidate.applicationId && !isInformationRuntime((candidate.metadata as any)?.executionContract)) return { skip: true };
+      if (candidate.applicationId && await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { skip: true };
+      const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + executionLeaseMs), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
       return { count: changed.count };
     });
     if ("error" in admitted) return sendApiError(res, 409, admitted.error!);
+    if ("skip" in admitted) continue;
     const claimed = admitted;
     if (!claimed.count) continue;
     await prisma.agentHost.update({ where: { id: host.id }, data: { status: "online", lastSeenAt: now } });
@@ -1320,7 +1376,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
       await prisma.task.update({ where: { id: execution.taskId }, data: { status: "in_progress" } });
     return res.json({ data: execution });
   }
-  return res.status(409).json({ error: "agent_execution_claim_conflict" });
+  return res.status(204).send();
 }));
 
 agentRuntimeRouter.post("/executions/:id/actions/managed-admission", asyncHandler(async (req,res) => {
@@ -1337,7 +1393,10 @@ agentRuntimeRouter.post("/executions/:id/heartbeat", asyncHandler(async (req, re
   const input = heartbeatSchema.parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
-  if (existing.cancelRequestedAt) return res.status(409).json({ error: "agent_execution_cancel_requested", data: { cancelRequested: true } });
+  if (existing.cancelRequestedAt) {
+    const pending = await prisma.criticalPreemption.findUnique({ where: { incumbentExecutionId: existing.id }, select: { status: true } });
+    return res.status(409).json({ error: pending?.status === "requested" ? "agent_execution_preemption_requested" : "agent_execution_cancel_requested", data: { cancelRequested: true } });
+  }
   const leaseExpiresAt = new Date(Date.now() + executionLeaseMs);
   const status = input.status ?? (existing.status === "claimed" ? "running" : existing.status);
   const updated = await readyTransaction(async tx => {
@@ -1420,7 +1479,7 @@ agentRuntimeRouter.post("/executions/:id/actions/fail", asyncHandler(async (req,
   const { progressObservation: _untrustedProgress, ...details } = input.details;
   const progressObservation = input.code === "hermes_quiet_empty_result" && details.nativeCleanupProven === true
     ? { classification: "no_accepted_progress", basis: "native_empty_result" } : null;
-  const failed = await prisma.agentExecution.updateMany({ where: { id: existing.id, contextInvalidatedAt: null, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "failed", errorState: json({ code: input.code, message: input.message, retryable: input.retryable,
+  const failed = await prisma.agentExecution.updateMany({ where: { id: existing.id, contextInvalidatedAt: null, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "failed", errorState: json({ code: input.code, message: input.message, retryable: input.retryable,
     details: { ...details, ...(progressObservation ? { progressObservation } : {}) } }),
     usage: json({ inputTokens: null, outputTokens: null, cost: null, physicalModelCalls: null,
       toolCalls: null, transportRetries: null, observedElapsedMs }), completedAt, leaseExpiresAt: null, leaseToken: null } });
@@ -1436,6 +1495,8 @@ agentRuntimeRouter.post("/executions/:id/actions/cancelled", asyncHandler(async 
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, cancelRequestedAt: { not: null }, status: { in: ["claimed", "running", "waiting_for_approval"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
   if (existing.contextInvalidatedAt) return sendApiError(res, 409, contextStopCode);
+  if (await prisma.criticalPreemption.findUnique({ where: { incumbentExecutionId: existing.id }, select: { id: true } }))
+    return sendApiError(res, 409, "critical_preemption_stop_ack_required");
   const cancelled = await prisma.agentExecution.updateMany({ where: { id: existing.id, contextInvalidatedAt: null, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "cancelled", completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
   if (!cancelled.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
   const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
@@ -1443,9 +1504,26 @@ agentRuntimeRouter.post("/executions/:id/actions/cancelled", asyncHandler(async 
   res.json({ data: execution });
 }));
 
+agentRuntimeRouter.post("/executions/:id/actions/request-critical-preemption", asyncHandler(async (req, res) => {
+  const input = requestCriticalPreemptionSchema.parse(req.body);
+  const result = await readyTransaction(tx => requestCriticalPreemption(tx, req.auth!, z.string().uuid().parse(req.params.id), input));
+  if ("error" in result && result.error) return sendApiError(res, result.error.endsWith("owner_required") ? 403 : 409, result.error);
+  if (!("request" in result) || !result.request) return sendApiError(res, 409, "critical_preemption_conflict");
+  res.status(201).json({ data: result.request });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/preemption-stopped", asyncHandler(async (req, res) => {
+  const input = preemptionStoppedSchema.parse(req.body);
+  const result = await readyTransaction(tx => acknowledgeCriticalPreemption(tx, req.auth!, z.string().uuid().parse(req.params.id), input));
+  if ("error" in result && result.error) return sendApiError(res, result.error === "worker_credential_forbidden" ? 403 : 409, result.error);
+  res.json({ data: result });
+}));
+
 agentRuntimeRouter.post("/executions/:id/actions/cancel", asyncHandler(async (req, res) => {
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId } });
   if (!existing) return sendApiError(res, 404, "agent_execution_not_found");
+  if (await prisma.criticalPreemption.findUnique({ where: { incumbentExecutionId: existing.id }, select: { id: true } }))
+    return sendApiError(res, 409, "critical_preemption_stop_ack_required");
   if (isCompanyInformation((existing.metadata as any)?.executionContract) && !requireWorkspaceRole(req, res, "owner")) return;
   if (["completed", "failed", "cancelled"].includes(existing.status)) return res.json({ data: existing });
   const immediate = existing.status === "queued" || Boolean(existing.contextInvalidatedAt && existing.contextStoppedAt);

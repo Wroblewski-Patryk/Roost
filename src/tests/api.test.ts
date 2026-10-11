@@ -1,6 +1,9 @@
 import { protocol } from "../modules/agent-runtime/host-protocol";
 const hostProtocolHeaders = { "X-Roost-Host-Protocol": String(protocol.version), "X-Roost-Host-Capabilities": protocol.requiredHostCapabilities.join(",") };
-const validHostMetadata = { runnerVersion: "roost-codex-agent-host-v1", protocolVersion: protocol.version, executionMode: "supervised" };
+const validHostMetadata = () => ({ runnerVersion: "roost-codex-agent-host-v1", protocolVersion: protocol.version, executionMode: "supervised",
+  schedulerResources: { schemaVersion: "roost-host-resources-v1", observedAt: new Date().toISOString(),
+    freeMemoryBytes: 16 * 1024 ** 3, totalMemoryBytes: 32 * 1024 ** 3,
+    freeDiskBytes: 32 * 1024 ** 3, totalDiskBytes: 128 * 1024 ** 3, cpuLogicalCount: 8 } });
 import { strict as assert } from "assert";
 import { createHmac, randomUUID } from "node:crypto";
 import { Prisma, PrismaClient } from "@prisma/client";
@@ -163,6 +166,7 @@ async function resetDatabase() {
       assert.match(guard.triggerName, /^[a-z_][a-z0-9_]*$/);
       await db.$executeRawUnsafe(`ALTER TABLE ${guard.tableName} DISABLE TRIGGER ${guard.triggerName}`);
     }
+    await db.$executeRawUnsafe("TRUNCATE critical_preemptions CASCADE");
     await db.$executeRawUnsafe("TRUNCATE task_proposal_decisions, task_proposal_occurrences, task_proposal_mandate_uses, task_proposals, task_proposal_mandate_revocations, task_proposal_mandates CASCADE");
     await db.$executeRawUnsafe("TRUNCATE task_review_actions, task_review_decisions, agent_credential_operations, api_keys, events CASCADE");
     await db.agentExecutionEvent.deleteMany();
@@ -2181,13 +2185,13 @@ test("explicit task roles enforce identity, provenance and independent admission
       const {ownerTicketFixture}=await import("./owner-ticket-fixture"),{hashApiKey}=await import("../auth/api-key");
       const ticketKey=(await ownerTicketFixture()).state().key;
       await prisma.trustedProviderTicketKey.create({data:{workspaceId,...ticketKey}});
-      const roleHost=await prisma.agentHost.create({data:{workspaceId,name:"Role host",slug:"role-host",platform:"win32",metadata:validHostMetadata,capabilities:protocol.requiredHostCapabilities}});
+      const roleHost=await prisma.agentHost.create({data:{workspaceId,name:"Role host",slug:"role-host",platform:"win32",metadata:validHostMetadata(),capabilities:protocol.requiredHostCapabilities}});
       const workerKey=randomUUID();
       await prisma.apiKey.create({data:{workspaceId,name:"Role test host ticket",keyHash:hashApiKey(workerKey),
         scopes:["agent-runtime:claim"],active:true,expiresAt:new Date(Date.now()+600000),
         workerHostId:roleHost.id,workerInstallationId:ticketKey.installationId,workerBindingEpoch:1}});
       const worker = { "X-API-Key": workerKey, ...hostProtocolHeaders };
-      await post("/v1/agent-runtime/hosts/register", { name: "Role host", slug: "role-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
+      await post("/v1/agent-runtime/hosts/register", { name: "Role host", slug: "role-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities }, worker);
       await prisma.workforceEntity.update({ where: { id: f.releaser.id }, data: { status: "inactive" } });
       assert.equal(((await read()).executionReadiness as any).status, "needs_revalidation");
       assert.equal((await post("/v1/agent-runtime/executions/claim", { hostSlug: "role-host" }, worker)).status, 409);
@@ -3202,7 +3206,7 @@ test("single-task scope requires one resolved target, manager, result and branch
       const queued = await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id }); assert.equal(queued.status, 201);
       const key = await post("/v1/api-keys", { name: "Scope worker", profileId: "mcp_codex_worker" });
       const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
-      await post("/v1/agent-runtime/hosts/register", { name: "Scope host", slug: "scope-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
+      await post("/v1/agent-runtime/hosts/register", { name: "Scope host", slug: "scope-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities }, worker);
       await prisma.applicationArchitectureComponent.update({ where: { id: f.component.id }, data: { description: "Changed component boundary" } });
       assert.equal((await pin()).status, "needs_revalidation");
       const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: "scope-host" }, worker); assert.equal(claim.status, 409);
@@ -3229,7 +3233,7 @@ test("Submit for execution is the sole durable and versioned Ready command", asy
   const key = await post("/v1/api-keys", { name: "Synthetic worker", profileId: "mcp_codex_worker" });
   const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
   const hostSlug = "submit-only-host";
-  await post("/v1/agent-runtime/hosts/register", { name: "Submit fixture", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
+  await post("/v1/agent-runtime/hosts/register", { name: "Submit fixture", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities }, worker);
   const claim = () => post("/v1/agent-runtime/executions/claim", { hostSlug }, worker);
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
   let accepted: any, proof: any;
@@ -3391,7 +3395,7 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     assert.equal(queued.metadata.readyContextPin.pinId, fresh.data.pinId);
     assert.equal((await post(`${route}/actions/submit-for-execution`, f.input)).status, 409);
     const hostSlug = "ready-fixture";
-    assert.equal((await post("/v1/agent-runtime/hosts/register", { name: "Ready host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, workerAuth)).status, 200);
+    assert.equal((await post("/v1/agent-runtime/hosts/register", { name: "Ready host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities }, workerAuth)).status, 200);
     await prisma.task.update({ where: { id: task.id }, data: { description: "Changed between queue and claim" } });
     assert.equal(((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any).status, "needs_revalidation");
     assert.equal((await post("/v1/agent-runtime/executions/claim", { hostSlug }, workerAuth)).status, 409);
@@ -3612,7 +3616,7 @@ test("active context stop fences late reports, checkpoints, recovery and complet
     await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
     const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: slug } });
     const f = await prepareReadyFixture(workspaceId, task.id, application.id, auth);
-    await post("/v1/agent-runtime/hosts/register", { name: slug, slug, platform: "win32", applicationSlugs: [slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities });
+    await post("/v1/agent-runtime/hosts/register", { name: slug, slug, platform: "win32", applicationSlugs: [slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities });
     assert.equal((await post("/v1/agent-runtime/executions", { taskId: task.id }, auth)).status, 201);
     const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: slug });
     assert.equal(claim.status, 200, JSON.stringify(claim.body));
@@ -3792,7 +3796,7 @@ test("accepted output budgets remain pinned and budget failures cannot retry or 
     assert.equal(rejected.status, 409);
   }
   assert.equal((await post(`/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`, f.input)).status, 200);
-  const registered = await post("/v1/agent-runtime/hosts/register", { name: "Output host", slug: "output-host", platform: "win32", applicationSlugs: [application.slug], capabilities: protocol.requiredHostCapabilities, metadata: { ...validHostMetadata, outputTokenBudgetEnforcement: "unavailable" } });
+  const registered = await post("/v1/agent-runtime/hosts/register", { name: "Output host", slug: "output-host", platform: "win32", applicationSlugs: [application.slug], capabilities: protocol.requiredHostCapabilities, metadata: { ...validHostMetadata(), outputTokenBudgetEnforcement: "unavailable" } });
   assert.equal(registered.status, 200);
   assert.ok((registered.body as { data: { runtime: { executionUnavailableReasons: string[] } } }).data.runtime.executionUnavailableReasons.includes("output_token_limit_unsupported"));
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
@@ -3958,14 +3962,13 @@ test("spent application work needs a changed Ready plan and explicit owner conti
     const hostAuth = { ...auth, ...hostProtocolHeaders };
     const hostSlug = `continuation-host-${randomUUID()}`;
     const host = await post("/v1/agent-runtime/hosts/register", { name: "Continuation fixture host", slug: hostSlug,
-      platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata,
+      platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(),
       capabilities: protocol.requiredHostCapabilities }, hostAuth);
     assert.equal(host.status, 200, JSON.stringify(host.body));
     const previousUsage = (await prisma.agentExecution.findUniqueOrThrow({ where: { id: first.id } })).usage;
     await prisma.agentExecution.update({ where: { id: first.id }, data: { usage: { inputTokens: 1 } } });
     const staleClaim = await post("/v1/agent-runtime/executions/claim", { hostSlug }, hostAuth);
-    assert.equal(staleClaim.status, 409);
-    assert.equal((staleClaim.body as { error: string }).error, "execution_continuation_stale");
+    assert.equal(staleClaim.status, 204, "a stale candidate must not block another eligible queue entry");
     const unclaimed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: (next.body as any).data.id } });
     assert.equal(unclaimed.status, "queued");
     assert.equal(unclaimed.attempt, 0);
@@ -4046,7 +4049,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const outsiderRead = await request(`/v1/agent-runtime/executions/${queued.id}`, { headers: { Authorization: `Bearer ${outsider.token}` } });
   assert.equal(outsiderRead.status, 404);
 
-  await prisma.agentHost.update({ where: { id: originalHost.id }, data: { metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities } });
+  await prisma.agentHost.update({ where: { id: originalHost.id }, data: { metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities, lastSeenAt: new Date() } });
   const claimResponse = await request("/v1/agent-runtime/executions/claim", {
     method: "POST",
     headers: workerAuth,
@@ -4254,7 +4257,7 @@ test("host lifecycle admission rejects forged healthy maintenance authority befo
       const registered = await request("/v1/agent-runtime/hosts/register", { method: "POST", headers,
         body: JSON.stringify({ name: "Lifecycle fixture", slug: "lifecycle-fixture", platform: "win32",
           applicationSlugs: [], capabilities: protocol.requiredHostCapabilities,
-          metadata: { ...validHostMetadata, ...(executionProvider ? { executionProvider } : {}) } }) });
+          metadata: { ...validHostMetadata(), ...(executionProvider ? { executionProvider } : {}) } }) });
       assert.equal(registered.status, 200);
       for (const [route, body] of [["/v1/agent-runtime/executions/claim", { hostSlug: "lifecycle-fixture" }],
         ["/v1/agent-runtime/recovery?hostSlug=lifecycle-fixture", null]] as const) {
@@ -4279,20 +4282,20 @@ test("host protocol admission fails closed while incompatible hosts remain onlin
   const headers = { ...auth, ...hostProtocolHeaders };
   const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Protocol fixture", slug: "protocol-fixture" } });
   const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Synthetic admission only" } });
-  const declaration = { name: "Protocol host", slug: "protocol-fixture", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities };
+  const declaration = { name: "Protocol host", slug: "protocol-fixture", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities };
   const register = (value: unknown) => request("/v1/agent-runtime/hosts/register", { method: "POST", headers, body: JSON.stringify(value) });
   const response = await register(declaration);
   const host = (response.body as { data: { id: string } }).data;
   const pending = await historicalRiskExecution({ data: { workspaceId: owner.workspace.id, taskId: task.id, applicationId: application.id, agentHostId: host.id, requestedByType: "user", status: "claimed", attempt: 1, leaseToken: "00000000-0000-4000-8000-000000000001", leaseExpiresAt: new Date(Date.now() + 90000), checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: "00000000-0000-4000-8000-000000000001", packetRevision: null, workspaceDigest: null } } });
   const scenarios: Array<[string, unknown, Record<string, string>]> = [
-    ["hermes_compatibility_unproven", { ...declaration, metadata: { ...validHostMetadata, executionProviderConfig: { secret: "PRIVATE_PROVIDER_SENTINEL" }, executionProvider: { kind: "hermes_codex", ready: true, executionSupported: true, executablePath: "PRIVATE_PROVIDER_SENTINEL", installedVersion: "PRIVATE_PROVIDER_SENTINEL", blockers: [] } } }, headers],
-    ["execution_provider_unknown", { ...declaration, metadata: { ...validHostMetadata, executionProvider: { kind: "PRIVATE_PROVIDER_SENTINEL" } } }, headers],
+    ["hermes_compatibility_unproven", { ...declaration, metadata: { ...validHostMetadata(), executionProviderConfig: { secret: "PRIVATE_PROVIDER_SENTINEL" }, executionProvider: { kind: "hermes_codex", ready: true, executionSupported: true, executablePath: "PRIVATE_PROVIDER_SENTINEL", installedVersion: "PRIVATE_PROVIDER_SENTINEL", blockers: [] } } }, headers],
+    ["execution_provider_unknown", { ...declaration, metadata: { ...validHostMetadata(), executionProvider: { kind: "PRIVATE_PROVIDER_SENTINEL" } } }, headers],
     ["host_protocol_missing", { ...declaration, metadata: {} }, headers],
-    ...[0, 2, "1", null].map(version => ["host_protocol_mismatch", { ...declaration, metadata: { ...validHostMetadata, protocolVersion: version } }, headers] as [string, unknown, Record<string, string>]),
+    ...[0, 2, "1", null].map(version => ["host_protocol_mismatch", { ...declaration, metadata: { ...validHostMetadata(), protocolVersion: version } }, headers] as [string, unknown, Record<string, string>]),
     ["host_capabilities_missing", { ...declaration, capabilities: ["heartbeat"] }, headers],
     ["host_capabilities_missing", { ...declaration, capabilities: declaration.capabilities.filter(value => value !== "output_budget_fail_closed_v1") }, headers],
     ["host_capabilities_missing", { ...declaration, capabilities: undefined }, headers],
-    ["observer_mode", { ...declaration, metadata: { ...validHostMetadata, executionMode: "observe" } }, headers],
+    ["observer_mode", { ...declaration, metadata: { ...validHostMetadata(), executionMode: "observe" } }, headers],
     ["host_mode_missing", { ...declaration, metadata: { protocolVersion: 1 } }, headers],
     ["request_protocol_missing", declaration, auth],
     ["request_capabilities_missing", declaration, { ...headers, "X-Roost-Host-Capabilities": declaration.capabilities.filter(value => value !== "output_budget_fail_closed_v1").join(",") }],
@@ -4321,7 +4324,7 @@ test("host protocol admission fails closed while incompatible hosts remain onlin
       const unchanged = await prisma.agentExecution.findUniqueOrThrow({ where: { id: pending.id } });
       assert.equal(unchanged.attempt, 1); assert.equal(unchanged.checkpointVersion, 1); assert.equal(unchanged.leaseToken, pending.leaseToken);
     }
-    const heartbeat = await request(`/v1/agent-runtime/hosts/${host.id}/heartbeat`, { method: "POST", headers, body: JSON.stringify({ metadata: { ...validHostMetadata, executionProvider: { kind: "hermes_codex", executablePath: "PRIVATE_PROVIDER_SENTINEL", ready: true, blockers: ["PRIVATE_PROVIDER_SENTINEL"] } } }) });
+    const heartbeat = await request(`/v1/agent-runtime/hosts/${host.id}/heartbeat`, { method: "POST", headers, body: JSON.stringify({ metadata: { ...validHostMetadata(), executionProvider: { kind: "hermes_codex", executablePath: "PRIVATE_PROVIDER_SENTINEL", ready: true, blockers: ["PRIVATE_PROVIDER_SENTINEL"] } } }) });
     assert.equal(heartbeat.status, 200); assert.equal(JSON.stringify(heartbeat.body).includes("PRIVATE_PROVIDER_SENTINEL"), false);
     const readiness = await request("/v1/agent-runtime/readiness", { headers });
     assert.equal(readiness.status, 200);
@@ -4347,7 +4350,7 @@ test("execution recovery fences old leases and preserves an auditable same-attem
   await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id, relationType: "delivery" } });
   const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Recover same execution" } });
   const hostSlug = "recovery-fixture";
-  assert.equal((await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Recovery host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }) })).status, 200);
+  assert.equal((await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Recovery host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities }) })).status, 200);
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
   try {
     await prepareReadyFixture(owner.workspace.id, task.id, application.id, ownerAuth);
@@ -4429,7 +4432,7 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   const keyFixture = await ownerTicketFixture();
   await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...keyFixture.state().key } });
   const host = await prisma.agentHost.create({ data: { workspaceId, name: "Readonly test host", slug: `readonly-${randomUUID()}`,
-    platform: "win32", status: "online", metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities } });
+    platform: "win32", status: "online", metadata: validHostMetadata(), capabilities: protocol.requiredHostCapabilities } });
   const raw = randomUUID();
   await prisma.apiKey.create({ data: { workspaceId, name: "Synthetic bound Worker", keyHash: hashApiKey(raw),
     scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600_000),
@@ -4646,7 +4649,7 @@ test("expired unsigned coding spawn terminalization denies native authority and 
   const key = (await ownerTicketFixture()).state().key;
   await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...key } });
   const host = await prisma.agentHost.create({ data: { workspaceId, name: "Unsigned coding test host",
-    slug: `unsigned-${randomUUID()}`, platform: "win32", status: "online", metadata: validHostMetadata,
+    slug: `unsigned-${randomUUID()}`, platform: "win32", status: "online", metadata: validHostMetadata(),
     capabilities: protocol.requiredHostCapabilities } });
   const raw = randomUUID();
   await prisma.apiKey.create({ data: { workspaceId, name: "Synthetic bound Worker", keyHash: hashApiKey(raw),
@@ -4695,7 +4698,7 @@ test("expired unsigned coding spawn terminalization denies native authority and 
   assert.equal((await positive.post(positive.proof, auth)).status, 403);
   assert.equal((await positive.post({ ...positive.proof, hostSlug: `foreign-${randomUUID()}` })).status, 403);
   const foreignHost = await prisma.agentHost.create({ data: { workspaceId, name: "Foreign unsigned test host",
-    slug: `foreign-${randomUUID()}`, platform: "win32", status: "online", metadata: validHostMetadata,
+    slug: `foreign-${randomUUID()}`, platform: "win32", status: "online", metadata: validHostMetadata(),
     capabilities: protocol.requiredHostCapabilities } });
   const foreignRaw = randomUUID();
   await prisma.apiKey.create({ data: { workspaceId, name: "Foreign bound Worker", keyHash: hashApiKey(foreignRaw),
@@ -15189,4 +15192,148 @@ test("decision governance follows directional dependencies without sibling expan
  const source=await prisma.task.create({data:{workspaceId,projectId:project.id,title:"Temporary pending source"}}),pending=await decisionFixtureProposal({...f,task:source});assert.equal(pending.response.status,201,JSON.stringify(pending.response.body));
  await prisma.task.delete({where:{id:source.id}});
  const historical=await request(`/v1/decisions/${pending.id}/governance`,{headers:auth});assert.equal(historical.status,200,JSON.stringify(historical.body));assert.equal((historical.body as any).data.impact,null);assert.equal((historical.body as any).data.current,false);assert.equal((historical.body as any).data.selected.body.title,pending.body.title);
+});
+
+test("G14 skips blocked work and requires owner confirmed incident plus bound native stop ACK", { skip: process.platform !== "win32", timeout: 480000 }, async () => {
+  const fs = await import("node:fs/promises"), os = await import("node:os");
+  const { execFile } = await import("node:child_process"), { promisify } = await import("node:util");
+  const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
+  const writer = await loadESM(pathToFileURL(path.resolve("scripts/lib/agent-host-writer-lock.mjs")).href);
+  const native = await loadESM(pathToFileURL(path.resolve("scripts/lib/agent-host-windows-job.mjs")).href);
+  const preemption = await loadESM(pathToFileURL(path.resolve("scripts/lib/agent-host-preemption.mjs")).href);
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "roost-g14-api-"));
+  let writerLock: any, nativeHandle: any;
+  const owner = await registerOwner(`g14-${randomUUID()}@example.test`, "G14 disposable scheduler");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const { ownerTicketFixture } = await import("./owner-ticket-fixture");
+  const { hashApiKey } = await import("../auth/api-key");
+  const key = (await ownerTicketFixture()).state().key;
+  await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...key } });
+  const app = await prisma.application.create({ data: { workspaceId, name: "G14 fixture app", slug: randomUUID() } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "G14 fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: app.id, projectId: project.id } });
+  const blocked = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Blocked high task", priority: "high" } });
+  const prerequisite = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Unfinished prerequisite" } });
+  const incumbentTask = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Low priority incumbent", priority: "low" } });
+  const critical = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Critical response", priority: "critical" } });
+  await prisma.dependency.create({ data: { workspaceId, dependencyType: "depends_on", status: "active",
+    fromEntityType: "task", fromEntityId: blocked.id, toEntityType: "task", toEntityId: prerequisite.id } });
+  const host = await prisma.agentHost.create({ data: { workspaceId, name: "G14 bound host", slug: `g14-${randomUUID()}`,
+    platform: "win32", status: "online", lastSeenAt: new Date(), metadata: validHostMetadata(),
+    capabilities: protocol.requiredHostCapabilities, applicationSlugs: [app.slug] } });
+  const raw = randomUUID();
+  await prisma.apiKey.create({ data: { workspaceId, name: "G14 bound Worker", keyHash: hashApiKey(raw),
+    scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600000),
+    workerHostId: host.id, workerInstallationId: key.installationId, workerBindingEpoch: 1 } });
+  const worker = { "X-API-Key": raw, ...hostProtocolHeaders };
+  const post = (route: string, body: unknown, headers: Record<string, string> = auth) => request(route, { method: "POST", headers, body: JSON.stringify(body) });
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    writerLock = await writer.acquireWriterLock(temporary);
+    const prepared = [];
+    for (const task of [blocked, incumbentTask, critical]) prepared.push(await prepareReadyFixture(workspaceId, task.id, app.id, auth, false));
+    for (const [index, task] of [blocked, incumbentTask, critical].entries()) {
+      const route = `/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`;
+      const ready = await post(route, await submissionInput(route, prepared[index].input, auth));
+      assert.equal(ready.status, 200, JSON.stringify(ready.body));
+    }
+    const highQueue = await post("/v1/agent-runtime/executions", { taskId: blocked.id });
+    const lowQueue = await post("/v1/agent-runtime/executions", { taskId: incumbentTask.id });
+    assert.equal(highQueue.status, 201, JSON.stringify(highQueue.body));
+    assert.equal(lowQueue.status, 201, JSON.stringify(lowQueue.body));
+    await prisma.agentHost.update({ where: { id: host.id }, data: { lastSeenAt: new Date(), metadata: validHostMetadata() } });
+    const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: host.slug, sessionId: writerLock.sessionId }, worker);
+    assert.equal(claim.status, 200, JSON.stringify(claim.body));
+    const incumbent = (claim.body as any).data;
+    assert.equal(incumbent.id, (lowQueue.body as any).data.id, "unfinished prerequisite prevents a higher priority claim");
+    assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: (highQueue.body as any).data.id } })).status, "queued");
+    await writerLock.checkpoint(incumbent);
+    const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "running", sessionId: writerLock.sessionId,
+      packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: "c".repeat(64) };
+    await prisma.agentExecution.update({ where: { id: incumbent.id }, data: { status: "running", checkpointVersion: 2, checkpoint } });
+    const running = { ...incumbent, checkpoint, checkpointVersion: 2 };
+    await writerLock.checkpoint(running);
+    const incoming = await post("/v1/agent-runtime/executions", { taskId: critical.id });
+    assert.equal(incoming.status, 201, JSON.stringify(incoming.body));
+    const incident = await prisma.companyRecord.create({ data: { workspaceId, recordType: "technical_incident",
+      key: `critical-${randomUUID()}`, title: "Confirmed critical fixture incident", status: "active", priority: "critical" } });
+    await prisma.agentHost.update({ where: { id: host.id }, data: { lastSeenAt: new Date(), metadata: validHostMetadata() } });
+    const route = `/v1/agent-runtime/executions/${incumbent.id}/actions/request-critical-preemption`;
+    const command = { requestId: randomUUID(), incidentRecordId: incident.id, incidentRevision: incident.updatedAt.toISOString(), incomingExecutionId: (incoming.body as any).data.id,
+      expectedVersion: 2, reason: "Owner confirms urgent critical incident response" };
+    assert.equal((await post(route, command, worker)).status, 403, "Worker cannot confirm the incident");
+    const { createAuthToken } = await import("../auth/token");
+    const ownerRow = await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } });
+    const freshOwner = { Authorization: `Bearer ${createAuthToken({ workspaceId, userId: ownerRow.ownerUserId! })}` };
+    const staleIncident = await post(route, { ...command, incidentRevision: new Date(0).toISOString() }, freshOwner);
+    assert.equal(staleIncident.status, 409, "a changed incident cannot be confirmed from an older preview");
+    const requested = await post(route, command, freshOwner);
+    assert.equal(requested.status, 201, JSON.stringify(requested.body));
+    assert.equal((await prisma.criticalPreemption.findUniqueOrThrow({ where: { id: command.requestId } })).status, "requested");
+    const heartbeat = await post(`/v1/agent-runtime/executions/${incumbent.id}/heartbeat`, { leaseToken: incumbent.leaseToken }, worker);
+    assert.equal((heartbeat.body as any).error, "agent_execution_preemption_requested");
+    assert.equal((await post(`/v1/agent-runtime/executions/${incumbent.id}/actions/cancelled`, { leaseToken: incumbent.leaseToken }, worker)).status, 409);
+    assert.equal((await post(`/v1/agent-runtime/executions/${incumbent.id}/actions/fail`, { leaseToken: incumbent.leaseToken,
+      code: "generic", message: "Cannot bypass confirmed stop" }, worker)).status, 409);
+    const stop = { schemaVersion: "roost-preemption-stop-v1", kind: "windows_job", attempt: incumbent.id,
+      jobClosed: true, activeProcesses: 0, cleanup: true, terminationReason: "lease_lost" };
+    const ackRoute = `/v1/agent-runtime/executions/${incumbent.id}/actions/preemption-stopped`;
+    assert.equal((await post(ackRoute, { leaseToken: incumbent.leaseToken, expectedVersion: 1, writerLockDigest: "d".repeat(64), stop }, worker)).status, 409);
+    const exactStop = { leaseToken: incumbent.leaseToken, expectedVersion: 2, writerLockDigest: "d".repeat(64), stop };
+    assert.equal((await post(ackRoute, { ...exactStop, replayOnly: true }, worker)).status, 409,
+      "a restart replay cannot create a new stop fact");
+    await prisma.agentExecution.update({ where: { id: incumbent.id }, data: { contextInvalidatedAt: new Date(), contextInvalidation: { reason: "fixture_concurrent_invalidation" } } });
+    assert.equal((await post(`/v1/agent-runtime/executions/${incumbent.id}/actions/context-stopped`,
+      { leaseToken: incumbent.leaseToken }, worker)).status, 409,
+      "the competing context stop cannot move pending preemption to waiting_for_approval");
+    const fixture = path.join(temporary, "fixture.exe");
+    await promisify(execFile)(path.join(process.env.SystemRoot!, "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe"),
+      ["/nologo", "/target:exe", "/platform:x64", `/out:${fixture}`, path.resolve("scripts/fixtures/windows-job-tree.cs")],
+      { windowsHide: true, timeout: 30000 });
+    const artifact = await native.buildWindowsJobLauncher(temporary);
+    let treeOutput = "";
+    nativeHandle = await native.startWindowsJob(artifact, { executable: fixture, argv: ["tree"], cwd: temporary,
+      environment: { SystemRoot: process.env.SystemRoot }, input: "", attempt: incumbent.id, durationMs: 10000,
+      onData: (channel: string, bytes: Buffer) => { if (channel === "stdout") treeOutput += bytes.toString("utf8"); } });
+    for (let n = 0; n < 100 && (treeOutput.match(/PID:/g) || []).length < 3; n += 1)
+      await new Promise(resolve => setTimeout(resolve, 20));
+    assert.ok((treeOutput.match(/PID:/g) || []).length >= 3, "owned native process tree started");
+    nativeHandle.stop("lease_lost");
+    const receipt = await nativeHandle.completion;
+    assert.ok(native.isWindowsJobCleanupReceipt(receipt));
+    const originalWriterDigest = writer.writerRecoveryEvidence(writerLock).digest;
+    const ack = await preemption.confirmPreemptionStopped({ execution: running, writerLock, ownedTreeReceipt: receipt,
+      api: async (route: string, options: { method: string; body: string }) => {
+        const response = await request(route, { method: options.method, headers: worker, body: options.body });
+        if (response.status !== 200) throw Object.assign(new Error("g14_native_api_ack_refused"), { status: response.status });
+        return (response.body as any).data;
+      } });
+    assert.equal(ack.checkpointVersion, 3);
+    assert.equal(((await prisma.criticalPreemption.findUniqueOrThrow({ where: { id: command.requestId } })).stopReceipt as any)?.kind, "windows_job");
+    const replay = await post(ackRoute, { ...exactStop, replayOnly: true }, worker);
+    assert.equal(replay.status, 409, "a different Writer digest cannot replay the native ACK");
+    const exactReplay = await post(ackRoute, { ...exactStop, writerLockDigest: originalWriterDigest,
+      replayOnly: true }, worker);
+    assert.equal(exactReplay.status, 200, JSON.stringify(exactReplay.body));
+    assert.deepEqual((exactReplay.body as any).data, ack);
+    assert.notEqual(writer.writerRecoveryEvidence(writerLock).digest, originalWriterDigest);
+    await writerLock.release(); writerLock = null;
+    await preemption.retireConfirmedPreemptionIntent(temporary);
+    assert.equal((await post(ackRoute, { ...exactStop, writerLockDigest: "e".repeat(64), replayOnly: true }, worker)).status, 409);
+    assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: incumbent.id } })).status, "cancelled");
+    assert.equal((await prisma.criticalPreemption.findUniqueOrThrow({ where: { id: command.requestId } })).status, "stopped");
+    assert.equal((await post(`/v1/agent-runtime/executions/${incumbent.id}/actions/retry`, {}, auth)).status, 409,
+      "G12 continuation requires a changed plan and fresh Ready");
+    await prisma.agentHost.update({ where: { id: host.id }, data: { lastSeenAt: new Date(), metadata: validHostMetadata() } });
+    const next = await post("/v1/agent-runtime/executions/claim", { hostSlug: host.slug }, worker);
+    assert.equal(next.status, 200, JSON.stringify(next.body));
+    assert.equal((next.body as any).data.id, (incoming.body as any).data.id);
+  } finally {
+    nativeHandle?.stop(); await nativeHandle?.completion.catch(() => {});
+    await writerLock?.release();
+    const resolved = await fs.realpath(temporary);
+    assert.equal(path.dirname(resolved), await fs.realpath(os.tmpdir()));
+    await fs.rm(resolved, { recursive: true, force: false });
+    delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+  }
 });

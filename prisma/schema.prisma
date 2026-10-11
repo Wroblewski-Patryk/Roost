@@ -2172,6 +2172,8 @@ model AgentExecution {
   checkpointVersion Int                   @default(0) @map("checkpoint_version")
   metadata          Json                  @default("{}")
   events            AgentExecutionEvent[]
+  criticalPreemption CriticalPreemption? @relation("PreemptedExecution")
+  incomingPreemptions CriticalPreemption[] @relation("IncomingCriticalExecution")
   createdAt         DateTime              @default(now()) @map("created_at")
   updatedAt         DateTime              @updatedAt @map("updated_at")
 
@@ -3451,6 +3453,35 @@ model TaskCapabilityUse {
   createdAt DateTime @default(now()) @map("created_at")
   @@unique([workspaceId, requestId])
   @@map("task_capability_uses")
+}
+
+// An owner confirmation is bound to one incident, one Ready critical execution,
+// and one incumbent. The stop acknowledgment is kept even after cancellation.
+model CriticalPreemption {
+  id                   String @id @default(uuid()) @db.Uuid
+  workspaceId          String @map("workspace_id") @db.Uuid
+  incidentRecordId     String @map("incident_record_id") @db.Uuid
+  incidentRevision     DateTime @map("incident_revision")
+  incidentDigest       String @map("incident_digest")
+  criticalTaskId       String @map("critical_task_id") @db.Uuid
+  incomingExecutionId  String @map("incoming_execution_id") @db.Uuid
+  incomingExecution    AgentExecution @relation("IncomingCriticalExecution", fields: [incomingExecutionId], references: [id], onDelete: Restrict)
+  incumbentExecutionId String @unique @map("incumbent_execution_id") @db.Uuid
+  incumbentExecution   AgentExecution @relation("PreemptedExecution", fields: [incumbentExecutionId], references: [id], onDelete: Restrict)
+  hostId               String @map("host_id") @db.Uuid
+  ownerUserId          String @map("owner_user_id") @db.Uuid
+  expectedVersion      Int @map("expected_version")
+  reason               String
+  status               String @default("requested")
+  stopReceipt          Json? @map("stop_receipt")
+  stoppedCheckpoint    Json? @map("stopped_checkpoint")
+  stoppedVersion       Int? @map("stopped_version")
+  requestedAt          DateTime @default(now()) @map("requested_at")
+  stoppedAt            DateTime? @map("stopped_at")
+
+  @@index([workspaceId, incomingExecutionId])
+  @@index([workspaceId, status, requestedAt])
+  @@map("critical_preemptions")
 }
 
 // G13 company-task proposals are deliberately separate from application Findings.

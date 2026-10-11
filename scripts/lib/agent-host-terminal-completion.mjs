@@ -45,6 +45,10 @@ async function dpapi(bytes,entropy,operation) {
     child.stdin.on('error',()=>{if(!closed)reject(uncertain('dpapi_failed'));});child.stdin.end(JSON.stringify({value:bytes.toString('base64'),entropy:entropy.toString('base64')}));
   });
 }
+// The preemption recovery journal also needs a restart-safe, account-bound
+// envelope. Keep the fixed DPAPI program and its stdin-only secret transport.
+export const protectCurrentUserData = (bytes, entropy) => dpapi(bytes, entropy, 'Protect');
+export const unprotectCurrentUserData = (bytes, entropy) => dpapi(bytes, entropy, 'Unprotect');
 function immutablePayload(payload,extraSecrets) {
   const wire=JSON.stringify(payload);assert(Buffer.byteLength(wire)<=maximumBytes,'completion_payload_invalid');
   const transported=hostTransport(wire,extraSecrets);

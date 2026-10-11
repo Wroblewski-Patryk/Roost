@@ -15,6 +15,10 @@ const pause = () => new Promise(resolve => setTimeout(resolve,100));
 
 export function registerFixedPublicTests(h: any) {
   test("fixed synthetic public API Worker E2E", {skip:process.platform!=="win32",timeout:180000},async t=>{
+    // This native application fixture uses measured host capacity. Keep a
+    // reserve for the database/build processes; a resource refusal is the
+    // scheduler's intended behavior on a constrained shared test laptop.
+    if (os.freemem() < 6 * 1024 ** 3) { t.skip("native host lacks application admission memory plus test reserve"); return; }
     h.restoreAdmission(); // Real production admission; the legacy API fixture mock is disabled.
     t.after(()=>h.restoreLegacyAdmission());
     const previous = process.env.ROOST_CODEX_EXECUTION_ENABLED;

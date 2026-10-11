@@ -3,6 +3,7 @@ import { currentNativeProcessIdentity, observeWindowsProcessIdentity, recordedPr
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { readFileSync, lstatSync, existsSync, openSync, closeSync, ftruncateSync, writeSync, fsyncSync, fstatSync } from "node:fs";
 import { qualifyReleaseWriterReclaim } from "./agent-host-release-writer-recovery.mjs";
 import { nativeDigest, physicalIdentity } from "./agent-host-native-footprint.mjs";
@@ -38,6 +39,7 @@ export function assertWriterLock(lock) {
 export const writerStateDirectory = "C:\\ProgramData\\Roost";
 export const writerLockFilename = "agent-host-writer.lock";
 export const recoveryLockFilename = "agent-host-recovery.lock";
+export const preemptionIntentFilename = "preemption-stop-intent.json";
 
 function ownerIsGone(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
@@ -260,6 +262,52 @@ export function localCheckpoint(execution) {
     checkpointVersion: execution?.checkpointVersion, stage: checkpoint?.stage, sessionId: checkpoint?.sessionId,
     packetRevision: checkpoint?.packetRevision, workspaceDigest: checkpoint?.workspaceDigest, contextRevision: checkpoint?.contextRevision,
     ...(checkpoint?.branch ? { branch: checkpoint.branch } : {}), ...(checkpoint?.headCommit ? { headCommit: checkpoint.headCommit } : {}) };
+}
+
+// A restarted Worker may retire an orphaned Writer only after the server has
+// returned the exact already-stopped ACK via replayOnly. The sidecar is local
+// evidence of what the live process sent, never native proof by itself.
+export async function reconcilePreemptionWriter(directory, intentBytes, intent, ack) {
+  const gatePath = path.join(directory, recoveryLockFilename);
+  let gate;
+  try { gate = await open(gatePath, "wx", 0o600); }
+  catch { throw new Error("agent_preemption_recovery_unproven"); }
+  try {
+    const intentPath = path.join(directory, preemptionIntentFilename);
+    const intentStat = await lstat(intentPath, { bigint: true });
+    if (!intentStat.isFile() || intentStat.isSymbolicLink() || intentStat.nlink !== 1n
+        || intentStat.size < 1n || intentStat.size > 16384n
+        || !(await readFile(intentPath)).equals(intentBytes)) throw new Error("agent_preemption_recovery_unproven");
+    const lockPath = path.join(directory, writerLockFilename);
+    const stat = await lstat(lockPath, { bigint: true }).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+    if (!stat) { await unlink(intentPath); return; }
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1n || stat.size < 1n || stat.size > 65536n
+        || `${stat.dev}:${stat.ino}` !== intent.writerIdentity) throw new Error("agent_preemption_recovery_unproven");
+    const originalBytes = await readFile(lockPath);
+    let current; try { current = JSON.parse(originalBytes); } catch { throw new Error("agent_preemption_recovery_unproven"); }
+    const owner = intent.writerRecord;
+    if (current.ownerPid !== owner?.ownerPid || current.ownerNonce !== owner?.ownerNonce
+        || current.createdAt !== owner?.createdAt
+        || JSON.stringify(current.ownerProcess ?? null) !== JSON.stringify(owner?.ownerProcess ?? null)
+        || !recordedOwnerIsGone(current)) throw new Error("agent_preemption_recovery_unproven");
+    const acknowledged = localCheckpoint({ ...intent.execution, checkpoint: ack.checkpoint, checkpointVersion: ack.checkpointVersion });
+    const atOriginal = createHash("sha256").update(originalBytes).digest("hex") === intent.writerLockDigest
+      && JSON.stringify(current.checkpoint) === JSON.stringify(intent.originalCheckpoint);
+    const atAcknowledged = isDeepStrictEqual(current.checkpoint, acknowledged);
+    if (!atOriginal && !atAcknowledged) throw new Error("agent_preemption_recovery_unproven");
+    if (!(await readFile(intentPath)).equals(intentBytes) || !(await readFile(lockPath)).equals(originalBytes))
+      throw new Error("agent_preemption_recovery_unproven");
+    if (atOriginal) {
+      current.checkpoint = guardHostContent(acknowledged).value;
+      const handle = await open(lockPath, "r+");
+      try { await handle.truncate(0); await handle.writeFile(JSON.stringify(current) + "\n"); await handle.sync(); }
+      finally { await handle.close(); }
+      if (!isDeepStrictEqual(JSON.parse(await readFile(lockPath, "utf8")).checkpoint, acknowledged))
+        throw new Error("agent_preemption_recovery_unproven");
+    }
+    await unlink(lockPath);
+    await unlink(intentPath);
+  } finally { await gate.close(); await unlink(gatePath); }
 }
 
 async function reclaimSealedRelease(directory, candidate) {

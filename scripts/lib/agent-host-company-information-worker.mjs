@@ -10,6 +10,7 @@ import { createExecutionDuration } from './agent-host-execution-duration.mjs';
 import { fetchExecutionContext } from './agent-host-execution-context.mjs';
 import { runCompanyInformationRuntime } from './agent-host-company-information-runtime.mjs';
 import { isWindowsJobCleanupReceipt } from './agent-host-windows-job.mjs';
+import { confirmPreemptionStopped } from './agent-host-preemption.mjs';
 
 const id = z.string().uuid();
 const anchorSchema = z.object({ schemaVersion: z.literal('roost-trusted-provider-pilot-v1'), installationId: id, workspaceId: id,
@@ -70,6 +71,14 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
     if (running) {
       await running.then(result => { owned ??= result.ownedTreeReceipt; }, stopped => { owned ??= stopped.details?.ownedTreeReceipt; });
       if (!isWindowsJobCleanupReceipt(owned)) error.leaseLost = true;
+    }
+    if (lease.failure?.preemptionRequested) {
+      try {
+        await confirmPreemptionStopped({ execution: claimed, writerLock, ownedTreeReceipt: owned, api });
+        return { preemptionStopped: true };
+      } catch (stopOrAckError) {
+        throw Object.assign(stopOrAckError, { leaseLost: true, preemptionRequested: true });
+      }
     }
     // A late/uncertain completion is never replayed or converted into success.
     // Preserve the real native closure locally; the existing lease/recovery

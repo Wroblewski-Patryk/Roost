@@ -42,6 +42,9 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
 
   function reject(error) {
     if (error.contextStop) lose(error);
+    else if (error.status === 409 && error.body?.error === "agent_execution_preemption_requested") {
+      lose(Object.assign(new Error("agent_execution_preemption_requested"), { preemptionRequested: true, retryable: false }));
+    }
     else if (error.body?.error === "agent_execution_cancel_requested") lose("agent_execution_cancel_requested");
     else if (error.status >= 400 && error.status < 500 && error.status !== 429) lose("agent_execution_lease_rejected");
   }
