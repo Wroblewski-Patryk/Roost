@@ -13,7 +13,8 @@ const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
 
 test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences',
-  { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000 : 150000 }, async t => {
+  { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000
+    : process.env.ROOST_G12_CONTINUATION === '1' ? 300000 : 150000 }, async t => {
   const server = createApp().listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -644,6 +645,19 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         leaseToken: claimed.body.data.leaseToken, code: 'synthetic_provider_unavailable',
         message: 'Synthetic terminal failure before any provider request', retryable: true, details: {} });
       assert.equal(failedAttempt.status, 200, JSON.stringify(failedAttempt.body));
+      const stoppedContinuation = await request(`${root}/execution-continuation`, token);
+      assert.equal(stoppedContinuation.status, 200);
+      assert.equal(stoppedContinuation.body.data.previousExecution.id, runtimeExecutionId);
+      assert.equal(stoppedContinuation.body.data.eligible, false);
+      assert.equal(stoppedContinuation.body.data.reason, 'execution_continuation_ready_stale');
+      assert.equal(stoppedContinuation.body.data.previousExecution.usage.inputTokens, null);
+      assert.equal(stoppedContinuation.body.data.previousExecution.usage.cost, null);
+      process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+      let repeatedStart;
+      try { repeatedStart = await request(`${root}/actions/start-information`, token, { requestId: randomUUID() }); }
+      finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
+      assert.equal(repeatedStart.status, 409);
+      assert.equal(repeatedStart.body.error, 'execution_continuation_required');
       process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
       let forbiddenRetry;
       try { forbiddenRetry = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/retry`, memberToken, {}); }
@@ -703,6 +717,132 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
           ready: true, sourceTaskStatus: finalTask.status, providerInvoked: false, newExecutionCount: 0 })}\n`);
         delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED;
         delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+        return;
+      }
+      if (process.env.ROOST_G12_CONTINUATION === '1') {
+        // No provider runs in this mode. The failed, claimed attempt above is
+        // retained while owner authority is rebuilt around a changed plan.
+        const revised = structuredClone(runtimeContract);
+        revised.objective.outcome = 'Diagnose the unavailable provider and return only a sourced preparation summary after a new admission';
+        revised.singleTask.problems[0].outcome = revised.objective.outcome;
+        revised.acceptance.criteria = ['Use the selected current source and explicitly report the provider limitation'];
+        revised.budgets.maxDurationSeconds = 360;
+        const revisedScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(),
+          expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion,
+          scopeKind: 'company_information', applicationId: null, contract: revised,
+          prompt: 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+        assert.equal(revisedScope.status, 200, JSON.stringify(revisedScope.body));
+        const revisedAssessment = await request(`${root}/risk/assessments`, token, { ...assessmentBody,
+          requestId: randomUUID(), expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion });
+        assert.equal(revisedAssessment.status, 200, JSON.stringify(revisedAssessment.body));
+        process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+        let nextCandidate;
+        try { nextCandidate = await request(`${root}/information-approval-candidate`, token); }
+        finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
+        assert.equal(nextCandidate.status, 200, JSON.stringify(nextCandidate.body));
+        assert.equal(nextCandidate.body.data.previousDecision?.id, decisionId);
+        assert.equal(nextCandidate.body.data.maxDurationSeconds, 360);
+        const nextDecisionText = 'Run one revised tool-free informational task after failed attempt';
+        const governance = await request('/v1/decisions/governance', token);
+        const nextProposal = await request('/v1/decisions/governance/proposals', token, { requestId: randomUUID(),
+          expectedVersion: governance.body.data.expectedVersion, title: 'Revised company information runtime',
+          context: 'Prior attempt ended before any provider request', decision: nextDecisionText,
+          rationale: 'Independent diagnosis changed the task plan and set a fresh one-attempt budget',
+          consequences: 'One bounded continuation after owner approval; no repository or native tools',
+          scopeReason: 'Only this informational Task', scope: [{ type: 'task', id: runtimeTask.id }],
+          supersedesId: decisionId, conflicts: [{ kind: 'replaces', oldProvision: 'Run one tool-free informational task',
+            newProvision: nextDecisionText, explanation: 'The first attempt failed and requires revised authority' }],
+          managedRuntimeApproval: nextCandidate.body.data.approval });
+        assert.equal(nextProposal.status, 201, JSON.stringify(nextProposal.body));
+        const nextDecisionId = nextProposal.body.data.record.id;
+        const nextAdmissionRoot = `${root}/risk-admission`;
+        let nextAdmission = await request(nextAdmissionRoot, token);
+        const nextAdmissionScope = await request(`${nextAdmissionRoot}/scope`, token, { ...scopeBody,
+          requestId: randomUUID(), expectedVersion: nextAdmission.body.data.expectedVersion,
+          operations: ['decision_supersede', 'runtime_execute'] });
+        assert.equal(nextAdmissionScope.status, 200, JSON.stringify(nextAdmissionScope.body));
+        let nextDecision = await request(`/v1/decisions/${nextDecisionId}/governance`, token);
+        const nextImpact = await request(`/v1/decisions/${nextDecisionId}/governance/actions`, token, {
+          requestId: randomUUID(), expectedVersion: nextDecision.body.data.expectedVersion, action: 'review_impact' });
+        assert.equal(nextImpact.status, 201, JSON.stringify(nextImpact.body));
+        nextAdmission = await request(nextAdmissionRoot, token);
+        const nextEvidence = await request(`${nextAdmissionRoot}/evidence`, token, { requestId: randomUUID(),
+          expectedVersion: nextAdmission.body.data.expectedVersion, operation: 'decision_supersede', gate: 'procedure',
+          verdict: 'passed', evidence, rationale: 'Changed plan and fresh budget checked against selected source',
+          validation: 'Compared prior failure with revised one-attempt scope', observedResult: 'Narrow continuation supported' });
+        assert.equal(nextEvidence.status, 200, JSON.stringify(nextEvidence.body));
+        nextDecision = await request(`/v1/decisions/${nextDecisionId}/governance`, token);
+        const nextAccepted = await request(`/v1/decisions/${nextDecisionId}/governance/actions`, token, {
+          requestId: randomUUID(), expectedVersion: nextDecision.body.data.expectedVersion, action: 'accept',
+          previewId: nextDecision.body.data.previews[0].id });
+        assert.equal(nextAccepted.status, 201, JSON.stringify(nextAccepted.body));
+        const acceptedNextDecision = await prisma.decision.findUniqueOrThrow({ where: { id: nextDecisionId } });
+        assert.equal(acceptedNextDecision.status, 'accepted');
+        assert.equal((await approveTaskSource('decision', acceptedNextDecision, runtimeTask.id, token)).status, 201);
+        revised.decisions = { items: [ref(acceptedNextDecision)], noneReason: null };
+        const finalScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(),
+          expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion,
+          scopeKind: 'company_information', applicationId: null, contract: revised,
+          prompt: null, baseBranch: null, releaseSet: null });
+        assert.equal(finalScope.status, 200, JSON.stringify(finalScope.body));
+        const finalAssessment = await request(`${root}/risk/assessments`, token, { ...assessmentBody,
+          requestId: randomUUID(), expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion });
+        assert.equal(finalAssessment.status, 200, JSON.stringify(finalAssessment.body));
+        nextAdmission = await request(nextAdmissionRoot, token);
+        const finalAdmissionScope = await request(`${nextAdmissionRoot}/scope`, token, { ...scopeBody,
+          requestId: randomUUID(), expectedVersion: nextAdmission.body.data.expectedVersion,
+          operations: ['runtime_execute'] });
+        assert.equal(finalAdmissionScope.status, 200, JSON.stringify(finalAdmissionScope.body));
+        nextAdmission = await request(nextAdmissionRoot, token);
+        const finalEvidence = await request(`${nextAdmissionRoot}/evidence`, token, { requestId: randomUUID(),
+          expectedVersion: nextAdmission.body.data.expectedVersion, operation: 'runtime_execute', gate: 'procedure',
+          verdict: 'passed', evidence, rationale: 'Exact revised task and selected source checked',
+          validation: 'Fresh bounded continuation requires separate owner event', observedResult: 'Runtime scope supported' });
+        assert.equal(finalEvidence.status, 200, JSON.stringify(finalEvidence.body));
+        const readiness = await request(`${root}/execution-readiness?version=1&executionClass=roost-company-information-runtime-v1`, token);
+        const nextReady = await request(`${root}/actions/submit-for-execution`, token, { requestId: randomUUID(),
+          expectedVersion: readiness.body.data.submissionVersion, applicationId: null, contract: revised });
+        assert.equal(nextReady.status, 200, JSON.stringify(nextReady.body));
+        assert.notEqual(nextReady.body.data.readiness.pinId, persisted.metadata.readyContextPin.pinId);
+        const continuationView = await request(`${root}/execution-continuation`, token);
+        assert.equal(continuationView.status, 200, JSON.stringify(continuationView.body));
+        assert.equal(continuationView.body.data.previousExecution.id, runtimeExecutionId);
+        assert.equal(continuationView.body.data.eligible, true, JSON.stringify(continuationView.body));
+        assert.equal(continuationView.body.data.continuation, null);
+        const continuationBody = { requestId: randomUUID(), previousExecutionId: runtimeExecutionId,
+          previousMaterialDigest: continuationView.body.data.previousExecution.materialDigest,
+          readyPinId: continuationView.body.data.readyPinId, readyRevision: continuationView.body.data.readyRevision,
+          diagnosis: 'The previous attempt ended before a provider request; its plan did not handle the unavailable provider.',
+          changedPlan: 'Require an explicit provider limitation and sourced summary within the revised one-attempt budget.' };
+        const approved = await request(`${root}/execution-continuation`, token, continuationBody);
+        assert.equal(approved.status, 201, JSON.stringify(approved.body));
+        const approvalEventId = approved.body.data.continuation.eventId;
+        const event = await prisma.event.findUniqueOrThrow({ where: { id: approvalEventId } });
+        assert.equal(event.type, 'task_execution_continuation_approved');
+        assert.equal(event.resourceId, runtimeExecutionId);
+        assert.equal(event.actorType, 'user');
+        assert.equal(event.payload.previousMaterialDigest, continuationBody.previousMaterialDigest);
+        assert.equal(event.payload.readyPinId, continuationBody.readyPinId);
+        const confirmed = await request(`${root}/execution-continuation`, token);
+        assert.equal(confirmed.body.data.continuation.eventId, approvalEventId);
+        process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+        let nextStart;
+        try { nextStart = await request(`${root}/actions/start-information`, token, { requestId: randomUUID() }); }
+        finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
+        assert.equal(nextStart.status, 201, JSON.stringify(nextStart.body));
+        const newExecution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: nextStart.body.data.execution.id } });
+        assert.notEqual(newExecution.id, runtimeExecutionId);
+        assert.equal(newExecution.status, 'queued'); assert.equal(newExecution.attempt, 0);
+        assert.equal(newExecution.metadata.readyContextPin.continuationEventId, approvalEventId);
+        assert.equal(newExecution.metadata.readyContextPin.runtimeDecisionId, nextDecisionId);
+        assert.equal(newExecution.metadata.executionContract.budgets.maxAttempts, 1);
+        assert.equal(newExecution.metadata.executionContract.budgets.maxDurationSeconds, 360);
+        assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 2);
+        const original = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
+        assert.equal(original.status, 'failed'); assert.equal(original.finalResponse, null);
+        process.stdout.write(`G12 company continuation ${JSON.stringify({ previousExecutionId: runtimeExecutionId,
+          newExecutionId: newExecution.id, approvalEventId, newDecisionId: nextDecisionId,
+          newBudgetSeconds: 360, providerInvoked: false })}\n`);
         return;
       }
       await prisma.companyRecord.update({ where: { id: currentSource.id }, data: { description: 'Synthetic source changed after claim.' } });

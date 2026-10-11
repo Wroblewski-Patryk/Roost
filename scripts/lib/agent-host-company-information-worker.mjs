@@ -75,6 +75,7 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
     // Preserve the real native closure locally; the existing lease/recovery
     // mechanism remains responsible when reporting itself is unavailable.
     const code = error.durationLimit ? 'agent_execution_duration_exceeded' : error.leaseLost ? 'information_lease_lost'
+      : error.message === 'hermes_quiet_empty_result' ? 'hermes_quiet_empty_result'
       : error.details?.reason ?? 'information_attempt_stopped';
     await api(`/v1/agent-runtime/executions/${claimed.id}/actions/fail`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken,
       code, message: 'Information attempt stopped. No automatic retry; owner diagnosis, changed plan and new budget are required.', retryable: false,

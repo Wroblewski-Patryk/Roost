@@ -1,5 +1,6 @@
 import type { AgentExecution, Prisma } from "@prisma/client";
 import { inspectReady, lockReadyTask } from "./task-execution-readiness";
+import { assertBoundExecutionContinuation } from "./task-execution-continuation";
 
 export const contextStopCode = "agent_execution_context_invalidated";
 
@@ -8,7 +9,7 @@ export async function guardExecutionContext(db: Prisma.TransactionClient, execut
   const current = await db.agentExecution.findUnique({ where: { id: execution.id } });
   if (current?.contextInvalidatedAt) return { error: contextStopCode };
   const pin = task?.executionReadiness as { status?: string; pinId?: string; revision?: string } | null;
-  const bound = (execution.metadata as { readyContextPin?: { pinId?: string; revision?: string } }).readyContextPin;
+  const bound = (execution.metadata as { readyContextPin?: { pinId?: string; revision?: string; continuationEventId?: string | null } }).readyContextPin;
   if (revalidate || pin?.status !== "ready" || pin?.pinId !== bound?.pinId || pin?.revision !== bound?.revision) {
     const ready = await inspectReady(db, execution.workspaceId, execution.taskId, execution);
     if (ready.error) {
@@ -16,6 +17,8 @@ export async function guardExecutionContext(db: Prisma.TransactionClient, execut
       return { error: fenced?.contextInvalidatedAt ? contextStopCode : ready.error };
     }
   }
+  const continuation = await assertBoundExecutionContinuation(db, current ?? execution, pin);
+  if (continuation.error) return { error: continuation.error };
   return {};
 }
 

@@ -17,6 +17,7 @@ const admin = new PrismaClient({ datasources: { db: { url: `postgresql://company
 const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) => /^(PATH|PATHEXT|SYSTEMROOT|COMSPEC|TEMP|TMP|APPDATA|LOCALAPPDATA)$/i.test(name)));
 Object.assign(environment, { DATABASE_URL: `postgresql://${role}:${password}@127.0.0.1:${port}/${database}?schema=public`, NODE_ENV: 'test', COMPANYCORE_SKIP_DOTENV: '1', DOTENV_CONFIG_QUIET: 'true', GOOGLE_OAUTH_CLIENT_ID: 'dev-fixture-client-id', GOOGLE_OAUTH_CLIENT_SECRET: 'dev-fixture-client-secret' });
 if (process.env.ROOST_G11_REVIEW_ACTION) environment.ROOST_G11_REVIEW_ACTION = process.env.ROOST_G11_REVIEW_ACTION;
+if (process.env.ROOST_G12_CONTINUATION === '1') environment.ROOST_G12_CONTINUATION = '1';
 if (process.env.ROOST_G6_NATIVE_RUNTIME === '1' && process.env.ROOST_G7_REVIEW_ONLY !== '1') {
   if (!process.env.ROOST_G6_NATIVE_HOST_CONFIG) throw Error('native_host_config_required');
   environment.ROOST_G6_NATIVE_RUNTIME = '1';
@@ -82,7 +83,7 @@ try {
     }
   } else {
     const proof = run(process.execPath, ['--test', 'scripts/company-information-native.test.mjs'], environment,
-      environment.ROOST_G6_NATIVE_RUNTIME === '1' ? 600000 : 180000);
+      environment.ROOST_G6_NATIVE_RUNTIME === '1' ? 600000 : environment.ROOST_G12_CONTINUATION === '1' ? 360000 : 180000);
     process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
     if (proof.status !== 0) throw new Error();
   }

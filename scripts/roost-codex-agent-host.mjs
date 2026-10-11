@@ -840,10 +840,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
 
 async function reportFailure(execution, error, writerLock) {
   if (!execution?.leaseToken || error.leaseLost || error.terminalCompletionUncertain) return;
+  const code = String(error.message || "agent_host_failed").split(":")[0];
+  const details = { ...(error.details || {}),
+    ...(code === "hermes_quiet_empty_result" ? { nativeCleanupProven: isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt) } : {}) };
   return api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
     method: "POST",
     ...(error.redaction ? { headers: { "X-Roost-Redaction-Notice": "1" } } : {}),
-    body: JSON.stringify({ leaseToken: execution.leaseToken, code: String(error.message || "agent_host_failed").split(":")[0], message: String(error.publicMessage || error.message || "Agent Host failed."), retryable: error.retryable ?? true, details: error.details || {} })
+    body: JSON.stringify({ leaseToken: execution.leaseToken, code, message: String(error.publicMessage || error.message || "Agent Host failed."), retryable: error.retryable ?? true, details })
   }).then(() => true).catch(async failure => {
     retainWriterLock = true; stopping = true;
     // execute() has already confirmed tree termination in its finally block.

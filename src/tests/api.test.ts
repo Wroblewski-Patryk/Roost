@@ -2730,6 +2730,10 @@ test("native review records decisions and manager returns without implementation
   await t.test("agent credential binds exact verifier and manager; decisions audit agent without owner attribution", async () => {
     const f = await fixture(true), rejection = await f.rejection();
     assert.equal((await f.view()).data.canReview, true);
+    const continuationRoute = `${f.root}/execution-continuation`;
+    const pendingReview = await request(continuationRoute, { headers: f.auth });
+    assert.equal(pendingReview.status, 200);
+    assert.equal((pendingReview.body as any).data.reason, "execution_review_required");
     const discovery=(await request("/v1/connection",{headers:f.reviewerAuth})).body as any;
     assert.deepEqual(discovery.data.auth.principal,{kind:"agent",id:f.verifier.id});
     assert.equal(discovery.data.auth.userId,undefined);assert.equal(discovery.data.auth.credentialPrefix,f.verifierKey.keyPrefix);
@@ -2743,10 +2747,17 @@ test("native review records decisions and manager returns without implementation
     assert.equal(review.actorUserId, null); assert.equal(review.actorAgentId, f.verifier.id); assert.equal(review.actorCredentialId, f.verifierKey.id);
     const ev = await prisma.event.findFirstOrThrow({ where: { resourceId: review.id } });
     assert.equal(ev.actorType, "agent"); assert.equal(ev.actorId, f.verifier.id); assert.ok(!JSON.stringify(ev).includes(f.verifierKey.key));
+    const beforeManagerReturn = await request(continuationRoute, { headers: f.auth });
+    assert.equal(beforeManagerReturn.status, 200);
+    assert.equal((beforeManagerReturn.body as any).data.eligible, false);
+    assert.equal((beforeManagerReturn.body as any).data.reason, "execution_review_manager_action_required");
     const action = await f.action();
     assert.equal((await f.post(f.root+"/actions/review-return", action, f.reviewerAuth)).status, 403);
     const acted = await f.post(f.root+"/actions/review-return", action, managerAuth); assert.equal(acted.status, 200, JSON.stringify(acted.body));
     assert.equal((acted.body as any).data.action.actorUserId, null); assert.equal((acted.body as any).data.action.actorAgentId, f.manager.id);
+    const afterManagerReturn = await request(continuationRoute, { headers: f.auth });
+    assert.equal(afterManagerReturn.status, 200);
+    assert.equal((afterManagerReturn.body as any).data.reason, "execution_continuation_ready_required");
     const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
     const code = "const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{method:'POST',headers:{'Content-Type':'application/json',...x.auth},body:JSON.stringify(x.body)});const data=await r.json();console.log(JSON.stringify({status:r.status,replayed:data.data?.replayed}));server.close(()=>process.exit());});";
     const restarted=await promisify(execFile)(process.execPath,["-e",code],{env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:f.root+"/actions/review-return",auth:managerAuth,body:action})}});
@@ -2982,6 +2993,9 @@ test("native review records decisions and manager returns without implementation
     await assert.rejects(prisma.taskReviewDecision.create({ data: { workspaceId: f.workspaceId, taskId: f.task.id, executionId: f.execution.id, requestId: randomUUID(), requestHash: "a".repeat(64), materialVersion: "0".repeat(64), actorUserId: f.user.id, verifierId: f.verifier.id, managerId: f.input.contract.taskRoles.accountableManager.id, decision: "approve", evidence: body, snapshot: { result: material } } }), /task_review_material_version_invalid/);
     const r = await f.post(`${f.root}/actions/review`, body, f.reviewerAuth); assert.equal(r.status, 200, JSON.stringify(r.body));
     assert.deepEqual((await f.post(`${f.root}/actions/review`, body, f.reviewerAuth)).body, { data: { ...(r.body as any).data, replayed: true } });
+    const acceptedContinuation = await request(`${f.root}/execution-continuation`, { headers: f.auth });
+    assert.equal(acceptedContinuation.status, 200);
+    assert.equal((acceptedContinuation.body as any).data.reason, "execution_result_accepted");
     const after = await prisma.task.findUniqueOrThrow({ where: { id: f.task.id } }); assert.equal(after.status, before.status); assert.equal(after.assignedWorkforceEntityId, before.assignedWorkforceEntityId); assert.deepEqual(after.executionReadiness, before.executionReadiness);
     const id = (r.body as any).data.decision.id;
     await assert.rejects(prisma.taskReviewDecision.update({ where: { id }, data: { decision: "reject" } }), /task_review_append_only/);
@@ -3660,8 +3674,10 @@ test("active context stop fences late reports, checkpoints, recovery and complet
       const resubmitted = await post(`/v1/agent-runtime/tasks/${f.task.id}/actions/submit-for-execution`, f.input, auth);
       assert.equal(resubmitted.status, 200, JSON.stringify(resubmitted.body));
       const fresh = await post("/v1/agent-runtime/executions", { taskId: f.task.id }, auth);
-      assert.equal(fresh.status, 201); assert.notEqual((fresh.body as any).data.id, stopped.id);
-      assert.notEqual((fresh.body as any).data.metadata.readyContextPin.pinId, (stopped.metadata as any).readyContextPin.pinId);
+      assert.equal(fresh.status, 409);
+      assert.equal((fresh.body as any).error, "execution_continuation_required");
+      assert.notEqual(((await prisma.task.findUniqueOrThrow({ where: { id: f.task.id } })).executionReadiness as any).pinId,
+        (stopped.metadata as any).readyContextPin.pinId);
       assert.equal((await f.post("/actions/complete", { summary: "Old token after new acceptance" })).status, 409);
     });
     await t.test("stop acknowledgment after lease expiry is allowed but cannot renew authority", async () => {
@@ -3778,21 +3794,165 @@ test("accepted output budgets remain pinned and budget failures cannot retry or 
   assert.ok((registered.body as { data: { runtime: { executionUnavailableReasons: string[] } } }).data.runtime.executionUnavailableReasons.includes("output_token_limit_unsupported"));
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
   try {
-    for (const code of ["agent_execution_output_budget_invalid", "agent_execution_output_budget_exceeded", "agent_execution_output_budget_unsupported"]) {
-      assert.equal((await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id })).status, 201);
+    for (const [index, code] of ["agent_execution_output_budget_invalid", "agent_execution_output_budget_exceeded", "agent_execution_output_budget_unsupported"].entries()) {
+      const caseTask = index === 0 ? task : await prisma.task.create({ data: { workspaceId: owner.workspace.id,
+        projectId: project.id, title: `Bound synthetic execution ${index}` } });
+      const caseFixture = index === 0 ? f : await prepareReadyFixture(owner.workspace.id, caseTask.id, application.id, auth);
+      assert.equal((await post("/v1/agent-runtime/executions", { taskId: caseTask.id, applicationId: application.id })).status, 201);
       const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: "output-host" });
       assert.equal(claim.status, 200, JSON.stringify(claim.body));
       const execution = (claim.body as { data: { id: string; leaseToken: string } }).data;
       assert.equal((await post(`/v1/agent-runtime/executions/${execution.id}/heartbeat`, { leaseToken: execution.leaseToken, metadata: { executionContract: { budgets: { maxOutputTokens: 99999 } } } })).status, 200);
       const stored = await prisma.agentExecution.findUniqueOrThrow({ where: { id: execution.id } });
-      assert.equal((stored.metadata as { executionContract: { budgets: { maxOutputTokens: number } } }).executionContract.budgets.maxOutputTokens, f.input.contract.budgets.maxOutputTokens);
+      assert.equal((stored.metadata as { executionContract: { budgets: { maxOutputTokens: number } } }).executionContract.budgets.maxOutputTokens, caseFixture.input.contract.budgets.maxOutputTokens);
       const failed = await post(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, { leaseToken: execution.leaseToken, code, message: "Synthetic budget diagnostic", retryable: true });
       assert.equal(failed.status, 200);
       assert.equal((failed.body as { data: { errorState: { retryable: boolean } } }).data.errorState.retryable, false);
       assert.equal((await post(`/v1/agent-runtime/executions/${execution.id}/actions/complete`, { leaseToken: execution.leaseToken, summary: "SYNTHETIC_SECRET_LATE_SUCCESS" })).status, 409);
       const retry = await post(`/v1/agent-runtime/executions/${execution.id}/actions/retry`, {});
-      assert.equal(retry.status, 409); assert.equal((retry.body as { error: string }).error, "agent_execution_requires_correction");
+      assert.equal(retry.status, 409); assert.equal((retry.body as { error: string }).error, "execution_continuation_required");
+      const blindQueue = await post("/v1/agent-runtime/executions", { taskId: caseTask.id, applicationId: application.id });
+      assert.equal(blindQueue.status, 409); assert.equal((blindQueue.body as { error: string }).error, "execution_continuation_required");
     }
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
+
+test("spent application work needs a changed Ready plan and explicit owner continuation", async () => {
+  const ownerEmail = `continuation-${randomUUID()}@example.test`;
+  const owner = await registerOwner(ownerEmail, "Continuation owner");
+  const outsiderEmail = `continuation-outsider-${randomUUID()}@example.test`;
+  const outsider = await registerOwner(outsiderEmail, "Other workspace");
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const outsiderAuth = { Authorization: `Bearer ${outsider.token}` };
+  const memberUser = await prisma.user.findFirstOrThrow({ where: { email: outsiderEmail } });
+  await prisma.workspaceMembership.create({ data: { workspaceId: owner.workspace.id,
+    userId: memberUser.id, role: "member" } });
+  const { createAuthToken } = await import("../auth/token");
+  const memberAuth = { Authorization: `Bearer ${createAuthToken({ userId: memberUser.id,
+    workspaceId: owner.workspace.id })}` };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id,
+    name: "Continuation fixture", slug: `continuation-${randomUUID()}` } });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Continuation project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id,
+    title: "Repair the synthetic parser" } });
+  const otherTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id,
+    title: "Unrelated continuation target" } });
+  const fixture = await prepareReadyFixture(owner.workspace.id, task.id, application.id, auth);
+  const root = `/v1/agent-runtime/tasks/${task.id}/execution-continuation`;
+  const submitRoute = `/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`;
+  const post = (route: string, body: unknown, headers: Record<string, string> = auth) => request(route, { method: "POST", headers,
+    body: JSON.stringify(body) });
+  const queue = () => post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id });
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    const initial = await queue();
+    assert.equal(initial.status, 201, JSON.stringify(initial.body));
+    const first = (initial.body as { data: { id: string; metadata: { readyContextPin: { pinId: string } } } }).data;
+    await prisma.agentExecution.update({ where: { id: first.id }, data: { status: "failed", attempt: 1,
+      completedAt: new Date(), errorState: { code: "agent_no_progress", retryable: false },
+      checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed",
+        sessionId: randomUUID(), packetRevision: null, workspaceDigest: null } } });
+    const view = await request(root, { headers: auth });
+    assert.equal(view.status, 200);
+    assert.equal((view.body as any).data.previousExecution.id, first.id);
+    assert.equal((view.body as any).data.eligible, false);
+    assert.equal((view.body as any).data.reason, "execution_continuation_ready_stale");
+    assert.equal((await request(root, { headers: outsiderAuth })).status, 404);
+    const blind = await queue();
+    assert.equal(blind.status, 409);
+    assert.equal((blind.body as { error: string }).error, "execution_continuation_required");
+    const previousMaterialDigest = (view.body as any).data.previousExecution.materialDigest as string;
+    assert.match(previousMaterialDigest, /^[a-f0-9]{64}$/);
+    const body = (pin: { pinId: string; revision: string }) => ({ requestId: randomUUID(),
+      previousExecutionId: first.id, previousMaterialDigest, readyPinId: pin.pinId, readyRevision: pin.revision,
+      diagnosis: "The first attempt stopped without a verified result.",
+      changedPlan: "Inspect the parser boundary before editing and verify the repaired input." });
+    const sameReady = await post(root, body(fixture.readiness));
+    assert.equal(sameReady.status, 409);
+    assert.equal((sameReady.body as { error: string }).error, "execution_continuation_ready_stale");
+
+    const budgetOnly = structuredClone(fixture.input);
+    budgetOnly.contract.budgets.maxDurationSeconds += 120;
+    const budgetReady = await post(submitRoute, await submissionInput(submitRoute, budgetOnly, auth));
+    assert.equal(budgetReady.status, 200, JSON.stringify(budgetReady.body));
+    const budgetPin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
+    assert.notEqual(budgetPin.pinId, fixture.readiness.pinId);
+    const unchangedPlan = await post(root, body(budgetPin));
+    assert.equal(unchangedPlan.status, 409);
+    assert.equal((unchangedPlan.body as { error: string }).error, "execution_continuation_plan_unchanged");
+    assert.equal((await queue()).status, 409);
+
+    const changed = structuredClone(budgetOnly);
+    changed.contract.singleTask.problems[0].statement = "The parser boundary rejects valid fixture token input";
+    const changedReady = await post(submitRoute, await submissionInput(submitRoute, changed, auth));
+    assert.equal(changedReady.status, 200, JSON.stringify(changedReady.body));
+    const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
+    assert.notEqual(pin.pinId, budgetPin.pinId);
+    const approvable = await request(root, { headers: auth });
+    assert.equal((approvable.body as any).data.eligible, true);
+    assert.equal((approvable.body as any).data.reason, null);
+    const wrongExecution = await post(root, { ...body(pin), previousExecutionId: randomUUID() });
+    assert.equal(wrongExecution.status, 409);
+    assert.equal((wrongExecution.body as { error: string }).error, "execution_continuation_stale");
+    const stalePin = await post(root, body(budgetPin));
+    assert.equal(stalePin.status, 409);
+    assert.equal((stalePin.body as { error: string }).error, "execution_continuation_ready_stale");
+    const staleMaterial = await post(root, { ...body(pin), previousMaterialDigest: "f".repeat(64) });
+    assert.equal(staleMaterial.status, 409);
+    assert.equal((staleMaterial.body as { error: string }).error, "execution_continuation_stale");
+    const secretAttempt = { ...body(pin), diagnosis: `Observed ${env.authTokenSecret}` };
+    const secretRejected = await post(root, secretAttempt);
+    assert.equal(secretRejected.status, 409);
+    assert.equal((secretRejected.body as { error: string }).error, "agent_runtime_content_blocked");
+    assert.equal(await prisma.event.count({ where: { id: secretAttempt.requestId } }), 0);
+    assert.equal(JSON.stringify(secretRejected.body).includes(env.authTokenSecret), false);
+    const approval = body(pin);
+    const wrongTask = await post(`/v1/agent-runtime/tasks/${otherTask.id}/execution-continuation`, approval);
+    assert.equal(wrongTask.status, 409);
+    assert.equal((wrongTask.body as { error: string }).error, "execution_continuation_stale");
+    assert.equal((await post(root, approval, memberAuth)).status, 403);
+    const accepted = await post(root, approval);
+    assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+    const replay = await post(root, approval);
+    assert.equal(replay.status, 200);
+    assert.equal((replay.body as any).data.continuation.eventId, approval.requestId);
+    const keyConflict = await post(root, { ...approval, changedPlan: "A different plan under the same key" });
+    assert.equal(keyConflict.status, 409);
+    assert.equal((keyConflict.body as { error: string }).error, "execution_continuation_key_conflict");
+    const afterApproval = await request(root, { headers: auth });
+    assert.equal((afterApproval.body as any).data.continuation.eventId, approval.requestId);
+    const next = await queue();
+    assert.equal(next.status, 201, JSON.stringify(next.body));
+    assert.equal((next.body as any).data.metadata.readyContextPin.continuationEventId, approval.requestId);
+    assert.equal((next.body as any).data.metadata.readyContextPin.pinId, pin.pinId);
+    assert.equal((next.body as any).data.attempt, 0);
+    assert.equal((await prisma.event.count({ where: { id: approval.requestId,
+      type: "task_execution_continuation_approved", taskId: task.id } })), 1);
+    const hostAuth = { ...auth, ...hostProtocolHeaders };
+    const hostSlug = `continuation-host-${randomUUID()}`;
+    const host = await post("/v1/agent-runtime/hosts/register", { name: "Continuation fixture host", slug: hostSlug,
+      platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata,
+      capabilities: protocol.requiredHostCapabilities }, hostAuth);
+    assert.equal(host.status, 200, JSON.stringify(host.body));
+    const previousUsage = (await prisma.agentExecution.findUniqueOrThrow({ where: { id: first.id } })).usage;
+    await prisma.agentExecution.update({ where: { id: first.id }, data: { usage: { inputTokens: 1 } } });
+    const staleClaim = await post("/v1/agent-runtime/executions/claim", { hostSlug }, hostAuth);
+    assert.equal(staleClaim.status, 409);
+    assert.equal((staleClaim.body as { error: string }).error, "execution_continuation_stale");
+    const unclaimed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: (next.body as any).data.id } });
+    assert.equal(unclaimed.status, "queued");
+    assert.equal(unclaimed.attempt, 0);
+    await prisma.agentExecution.update({ where: { id: first.id }, data: { usage: previousUsage as Prisma.InputJsonValue } });
+    const claimed = await post("/v1/agent-runtime/executions/claim", { hostSlug }, hostAuth);
+    assert.equal(claimed.status, 200, JSON.stringify(claimed.body));
+    const leaseToken = (claimed.body as any).data.leaseToken as string;
+    assert.ok(leaseToken);
+    await prisma.agentExecution.update({ where: { id: first.id }, data: { usage: { inputTokens: 2 } } });
+    const staleHeartbeat = await post(`/v1/agent-runtime/executions/${unclaimed.id}/heartbeat`,
+      { leaseToken, status: "running" }, hostAuth);
+    assert.equal(staleHeartbeat.status, 409);
+    assert.equal((staleHeartbeat.body as { error: string }).error, "execution_continuation_stale");
   } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
 });
 
@@ -3998,7 +4158,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.ok(visibleData.events.some((event) => event.message.includes("contract.acceptance")));
   const rejectedRetry = await request(`/v1/agent-runtime/executions/${invalid.id}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
   assert.equal(rejectedRetry.status, 409);
-  assert.equal((rejectedRetry.body as { error: string }).error, "agent_execution_requires_correction");
+  assert.equal((rejectedRetry.body as { error: string }).error, "execution_continuation_required");
 
   const retryCompleted = await request(`/v1/agent-runtime/executions/${queued.id}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
   assert.equal(retryCompleted.status, 409, "completed work requires a new owner decision, not an automatic retry");
@@ -4019,8 +4179,8 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const cancellationAck = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/actions/cancelled`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: cancelLeaseToken }) });
   assert.equal(cancellationAck.status, 200);
   const retryCancelled = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
-  assert.equal(retryCancelled.status, 201);
-  assert.equal((retryCancelled.body as { data: { status: string } }).data.status, "queued");
+  assert.equal(retryCancelled.status, 409);
+  assert.equal((retryCancelled.body as { error: string }).error, "execution_continuation_required");
   const revokedKey = await request(`/v1/api-keys/${workerKeyId}`, { method: "PATCH", headers: ownerAuth, body: JSON.stringify({ active: false }) });
   assert.equal(revokedKey.status, 200);
   const revokeAudit = await prisma.event.findFirstOrThrow({ where: { type: "api_key.revoked", resourceId: workerKeyId } });

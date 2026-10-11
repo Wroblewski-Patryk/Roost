@@ -3,7 +3,8 @@ import { z } from 'zod';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import type { AuthContext } from '../../auth/api-key.middleware';
 import { workerClaimAllowed } from '../../auth/worker-ticket-principal';
-import { inspectReady } from './task-execution-readiness';
+import { inspectReady, lockReadyTask } from './task-execution-readiness';
+import { assertBoundExecutionContinuation } from './task-execution-continuation';
 import { firstWriteApproval, managedRuntimeApproval } from '../decisions/decision-governance-contract';
 import { releaseCandidateNativeError, releaseDigest } from './governed-release-contract';
 import { informationManagedAdmission } from './company-information-runtime';
@@ -201,8 +202,10 @@ export async function managedAdmission(client: PrismaClient, auth: AuthContext, 
     const key = await db.trustedProviderTicketKey.findUnique({ where: { workspaceId: identity.workspaceId } });
     const publicDigest = createHash('sha256').update(createPublicKey(signer.publicKey).export({ format: 'der', type: 'spki' })).digest('hex');
     if (!key || key.installationId !== identity.installationId || key.publicKeyDigest !== publicDigest) fail();
+    await lockReadyTask(db, identity.workspaceId, execution.taskId);
     const ready = await inspectReady(db, identity.workspaceId, execution.taskId, execution, true);
     if (ready.error || !ready.pin) fail();
+    if ((await assertBoundExecutionContinuation(db, execution, ready.pin)).error) fail();
     const pin = ready.pin as any, selection = pin.contract?.modelSelection;
     if (selection?.schemaVersion !== 'roost-managed-hermes-backend-v1' || selection.backend !== 'codex_responses'
       || selection.riskClass !== 'low' || selection.fallback !== 'none' || pin.requestedByType !== 'user') fail();

@@ -5,6 +5,7 @@ import type { AuthContext } from "../../auth/api-key.middleware";
 import type { ManagedAdmissionSigner } from "./managed-admission";
 import { workerClaimAllowed } from "../../auth/worker-ticket-principal";
 import { inspectReady, lockReadyTask, submissionVersion, submitReady } from "./task-execution-readiness";
+import { assertBoundExecutionContinuation, assertExecutionContinuation } from "./task-execution-continuation";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
 
 export const companyRuntimeClass = "roost-company-information-runtime-v1";
@@ -121,6 +122,8 @@ export async function startInformationTask(db: Db, auth: AuthContext, taskId: st
   const ready = await inspectReady(db, auth.workspaceId, taskId);
   if (ready.error) return ready;
   const pin: any = ready.pin, c = structuredClone(pin.contract);
+  const continuation = await assertExecutionContinuation(db, auth.workspaceId, taskId, pin);
+  if ("error" in continuation) return continuation;
   if (!["roost-company-information-v1", companyRuntimeClass].includes(c.executionClass)) return { error: "company_information_scope_invalid" };
   c.executionClass = companyRuntimeClass; c.budgets.maxAttempts = 1;
   c.modelSelection = managedInformationSelection(c);
@@ -133,10 +136,19 @@ export async function startInformationTask(db: Db, auth: AuthContext, taskId: st
   const checked = await inspectReady(db, auth.workspaceId, taskId);
   if (checked.error) return checked;
   const qualified: any = checked.pin;
+  if (continuation.continuationEventId) {
+    const confirmed = await assertExecutionContinuation(db, auth.workspaceId, taskId, qualified,
+      { pinId: pin.pinId, revision: pin.revision });
+    if ("error" in confirmed || confirmed.continuationEventId !== continuation.continuationEventId)
+      return { error: "execution_continuation_stale" };
+  }
   const execution = await db.agentExecution.create({ data: { workspaceId: auth.workspaceId, taskId, applicationId: null, baseBranch: null,
     requestedByType: "user", requestedById: auth.userId, prompt: qualified.prompt,
     metadata: { informationStartRequestId: input.requestId, executionContract: c, readyContextPin: { pinId: qualified.pinId, revision: qualified.revision, preparationOnly: false, modelExecutionQualified: true,
-      runtimeDecisionId: approval.decisionId, runtimeDecisionVersion: approval.decisionVersion } } } });
+      runtimeDecisionId: approval.decisionId, runtimeDecisionVersion: approval.decisionVersion,
+      continuationEventId: continuation.continuationEventId,
+      ...(continuation.continuationEventId ? { continuationSourcePinId: pin.pinId,
+        continuationSourceRevision: pin.revision } : {}) } } } });
   await db.agentExecutionEvent.create({ data: { workspaceId: auth.workspaceId, executionId: execution.id, type: "queued", message: "Owner-authorized information task queued; no repository or native tools." } });
   return { execution };
 }
@@ -157,6 +169,7 @@ export async function informationManagedAdmission(client: PrismaClient, auth: Au
     if (!key || key.installationId !== identity.installationId || key.publicKeyDigest !== keyDigest) throw Error("managed_admission_denied");
     const ready = await inspectReady(db, auth.workspaceId, execution.taskId, execution, true);
     if (ready.error) throw Error("managed_admission_denied");
+    if ("error" in await assertBoundExecutionContinuation(db, execution, ready.pin)) throw Error("managed_admission_denied");
     const approval = await informationApproval(db, auth.workspaceId, execution.taskId, (ready.pin as any).contract.modelSelection);
     if (!approval || approval.decisionId !== (ready.pin as any).runtimeApproval?.decisionId) throw Error("managed_admission_denied");
     if (await db.agentExecutionEvent.count({ where: { executionId, type: "information_admitted" } })) throw Error("information_attempt_already_admitted");
