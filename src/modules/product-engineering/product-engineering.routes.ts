@@ -527,8 +527,9 @@ productEngineeringRouter.get("/portfolio", asyncHandler(async (req, res) => {
 }));
 
 productEngineeringRouter.get("/applications", asyncHandler(async (req, res) => {
+  const archive = z.enum(["exclude", "only", "all"]).default("exclude").parse(req.query.archive);
   const applications = await prisma.application.findMany({
-    where: { workspaceId: req.auth!.workspaceId },
+    where: { workspaceId: req.auth!.workspaceId, ...(archive === "all" ? {} : { status: archive === "only" ? ApplicationStatus.archived : { not: ApplicationStatus.archived } }) },
     include: { repositories: true, offerings: true, _count: { select: { capabilities: true, evidence: true, projects: true } } },
     orderBy: { updatedAt: "desc" }
   });

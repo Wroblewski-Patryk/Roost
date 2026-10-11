@@ -833,6 +833,41 @@ test("task archives stay out of current work and remain explicitly accessible", 
   assert.deepEqual((await request("/v1/tasks", { headers })).body, { data: [] });
 });
 
+test("archived application, project and record stay out of ordinary company lists", async () => {
+  const owner = await registerOwner("company-archive-owner@example.test", "Company archive scope");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  const workspaceId = owner.workspace.id;
+  const activeApplication = await prisma.application.create({ data: { workspaceId, name: "Current application", slug: "current-application" } });
+  const archivedApplication = await prisma.application.create({ data: { workspaceId, name: "Historical certification", slug: "historical-certification", status: "archived" } });
+  const activeProject = await prisma.project.create({ data: { workspaceId, name: "Current delivery" } });
+  const archivedProject = await prisma.project.create({ data: { workspaceId, name: "Historical certification delivery", status: "archived" } });
+  const activeRecord = await prisma.companyRecord.create({ data: { workspaceId, recordType: "requirement", key: "current-company-record", title: "Current company record" } });
+  const archivedRecord = await prisma.companyRecord.create({ data: { workspaceId, recordType: "requirement", key: "historical-company-record", title: "Historical company record", status: "archived" } });
+  for (const [route, currentId, historicalId] of [
+    ["/v1/product-engineering/applications", activeApplication.id, archivedApplication.id],
+    ["/v1/projects", activeProject.id, archivedProject.id],
+    ["/v1/company-records", activeRecord.id, archivedRecord.id]
+  ] as const) {
+    const response = await request(route, { headers });
+    assert.equal(response.status, 200, route);
+    assert.ok(JSON.stringify(response.body).includes(currentId), route);
+    assert.equal(JSON.stringify(response.body).includes(historicalId), false, route);
+  }
+  const readiness = await request("/v1/agent-runtime/readiness", { headers });
+  assert.equal(readiness.status, 200);
+  assert.ok(JSON.stringify((readiness.body as any).data.applications).includes(activeApplication.id));
+  assert.equal(JSON.stringify((readiness.body as any).data.applications).includes(archivedApplication.id), false);
+  for (const [route, historicalId] of [
+    ["/v1/product-engineering/applications?archive=only", archivedApplication.id],
+    ["/v1/projects?archive=only", archivedProject.id],
+    ["/v1/company-records?status=archived", archivedRecord.id]
+  ] as const) {
+    const response = await request(route, { headers });
+    assert.equal(response.status, 200, route);
+    assert.ok(JSON.stringify(response.body).includes(historicalId), route);
+  }
+});
+
 test("account and workspace settings profile contract exposes active owner workspace", async () => {
   const owner = await registerOwner("settings-profile-owner@example.com", "Settings Profile Workspace");
   const headers = { Authorization: `Bearer ${owner.token}` };

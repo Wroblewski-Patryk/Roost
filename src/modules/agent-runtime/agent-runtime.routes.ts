@@ -1028,7 +1028,7 @@ agentRuntimeRouter.get("/readiness", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const [applications, hosts, executionCounts, triggerRule] = await Promise.all([
     prisma.application.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       include: { repositories: true, projects: { include: { project: true } } },
       orderBy: { name: "asc" }
     }),

@@ -60,7 +60,7 @@ companyRecordsRouter.get("/", asyncHandler(async (req, res) => {
   const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
   const records = await prisma.companyRecord.findMany({ where: {
     workspaceId, ...(ids ? { id: { in: ids } } : {}), ...(typeof req.query.recordType === "string" ? { recordType: req.query.recordType } : {}),
-    ...(typeof req.query.status === "string" ? { status: req.query.status } : {}), ...(typeof req.query.projectId === "string" ? { projectId: req.query.projectId } : {}),
+    ...(typeof req.query.status === "string" ? { status: req.query.status } : { status: { not: "archived" } }), ...(typeof req.query.projectId === "string" ? { projectId: req.query.projectId } : {}),
     ...(typeof req.query.applicationId === "string" ? { applicationId: req.query.applicationId } : {}), ...(typeof req.query.clientId === "string" ? { clientId: req.query.clientId } : {}),
     ...(q ? { OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }, { key: { contains: q, mode: "insensitive" } }] } : {})
   }, include: { parent: { select: { id: true, key: true, title: true, recordType: true } }, children: { select: { id: true, key: true, title: true, recordType: true, status: true } } }, orderBy: [{ priority: "asc" }, { updatedAt: "desc" }] });

@@ -26,9 +26,10 @@ export const projectsRouter = Router();
 async function serializeProjects(workspaceId: string, rows: Array<Record<string, any>>) { const contexts = await organizationalContextsForEntities(workspaceId, "project", rows.map((row) => row.id)); return rows.map((row) => ({ ...row, organizationalContext: contexts.get(row.id) })); }
 
 projectsRouter.get("/", asyncHandler(async (req, res) => {
+  const archive = z.enum(["exclude", "only", "all"]).default("exclude").parse(req.query.archive);
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null; const ids = departmentKey ? await contextualEntityIds(workspaceId, "project", departmentKey, req.query.includeCompanyWide !== "false") : null;
   const projects = await prisma.project.findMany({
-    where: { workspaceId, ...(ids ? { id: { in: ids } } : {}) },
+    where: { workspaceId, ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) },
     orderBy: { createdAt: "desc" }
   });
   res.json({ data: await serializeProjects(workspaceId, projects) });

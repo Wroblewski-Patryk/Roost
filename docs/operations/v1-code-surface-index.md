@@ -65,6 +65,7 @@ Use it with:
 | evidence | `/v1/evidence` | Generic entity evidence plus explicit verification lifecycle. |
 | entity relations | `/v1/entity-relations` | Typed cross-entity Company Graph edges over canonical records. |
 | company intelligence | `/v1/company-intelligence` | Universal search, unified graph, universal entity inspector, company/department health, and complete task agent execution context. |
+
 | targets | `/v1/targets` | Workspace-scoped target CRUD/archive. |
 | clients | `/v1/clients` | Workspace-scoped client CRUD/archive. |
 | deals | `/v1/deals` | Workspace-scoped deal CRUD/archive. |
@@ -80,6 +81,14 @@ Use it with:
 | health | `/health`, `/v1/health` | Public readiness signal. |
 | auth | `/auth`, `/v1/auth` | Register, login, and current user context. |
 | workspace access | `/v1/workspaces/:id/access` | Members, roles, expiring invitations, removal, ownership transfer, and audit evidence. |
+
+Ordinary application and project lists exclude archived records by default; use
+`?archive=only` or `?archive=all` for an explicit history read. The company-record
+list also excludes archived records by default and accepts `?status=archived`
+for explicit history. Agent runtime application readiness excludes archived
+applications. Archiving retains record identity, links and audit history; a
+test or certification artifact must be archived through its scoped API after
+its production proof is complete, not deleted directly from the database.
 
 ## Web Route Ownership
 
