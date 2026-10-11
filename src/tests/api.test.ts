@@ -41,10 +41,12 @@ import { registerWorkerHandoffDatabaseTests } from "./worker-handoff-api";
 import { registerReleaseRenewalTests } from "./governed-release-renewal-api";
 import { registerTaskProposalTests } from "./task-proposal-api";
 import { registerDepartmentCompositionTests } from "./department-composition-api";
+import { registerGovernedGoogleDocTests } from "./governed-google-doc-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerTaskProposalTests({ request, registerOwner });
 registerDepartmentCompositionTests({ request, registerOwner });
+registerGovernedGoogleDocTests({ request, registerOwner });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });

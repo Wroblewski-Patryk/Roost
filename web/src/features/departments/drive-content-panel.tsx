@@ -4,9 +4,10 @@ import { CcButton } from "../../components/cc-button";
 import { CcSelect } from "../../components/cc-select";
 import { CcNotice } from "../../components/cc-notice";
 import { useLanguage } from "../../i18n/i18n";
+import { GovernedDocPanel } from "./governed-doc-panel";
 
 type Block = { range: string; values: { values?: unknown[][] }; formulas?: { values?: unknown[][] } };
-type Snapshot = { contentKind: string; extractedText: string | null; updatedAt: string; structuredPreview?: { ranges?: Block[] } };
+type Snapshot = { id: string; createdAt: string; sourceRevisionId: string; contentKind: string; extractedText: string | null; updatedAt: string; structuredPreview?: { ranges?: Block[] } };
 function columnName(index: number): string {
   let name = "";
   for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26)) name = String.fromCharCode(65 + (n - 1) % 26) + name;
@@ -45,6 +46,7 @@ export function DriveContentPanel({ fileId }: { fileId: string }) {
     </div>
     {error ? <CcNotice tone="error" title={error} live /> : null}
     {busy ? <p role="status">{pl ? "Łączenie z Google…" : "Connecting to Google…"}</p> : null}
+    {snapshot?.contentKind === "google_doc" ? <GovernedDocPanel fileId={fileId} snapshot={snapshot} /> : null}
     {snapshot && sheet ? <>
       <div className="flex flex-wrap items-center gap-3">
         <CcSelect aria-label={pl ? "Zakładka arkusza" : "Worksheet"} value={tab} onChange={event => { setTab(Number(event.target.value)); }}>{blocks.map((item, index) => <option key={item.range} value={index}>{item.range.replace(/^'|'$/g, "").replace(/''/g, "'")}</option>)}</CcSelect>

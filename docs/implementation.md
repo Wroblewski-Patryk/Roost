@@ -3,7 +3,7 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** none — G18a delivered on 2026-10-11; [evidence and limits](architecture/clickup-status-authority-g18a.md#verification-log). G18b needs owner authorization.
+**Active gate:** G18b — one governed Google Doc journey, owner authorized 2026-10-11; [scope and evidence](architecture/google-doc-authority-g18b.md).
 
 **G17 release:** Implementation commit `cbc20bf5` was deployed in Coolify run 6382. Native/API/UI/Security checks and read-only production smoke passed within the bounded gate. No production business-data write or paid model call was made. See [exact evidence and limits](architecture/procedure-improvement-g17.md#g17-verification-and-release).
 

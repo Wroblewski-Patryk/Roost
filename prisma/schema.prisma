@@ -1976,6 +1976,7 @@ model GoogleDriveFile {
   rawMetadata       Json                         @default("{}") @map("raw_metadata")
   knowledgeLinks    KnowledgeLink[]
   contentSnapshots  GoogleDriveContentSnapshot[]
+  governedDocMandate GoogleDocMandate?
   createdAt         DateTime                     @default(now()) @map("created_at")
   updatedAt         DateTime                     @updatedAt @map("updated_at")
 
@@ -2985,6 +2986,7 @@ model TaskList {
 }
 
 model Task {
+  googleDocMandate GoogleDocMandate?
   clickUpStatusState ClickUpStatusState?
   clickUpStatusIntents ClickUpStatusIntent[]
   scopedHumanMemberships WorkspaceMembership[] @relation("TaskScopedMembership")
@@ -3466,6 +3468,55 @@ model TaskCapabilityUse {
   createdAt DateTime @default(now()) @map("created_at")
   @@unique([workspaceId, requestId])
   @@map("task_capability_uses")
+}
+
+model GoogleDocMandate {
+  id             String @id @default(uuid()) @db.Uuid
+  workspaceId    String @map("workspace_id") @db.Uuid
+  taskId         String @unique @map("task_id") @db.Uuid
+  task           Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  fileId         String @unique @map("file_id") @db.Uuid
+  file           GoogleDriveFile @relation(fields: [fileId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  sourceReviewId String @map("source_review_id") @db.Uuid
+  sourceSnapshotId String @map("source_snapshot_id") @db.Uuid
+  selectedFolderId String @map("selected_folder_id")
+  agentId        String @map("agent_id") @db.Uuid
+  credentialId   String @map("credential_id") @db.Uuid
+  credentialVersion Int @map("credential_version")
+  validUntil     DateTime @map("valid_until")
+  ownerUserId    String @map("owner_user_id") @db.Uuid
+  requestId      String @unique @map("request_id") @db.Uuid
+  requestHash    String @map("request_hash")
+  createdAt      DateTime @default(now()) @map("created_at")
+  revokedAt      DateTime? @map("revoked_at")
+  intent         GoogleDocEditIntent?
+  @@index([workspaceId, taskId])
+  @@map("google_doc_mandates")
+}
+
+model GoogleDocEditIntent {
+  id             String @id @default(uuid()) @db.Uuid
+  mandateId      String @unique @map("mandate_id") @db.Uuid
+  mandate        GoogleDocMandate @relation(fields: [mandateId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  workspaceId    String @map("workspace_id") @db.Uuid
+  taskId         String @map("task_id") @db.Uuid
+  fileId         String @map("file_id") @db.Uuid
+  requestId      String @unique @map("request_id") @db.Uuid
+  requestHash    String @map("request_hash")
+  actorType      String @map("actor_type")
+  actorId        String @map("actor_id") @db.Uuid
+  credentialId   String? @map("credential_id") @db.Uuid
+  baseRevisionId String @map("base_revision_id")
+  appendTextHash String @map("append_text_hash")
+  state          String
+  errorCode      String? @map("error_code")
+  providerRevisionId String? @map("provider_revision_id")
+  providerVersion String? @map("provider_version")
+  readbackTextHash String? @map("readback_text_hash")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  @@index([workspaceId, taskId, createdAt])
+  @@map("google_doc_edit_intents")
 }
 
 model ClickUpStatusState {

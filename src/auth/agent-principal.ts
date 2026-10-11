@@ -6,6 +6,8 @@ import type { AuthContext } from "./api-key.middleware";
 export const agentPrincipalScopes = ["connection:read", "tasks:read", "workforce:read", "agent-runtime:read", "agent-runtime:write"];
 export function agentPrincipalRoute(method: string, path: string) {
   const route = path.replace(/^\/v1(?=\/)/, "");
+  if (method === "GET" && /^\/google-drive\/tasks\/[a-f0-9-]{36}\/docs\/[a-f0-9-]{36}\/governed$/i.test(route)) return true;
+  if (method === "POST" && /^\/google-drive\/tasks\/[a-f0-9-]{36}\/docs\/[a-f0-9-]{36}\/governed\/append$/i.test(route)) return true;
   if (method === "GET" && (route === "/mcp/manifest" || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/i.test(route))) return true;
   if (method === "POST" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/proposals$/i.test(route)) return true;
   if (method === "GET" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/i.test(route)

@@ -21,5 +21,6 @@ export function proofEligibleAction(method: string, path: string) {
     || path === "/v1/agent-runtime/releases"
     || /^\/v1\/agent-runtime\/releases\/[0-9a-f-]{36}\/actions\/(?:renew|close-failed|authorize-reconciliation)$/.test(path)
     || /^\/v1\/agent-runtime\/tasks\/[0-9a-f-]{36}\/proposal-mandates(?:\/[0-9a-f-]{36}\/actions\/revoke)?$/.test(path)
+    || /^\/v1\/google-drive\/tasks\/[0-9a-f-]{36}\/docs\/[0-9a-f-]{36}\/governed\/mandate$/.test(path)
     || /^\/v1\/agent-runtime\/executions\/[0-9a-f-]{36}\/actions\/request-critical-preemption$/.test(path);
 }

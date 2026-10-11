@@ -92,6 +92,8 @@ export async function updateGoogleDoc(input: {
   expectedRevision?: string;
 }) {
   const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
+  if (await prisma.googleDocMandate.findFirst({ where: { workspaceId: input.workspaceId, fileId: file.id, revokedAt: null }, select: { id: true } }))
+    throw new IntegrationError("google_doc_mandate_conflict", 409, "Use the task-bound governed Doc edit for this file.");
   if (file.mimeType !== googleDocMimeType) {
     throw new IntegrationError("sync_failed", 422, "The selected file is not a Google Doc.");
   }
@@ -437,7 +439,7 @@ function toGoogleDriveFileUpdate(file: GoogleDriveFileMetadata) {
   };
 }
 
-function extractGoogleDocText(document: Record<string, unknown>) {
+export function extractGoogleDocText(document: Record<string, unknown>) {
   const parts: string[] = [];
   collectText(document, parts);
   return parts.join("").replace(/\n{3,}/g, "\n\n").trim();
@@ -507,6 +509,8 @@ function spreadsheetRanges(sheet: Record<string, unknown>): string[] {
 
 export async function updateGoogleDriveFileMetadata(input: { workspaceId: string; fileId: string; name?: string; parentId?: string; trashed?: boolean }) {
   const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
+  if (await prisma.googleDocMandate.findFirst({ where: { workspaceId: input.workspaceId, fileId: file.id, revokedAt: null }, select: { id: true } }))
+    throw new IntegrationError("google_doc_mandate_conflict", 409, "This Doc has a task-bound mandate.");
   const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
   const settings = await getGoogleDriveSettingsForWorkspace(input.workspaceId);
   if (!settings) throw new IntegrationError("integration_not_configured", 422, "Google Drive is not configured.");

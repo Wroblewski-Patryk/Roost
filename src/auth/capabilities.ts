@@ -603,6 +603,11 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/integration-settings/google_drive/oauth/exchange", capability: "integration-settings:google-drive:oauth" }
     ],
     googleDrive: [
+      { method: "GET", path: "/v1/google-drive/tasks/:taskId/docs/:id/governed", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/google-drive/tasks/:taskId/docs/:id/governed/candidate", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/google-drive/tasks/:taskId/docs/:id/governed/mandate", capability: "agent-runtime:write" },
+      { method: "POST", path: "/v1/google-drive/tasks/:taskId/docs/:id/governed/append", capability: "agent-runtime:write" },
+      { method: "POST", path: "/v1/google-drive/tasks/:taskId/docs/:id/governed/intents/:intentId/close", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/google-drive/files", capability: "google-drive:files:read" },
       { method: "GET", path: "/v1/google-drive/files/:id/content", capability: "google-drive:files:read" },
       { method: "PATCH", path: "/v1/google-drive/files/:id/metadata", capability: "google-drive:files:write" },

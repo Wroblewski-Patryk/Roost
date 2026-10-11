@@ -12,8 +12,8 @@ export async function resolveDriveScope(file: GoogleDriveFileMetadata, config: G
     if (seen.has(current.id)) throw new IntegrationError("sync_failed", 502, "Drive hierarchy contains a cycle.");
     seen.add(current.id);
     mapping ??= config.operatingScopeMappings?.find(item => item.folderId === current!.id);
-    if (roots.has(current.id)) return { included: true, mapping };
     if (current.trashed) return { included: false, mapping: undefined };
+    if (roots.has(current.id)) return { included: true, mapping };
     const parent: string | undefined = current.parents?.[0];
     if (!parent) break;
     current = cache.get(parent);

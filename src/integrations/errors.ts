@@ -21,6 +21,12 @@ export class IntegrationError extends Error {
       | "clickup_comment_result_uncertain"
       | "clickup_status_intent_not_resolvable"
       | "clickup_task_not_found"
+      | "google_doc_mandate_required"
+      | "google_doc_mandate_conflict"
+      | "google_doc_source_not_approved"
+      | "google_doc_scope_changed"
+      | "google_doc_edit_already_used"
+      | "google_doc_intent_not_resolvable"
       | "not_found",
     public readonly status: number,
     message: string

@@ -14,6 +14,7 @@ import {
   updateGoogleSheetValues
 } from "../../integrations/google-drive/google-drive.content";
 import { asyncHandler } from "../../middleware/async-handler";
+import { appendGovernedGoogleDoc, closeGovernedGoogleDocIntent, createGovernedGoogleDocMandate, governedGoogleDocCandidate, readGovernedGoogleDoc } from "../../integrations/google-drive/google-doc-governance";
 
 const createDocSchema = z.object({
   name: z.string().min(1),
@@ -42,6 +43,10 @@ const updateSheetValuesSchema = z.object({
 }).strict();
 
 const uuidSchema = z.string().uuid();
+const governedDocMandateSchema = z.object({ requestId: uuidSchema, sourceSnapshotId: uuidSchema, credentialId: uuidSchema,
+  expectedRevision: z.string().min(1), classification: z.enum(["fact", "observation", "proposal", "inference"]), validUntil: z.string().datetime() }).strict();
+const governedDocAppendSchema = z.object({ requestId: uuidSchema, expectedRevision: z.string().min(1),
+  text: z.string().min(1).max(20_000).refine(value => value.trim().length > 0 && !/[\u0000-\u0008\u000c-\u001f\ue000-\uf8ff]/u.test(value), "Unsupported control characters") }).strict();
 
 const updateDriveScopeSchema = z.object({
   areaId: uuidSchema,
@@ -58,6 +63,59 @@ const updateDriveTextContentSchema = z.object({
 }).strict();
 
 export const googleDriveRouter = Router();
+
+googleDriveRouter.get("/tasks/:taskId/docs/:id/governed", asyncHandler(async (req, res) => {
+  try {
+    const data = await readGovernedGoogleDoc(req.auth!, uuidSchema.parse(req.params.taskId), uuidSchema.parse(req.params.id));
+    res.json({ data });
+  } catch (error) {
+    if (error instanceof IntegrationError) return res.status(error.status).json({ error: error.code });
+    throw error;
+  }
+}));
+
+googleDriveRouter.get("/tasks/:taskId/docs/:id/governed/candidate", asyncHandler(async (req, res) => {
+  try {
+    const data = await governedGoogleDocCandidate(req.auth!, uuidSchema.parse(req.params.taskId), uuidSchema.parse(req.params.id));
+    res.json({ data });
+  } catch (error) {
+    if (error instanceof IntegrationError) return res.status(error.status).json({ error: error.code });
+    throw error;
+  }
+}));
+
+googleDriveRouter.post("/tasks/:taskId/docs/:id/governed/mandate", asyncHandler(async (req, res) => {
+  const body = governedDocMandateSchema.parse(req.body);
+  if (!req.header("X-Owner-Action-Proof")) return res.status(403).json({ error: "google_doc_fresh_owner_required" });
+  try {
+    const data = await createGovernedGoogleDocMandate(req.auth!, { taskId: uuidSchema.parse(req.params.taskId), fileId: uuidSchema.parse(req.params.id), ...body });
+    res.status(201).json({ data });
+  } catch (error) {
+    if (error instanceof IntegrationError) return res.status(error.status).json({ error: error.code });
+    throw error;
+  }
+}));
+
+googleDriveRouter.post("/tasks/:taskId/docs/:id/governed/append", asyncHandler(async (req, res) => {
+  const body = governedDocAppendSchema.parse(req.body);
+  try {
+    const data = await appendGovernedGoogleDoc(req.auth!, { taskId: uuidSchema.parse(req.params.taskId), fileId: uuidSchema.parse(req.params.id), ...body });
+    res.status(201).json({ data });
+  } catch (error) {
+    if (error instanceof IntegrationError) return res.status(error.status).json({ error: error.code });
+    throw error;
+  }
+}));
+
+googleDriveRouter.post("/tasks/:taskId/docs/:id/governed/intents/:intentId/close", asyncHandler(async (req, res) => {
+  try {
+    const data = await closeGovernedGoogleDocIntent(req.auth!, uuidSchema.parse(req.params.taskId), uuidSchema.parse(req.params.id), uuidSchema.parse(req.params.intentId));
+    res.json({ data });
+  } catch (error) {
+    if (error instanceof IntegrationError) return res.status(error.status).json({ error: error.code });
+    throw error;
+  }
+}));
 
 googleDriveRouter.get("/files", asyncHandler(async (req, res) => {
   const files = await listGoogleDriveFiles(req.auth!.workspaceId, { parentId: typeof req.query.parentId === "string" ? req.query.parentId : undefined, q: typeof req.query.q === "string" ? req.query.q : undefined });
