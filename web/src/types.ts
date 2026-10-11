@@ -7,8 +7,9 @@ export type LoadState<T> = {
 export type AuthPayload = {
   data?: {
     token: string;
+    taskScopeId?: string | null;
     user: { email: string; name?: string | null };
-    workspace: { name: string };
+    workspace: { id?: string; name: string };
   };
   error?: string;
 };
@@ -17,6 +18,7 @@ export type AuthMe = {
   authType: "user" | "api_key";
   userId?: string;
   workspaceId: string;
+  taskScopeId?: string | null;
   user?: {
     email: string;
     name?: string | null;

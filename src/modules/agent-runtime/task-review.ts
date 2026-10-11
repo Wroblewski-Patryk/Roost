@@ -70,7 +70,9 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
 
 export async function taskReviewView(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, cursor?: string) {
   const s = await reviewState(db, workspaceId, taskId, actor);
-  if ("error" in s) return s;
+  if (s.error) return { error: s.error } as const;
+  const scopedHuman = actor && typeof actor !== "string" && actor.authType === "user" && Boolean(actor.taskScopeId);
+  if (scopedHuman && actor.taskScopeId !== taskId) return { error: "task_review_forbidden" } as const;
   if (actor && typeof actor !== "string" && actor.authType === "api_key" && !s.principal) return { error: "task_review_forbidden" } as const;
   if (s.information && (!s.principal || s.principal.kind !== "user"
     || !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager)
@@ -79,7 +81,7 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   if (s.principal?.kind === "agent" && s.task.assignedWorkforceEntityId !== s.principal.id
     && !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager))
     return { error: "task_review_forbidden" } as const;
-  if (cursor && !await db.taskReviewDecision.findFirst({ where: { id: cursor, workspaceId, taskId } })) return { error: "task_review_cursor_invalid" };
+  if (cursor && !await db.taskReviewDecision.findFirst({ where: { id: cursor, workspaceId, taskId } })) return { error: "task_review_cursor_invalid" } as const;
   const history = await db.taskReviewDecision.findMany({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { action: true } });
   const specialistAction = s.decision?.action?.action === "create_specialist_task" ? s.decision.action : null;
   const specialistProgress = specialistAction?.childTaskId ? await (async () => {
@@ -107,14 +109,14 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   const reviewBlocked=await blocked("review_decision"), returnBlocked=await blocked("return_to_executor"), specialistBlocked=await blocked("create_specialist_task");
   const canReview = s.canReview && !reviewBlocked && (!grantAccess || grantAccess.review_decision.status === "active");
   const canManage = s.canManage && ((!returnBlocked&&(!grantAccess||grantAccess.return_to_executor.status==="active")) || (!specialistBlocked&&(!grantAccess||grantAccess.create_specialist_task.status==="active")));
-  const specialists = s.information || s.principal?.kind === "agent" && !canManage ? []
+  const specialists = scopedHuman || s.information || s.principal?.kind === "agent" && !canManage ? []
     : await db.workforceEntity.findMany({ where: { workspaceId, type: "agent", status: "active", source: { not: "user" } }, select: { id: true, name: true, role: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 });
   const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
-  return { task: { id: taskId, title: s.task.title, workspaceId: s.task.workspaceId }, decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
+  return { task: { id: taskId, title: s.task.title, workspaceId: s.task.workspaceId }, decisionAuthorities:scopedHuman ? null : await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
     // Transport witness only: keep the SQL material and both CAS hashes intact.
     executionChronology: s.execution?.completedAt && s.materialVersion ? { schemaVersion: "roost-task-review-execution-chronology-v1",
       executionId: s.execution.id, materialVersion: s.materialVersion, completedAt: s.execution.completedAt.toISOString() } : null,
-    ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
+    ...(scopedHuman ? {} : await suspensionList(db,workspaceId,taskId)), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
     result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), specialistProgress, approvalCommit: s.approvalCommit, approvalInformationSeal: s.information && s.informationProven ? s.materialVersion : null, informationTask: s.information, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
     reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current && !s.manageCurrent ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
@@ -124,6 +126,8 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
 export async function recordTaskReview(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, body: unknown) {
   const s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
+  if (actor && typeof actor !== "string" && actor.authType === "user" && actor.taskScopeId && actor.taskScopeId !== taskId)
+    return { error: "task_review_forbidden" } as const;
   if (actor && typeof actor !== "string" && actor.authType === "api_key" && !s.principal) return { error: "task_review_forbidden" } as const;
   const input = (s.information ? informationReviewDecisionSchema : reviewDecisionSchema).parse(body);
   if (input.decision === "approve" && nativeBoundaryResultBlocked(s.execution?.verification, s.contract)) return { error: "native_boundary_reconciliation_required" };

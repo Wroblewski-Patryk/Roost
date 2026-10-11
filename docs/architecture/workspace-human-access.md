@@ -42,6 +42,58 @@ Every protected human request resolves the current membership from the token's
 workspace and enforces the role from the database. A stale token never carries
 durable role authority. Cross-workspace access fails closed.
 
+## G16a task-scoped human access
+
+The primary owner may issue a seven-day, one-time invitation for one email and
+one existing, active task in the current workspace. The invitation stores the
+task ID, membership role `member`, and a digest of the token. Reissue revokes the
+old token; revocation and expiry prevent acceptance. Acceptance creates a
+membership bound to that same task and a human workforce profile in one database
+transaction. An existing full workspace member cannot accept this invitation as
+a scope change. A scoped membership cannot be promoted or have its task scope
+cleared; removal revokes its live access. The task and workspace relationship is
+enforced by a composite foreign key, while archived tasks are refused at the
+API boundary.
+
+The human bearer token carries identity, not a durable scope grant. Each
+request reloads the membership and allows a scoped person only the exact task
+detail, its reduced review view, and the exact task review command. Both `/v1`
+and legacy API aliases use the same deny-by-default boundary. Task listing,
+other task IDs, workspace/project/company search and graph, execution history,
+owner decisions, grants, member administration and task mutation are denied.
+The account profile and logout remain available. The dedicated task page has
+no workspace navigation. The login API may select one of the user's existing
+memberships by explicit workspace ID; selecting a scoped membership does not
+initialize a workspace operating model.
+
+An invitation does not appoint the verifier. The owner must assign the new
+human workforce profile as the exact verifier with the required authority,
+competencies and current role pin. The existing independent review guard still
+checks the distinct agent executor, native result, risk admission, material
+version and one-time decision. A forward migration also checks the human's live
+task scope in the database review guard. No invitation email is sent; the
+owner copies the one-time link and delivers it through a separately chosen
+channel. This first slice supports one scoped task per human per workspace.
+
+### G16a local verification
+
+The disposable PostgreSQL HTTP journey passed 2/2: one-time invite/reissue and
+acceptance, exact-task read and cross-task/workspace-surface refusal, live
+membership revocation, and an independent human review of a distinct agent's
+completed result under current risk and procedure evidence. The migration
+applied on an empty database and on a populated predecessor schema; existing
+Task, membership and invitation values were preserved with null task scopes.
+The focused PL/EN browser check submitted an exact-task review command at
+390/1440 px (2/2), and the review/navigation model checks passed 3/3.
+`npm run validate`, `npm run codex:check`, and diff checks passed. An attempted
+all-API diagnostic encountered one ordinary `/auth/me` response-shape mismatch
+and one transient browser fixture fetch failure; the shape was repaired and
+both cases passed in a focused 2/2 rerun. The all-API suite was not completed
+as one green run. Independent Security code review found no remaining confirmed
+scope bypass after the invitation race and primary-owner lifecycle repairs.
+These are local proofs; deployed behavior and production human invitation are
+not claimed here.
+
 ## Invitations
 
 - Administrators invite `member` or `viewer`; owners may also invite `admin`.

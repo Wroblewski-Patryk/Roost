@@ -224,6 +224,10 @@ export function createApp() {
     if (isApiHost(req.headers.host)) return next();
     res.sendFile(path.join(publicRoot, "react", "index.html"));
   });
+  app.get(/^\/task-work\/[0-9a-f-]{36}$/, (req, res, next) => {
+    if (isApiHost(req.headers.host)) return next();
+    res.sendFile(path.join(publicRoot, "react", "index.html"));
+  });
   app.use("/health", healthRouter);
   app.use("/v1/health", healthRouter);
   app.use("/ready", readinessRouter);
@@ -240,8 +244,8 @@ export function createApp() {
     app.post(action === "request" ? "/v1/api-keys/worker-credentials/handoff/request"
       : `/v1/worker-credential-handoff/${action}`, productionWorkerHandoffHandler(action));
   app.use(requireApiKey);
-  app.use(runtimeRedactionBoundary);
   app.use(enforceHumanWorkspaceAccess);
+  app.use(runtimeRedactionBoundary);
   mountProtectedRoutes(app);
 
   const v1Router = Router();

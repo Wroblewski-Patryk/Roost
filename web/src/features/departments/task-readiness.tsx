@@ -15,6 +15,7 @@ import { CompanyInformationAuthorization } from "./company-information-authoriza
 import { SingleTaskFields } from "./single-task-fields";
 import { TaskRoleFields, TaskRoleSummary } from "./task-role-fields";
 import { TaskReviewModal } from "./task-review";
+import { TaskVerifierInvite } from "./task-verifier-invite";
 import { TaskProcedureCompositionModal } from "./procedure-composition";
 import { TaskRiskModal } from "./task-risk";
 import { reviewMessages } from "./task-review-messages";
@@ -171,6 +172,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
         {packet.reason?.startsWith("procedure_composition_")?<CcNotice tone="warning" title={tr("compositionRequired")}/>:null}
         {packet.reason?.startsWith("task_risk_") || packet.reason==="risk_context_changed" ? <CcNotice tone="warning" title={tr("riskRequired")}/> : null}
         <TaskRoleSummary editor={e} tr={tr} />
+        <TaskVerifierInvite taskId={taskId} taskTitle={e.task.title} />
         {e.accepted?.contract.singleTask ? <section className="grid gap-2 text-sm"><h3 className="font-bold">{tr("single.title")}</h3><p>{!informational ? <>{e.components?.find(item => item.id === e.accepted?.contract.singleTask.component?.id)?.label ?? tr("staleRefs")} · </> : null}{e.managers?.find(item => item.id === e.accepted?.contract.singleTask.accountableManager.id)?.label ?? tr("staleRefs")}</p>{!informational ? <p className="break-all font-mono text-xs">{e.accepted.contract.singleTask.branch}</p> : null}{e.accepted.contract.singleTask.commonCause ? <details><summary className="cursor-pointer py-2 font-bold text-warning">{tr("single.exception")}</summary><p>{e.accepted.contract.singleTask.commonCause.mechanism}</p><p className="mt-2">{e.accepted.contract.singleTask.commonCause.inseparability}</p><ul className="mt-2 list-disc pl-5">{e.accepted.contract.singleTask.problems.map((problem: { statement: string; causalLink: string }, index: number) => <li key={index}>{problem.statement}: {problem.causalLink}</li>)}</ul></details> : null}</section> : null}
         {packet.revision ? <dl className="grid gap-3 text-sm sm:grid-cols-3"><div><dt className="text-company-muted">{tr("fingerprint")}</dt><dd className="font-mono break-all">{packet.revision.slice(0, 12)}…{packet.revision.slice(-8)}</dd><dd className="mt-1 text-xs text-company-muted">{packet.validationRevision === packet.revision ? tr("proof") : tr("reason.revalidation_required")}</dd></div><div><dt className="text-company-muted">{tr("author")}</dt><dd>{e.acceptance?.authorName || tr(e.acceptance?.authorType === "agent" ? "agentAuthor" : "unknownAuthor")}</dd></div><div><dt className="text-company-muted">{tr("date")}</dt><dd>{e.acceptance?.validatedAt ? new Date(e.acceptance.validatedAt).toLocaleString(locale) : "—"}</dd></div></dl> : null}
         {!packet.canSubmit ? <CcNotice tone="info" title={tr("readOnly")} /> : e.activeExecution ? <CcNotice tone="warning" title={tr("active")} /> : !linksValid ? <CcNotice tone="warning" title={tr(informational ? "information.missingLinks" : "missingLinks")} /> : null}

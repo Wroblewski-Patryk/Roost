@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { canonicalPostAuthPath } from "../../app-route-registry";
 import { api } from "../../api/client";
-import { setOwnerToken } from "../../api/auth-token";
+import { setOwnerToken, setTaskScopeId, setTaskWorkspaceHint, taskWorkspaceHint } from "../../api/auth-token";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
@@ -11,6 +11,7 @@ import { PublicLayout } from "../../layout/public-layout";
 import { AuthPayload } from "../../types";
 import { useLanguage } from "../../i18n/i18n";
 import { AuthFormErrors, hasAuthErrors, validateAuthForm } from "./auth-validation";
+import { postAuthDestination } from "./task-scope-navigation";
 
 export function AuthRoute({ mode }: { mode: "login" | "register" }) {
   const { t } = useLanguage();
@@ -26,7 +27,8 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
     const payload = isLogin
       ? {
           email: String(form.get("email") || ""),
-          password: String(form.get("password") || "")
+          password: String(form.get("password") || ""),
+          ...(taskWorkspaceHint() ? { workspaceId: taskWorkspaceHint() } : {})
         }
       : {
           email: String(form.get("email") || ""),
@@ -45,15 +47,23 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
 
     setStatus("loading");
     try {
-      const response = await api<AuthPayload>(isLogin ? "/v1/auth/login" : "/v1/auth/register", {
-        method: "POST",
-        body: JSON.stringify(payload)
+      const submit = (body: object) => api<AuthPayload>(isLogin ? "/v1/auth/login" : "/v1/auth/register", {
+        method: "POST", body: JSON.stringify(body)
       });
+      let response: AuthPayload;
+      try { response = await submit(payload); }
+      catch (error) {
+        if (!isLogin || !taskWorkspaceHint() || !(error instanceof Error) || error.message !== "workspace_required") throw error;
+        setTaskWorkspaceHint(null);
+        response = await submit({ email: payload.email, password: payload.password });
+      }
       if (!response.data?.token) {
         throw new Error(response.error || "auth_failed");
       }
       setOwnerToken(response.data.token);
-      window.location.assign(canonicalPostAuthPath(window.sessionStorage.getItem("companycorePendingPrivatePath")));
+      setTaskScopeId(response.data.taskScopeId);
+      setTaskWorkspaceHint(response.data.taskScopeId ? response.data.workspace?.id : null);
+      window.location.assign(postAuthDestination(response.data.taskScopeId, canonicalPostAuthPath(window.sessionStorage.getItem("companycorePendingPrivatePath"))));
     } catch (authError) {
       setStatus("error");
       setSubmitError(userErrorMessage(authError, t));

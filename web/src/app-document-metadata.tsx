@@ -33,6 +33,10 @@ export function AppDocumentMetadata({ locationKey, route }: { locationKey: strin
       pageLabel = t("workspaceSettings.title");
       description = t("workspaceSettings.description");
       privatePage = true;
+    } else if (pathname.startsWith("/task-work/")) {
+      pageLabel = t("taskWork.title");
+      description = t("taskInvite.previewDescription");
+      privatePage = true;
     } else if (pathname === "/areas") {
       const area = coreAreas.find((candidate) => candidate.key === params.get("area")) || coreAreas[0];
       const view = area.views?.find((candidate) => candidate.key === (params.get("view") || "overview"));

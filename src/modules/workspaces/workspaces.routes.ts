@@ -166,7 +166,7 @@ workspacesRouter.post("/:id/actions/select", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
-  await ensureOperatingModelForWorkspace(prisma, workspaceId);
+  if (!membership.taskScopeId) await ensureOperatingModelForWorkspace(prisma, workspaceId);
 
   const token = createAuthToken({
     userId,
@@ -179,7 +179,8 @@ workspacesRouter.post("/:id/actions/select", asyncHandler(async (req, res) => {
     data: {
       token,
       workspace: safeWorkspace(membership.workspace),
-      role: membership.role
+      role: membership.role,
+      taskScopeId: membership.taskScopeId
     }
   });
 }));

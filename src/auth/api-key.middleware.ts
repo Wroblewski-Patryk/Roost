@@ -20,6 +20,7 @@ export type AuthContext = {
   credentialPrefix?: string;
   scopes?: string[];
   workspaceRole?: WorkspaceRole;
+  taskScopeId?: string | null;
   authenticatedAt?: number;
   authVersion?: number;
   workerTicketIdentity?: WorkerTicketIdentity;
@@ -81,6 +82,7 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
       workspaceId: payload.workspaceId,
       authType: "user",
       workspaceRole: membership.role,
+      taskScopeId: membership.taskScopeId,
       authenticatedAt: payload.authTime,
       authVersion: user.authVersion
     };

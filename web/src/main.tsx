@@ -19,9 +19,11 @@ import {
   canonicalApplicationGraphPath,
   resolveRouteMeta
 } from "./app-route-registry";
-import { isSignedIn } from "./api/auth-token";
+import { isSignedIn, setTaskScopeId } from "./api/auth-token";
 import { AuthRoute } from "./features/auth/auth-pages";
 import { InvitationPage } from "./features/auth/invitation-page";
+import { taskWorkPath } from "./features/auth/task-scope-navigation";
+import { TaskWorkRoute } from "./features/departments/task-work-route";
 import { PublicHomeRoute } from "./features/public/public-home";
 import { LanguageProvider, useLanguage } from "./i18n/i18n";
 import { CcRouteLoading } from "./components/cc-route-loading";
@@ -32,6 +34,9 @@ import { AppDocumentMetadata } from "./app-document-metadata";
 import { DepartmentHealthStrip } from "./features/departments/department-health-strip";
 import { DepartmentToolsPreview } from "./features/departments/department-tools-preview";
 import type { CoreAreaKey } from "./types";
+import type { AuthMe } from "./types";
+import { useOwnerPacket } from "./hooks/use-owner-packet";
+import { CcNotice } from "./components/cc-notice";
 import "./styles.css";
 
 const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
@@ -129,6 +134,17 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PrivateAppRoute({ activeArea, children }: { activeArea?: string; children: React.ReactNode }) {
+  const { t } = useLanguage();
+  const signedIn = isSignedIn();
+  const profile = useOwnerPacket<AuthMe>("/v1/auth/me", signedIn, t);
+  if (signedIn && profile.status === "loading") return <CcNotice tone="loading" title={t("taskWork.loadingAccess")} />;
+  if (signedIn && profile.status === "error") return <CcNotice tone="error" title={t("taskWork.error")} />;
+  const exactScope = profile.data?.taskScopeId;
+  if (signedIn && profile.status === "ready") setTaskScopeId(exactScope);
+  if (signedIn && exactScope) {
+    window.history.replaceState(null, "", taskWorkPath(exactScope));
+    return <TaskWorkRoute taskId={exactScope} />;
+  }
   const dashboardView = ["overview", "directory", "departments"].includes(currentAreaView()) || (activeArea === "04-operacje" && currentAreaView() === "tasks");
   const showToolPreview = Boolean(activeArea && activeArea !== "00-ogolny" && currentAreaView() === "overview");
   return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}{showToolPreview ? <DepartmentToolsPreview departmentKey={activeArea as CoreAreaKey} /> : null}</LazyRoute></Shell></PrivateRoute>;
@@ -143,6 +159,8 @@ function App() {
   const metadata = <AppDocumentMetadata locationKey={locationKey} route={route} />;
 
   const areaKey = currentAreaKey();
+  const taskWorkMatch = pathname.match(/^\/task-work\/([0-9a-fA-F-]{36})$/);
+  if (taskWorkMatch) return <>{metadata}<PrivateRoute><TaskWorkRoute taskId={taskWorkMatch[1]} /></PrivateRoute></>;
   if (pathname === "/areas" && currentAreaView() === "company-graph") {
     return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyGraphRoute /></PrivateAppRoute></>;
   }

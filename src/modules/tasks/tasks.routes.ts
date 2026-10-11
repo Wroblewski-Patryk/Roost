@@ -108,6 +108,15 @@ tasksRouter.get("/", asyncHandler(async (req, res) => {
 }));
 
 tasksRouter.get("/:id", asyncHandler(async (req, res) => {
+  if (req.auth!.taskScopeId) {
+    const scoped = await prisma.task.findFirst({ where: {
+      id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { not: "archived" }
+    }, select: {
+      id: true, title: true, description: true, status: true,
+      assignedWorkforceEntityId: true, createdAt: true, updatedAt: true
+    } });
+    return scoped ? res.json({ data: scoped }) : res.status(404).json({ error: "not_found" });
+  }
   const task = await prisma.task.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId,
       ...(req.auth!.agentId ? { assignedWorkforceEntityId: req.auth!.agentId } : {}) },

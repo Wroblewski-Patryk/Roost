@@ -496,6 +496,22 @@ agentRuntimeRouter.get("/tasks/:id/review", asyncHandler(async (req, res) => {
   }
   const result = await readyTransaction(tx => taskReviewView(tx, req.auth!.workspaceId, taskId, req.auth!, cursor));
   if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "task_review_forbidden" ? 403 : 409, result.error!);
+  if (req.auth!.taskScopeId) return res.json({ data: {
+    task: result.task,
+    expectedVersion: result.expectedVersion,
+    materialVersion: result.materialVersion,
+    executionChronology: result.executionChronology,
+    result: result.result,
+    labels: result.labels,
+    decision: result.decision,
+    approvalCommit: result.approvalCommit,
+    approvalInformationSeal: result.approvalInformationSeal,
+    informationTask: result.informationTask,
+    canReview: result.canReview,
+    reason: result.reason,
+    history: result.history,
+    nextCursor: result.nextCursor
+  } });
   res.json({ data: result });
 }));
 agentRuntimeRouter.post("/tasks/:id/actions/review", asyncHandler(async (req, res) => {

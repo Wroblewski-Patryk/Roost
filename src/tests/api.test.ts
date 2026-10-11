@@ -252,6 +252,8 @@ async function resetDatabase() {
     await db.companyRole.deleteMany();
     await db.interaction.deleteMany();
     await db.client.deleteMany();
+    await db.workspaceInvitation.deleteMany();
+    await db.workspaceMembership.deleteMany();
     await db.task.deleteMany();
     await db.target.deleteMany();
     await db.goal.deleteMany();
@@ -262,7 +264,6 @@ async function resetDatabase() {
     await db.apiKey.deleteMany();
     await db.ownerActionProof.deleteMany();
     await db.authSessionRevocation.deleteMany();
-    await db.workspaceMembership.deleteMany();
     await db.workspace.deleteMany();
     await db.user.deleteMany();
     for (const guard of guards)
@@ -2463,6 +2464,101 @@ test("governed release transport requires separately provisioned principal scope
     const action = async (kind = "return_to_executor") => { const capability=await grantFor(kind), s = (await view(auth)).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
     return { ...f, grant, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, resultCommit, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
   }
+
+test("G16a task invitation binds one human to one task and denies workspace traversal", async () => {
+  const owner = await registerOwner(`scoped-owner-${randomUUID()}@example.test`, "Scoped owner");
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Exact task" } });
+  const other = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Other task" } });
+  const email = `scoped-${randomUUID()}@example.test`;
+  const route = `/v1/workspaces/${owner.workspace.id}/access`;
+  const invite = await request(`${route}/task-invitations`, { method: "POST", headers: auth,
+    body: JSON.stringify({ email, taskId: task.id }) });
+  assert.equal(invite.status, 201, JSON.stringify(invite.body));
+  const first = (invite.body as any).data;
+  assert.equal(first.taskScopeId, task.id);
+  assert.equal(first.taskTitle, task.title);
+  assert.equal((await prisma.workspaceInvitation.findUniqueOrThrow({ where: { id: first.id } })).tokenHash === first.token, false);
+  const preview = await request(`/v1/auth/invitations/${first.token}`);
+  assert.equal(preview.status, 200);
+  assert.equal((preview.body as any).data.taskScopeId, task.id);
+  const reissued = await request(`${route}/invitations/${first.id}/actions/reissue`, { method: "POST", headers: auth });
+  assert.equal(reissued.status, 200);
+  assert.equal((await request(`/v1/auth/invitations/${first.token}`)).status, 404);
+  const token = (reissued.body as any).data.token;
+  const accepted = await request(`/v1/auth/invitations/${token}/accept`, { method: "POST",
+    body: JSON.stringify({ name: "Exact verifier", password: "strong-scoped-password" }) });
+  assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+  const person = (accepted.body as any).data;
+  assert.equal(person.taskScopeId, task.id);
+  assert.equal((await request(`/v1/auth/invitations/${token}/accept`, { method: "POST",
+    body: JSON.stringify({ password: "strong-scoped-password" }) })).status, 404);
+  const member = await prisma.workspaceMembership.findUniqueOrThrow({ where: {
+    workspaceId_userId: { workspaceId: owner.workspace.id, userId: person.user.id }
+  } });
+  assert.equal(member.taskScopeId, task.id);
+  assert.equal(await prisma.workforceEntity.count({ where: {
+    workspaceId: owner.workspace.id, source: "user", externalId: person.user.id
+  } }), 1);
+  const scoped = { Authorization: `Bearer ${person.token}` };
+  const detail = await request(`/v1/tasks/${task.id}`, { headers: scoped });
+  assert.equal(detail.status, 200);
+  assert.deepEqual(Object.keys((detail.body as any).data).sort(),
+    ["id", "title", "description", "status", "assignedWorkforceEntityId", "createdAt", "updatedAt"].sort());
+  const review = await request(`/v1/agent-runtime/tasks/${task.id}/review`, { headers: scoped });
+  assert.equal(review.status, 200, JSON.stringify(review.body));
+  assert.equal("specialists" in (review.body as any).data, false);
+  assert.equal("decisionAuthorities" in (review.body as any).data, false);
+  for (const path of ["/v1/tasks", "/tasks", `/v1/tasks/${other.id}`, `/tasks/${other.id}`,
+    `/v1/agent-runtime/tasks/${other.id}/review`, "/v1/projects", "/v1/company-records",
+    "/v1/agent-runtime/executions", `/v1/workspaces/${owner.workspace.id}/access/members`]) {
+    assert.equal((await request(path, { headers: scoped })).status, 403, path);
+  }
+  assert.equal((await request(`/v1/tasks/${other.id}`, { method: "PATCH", headers: scoped,
+    body: JSON.stringify({ title: "Unauthorized" }) })).status, 403);
+  assert.equal((await request(`/v1/workspaces/${owner.workspace.id}/access/members/${person.user.id}`, {
+    method: "PATCH", headers: auth, body: JSON.stringify({ role: "owner" })
+  })).status, 409);
+  const me = await request("/v1/auth/me", { headers: scoped });
+  assert.equal((me.body as any).data.taskScopeId, task.id);
+  const login = await request("/v1/auth/login", { method: "POST", body: JSON.stringify({
+    email, password: "strong-scoped-password", workspaceId: owner.workspace.id
+  }) });
+  assert.equal(login.status, 200);
+  assert.equal((login.body as any).data.taskScopeId, task.id);
+  assert.equal((await request(`${route}/members/${person.user.id}`, { method: "DELETE", headers: auth })).status, 204);
+  assert.equal((await request(`/v1/tasks/${task.id}`, { headers: scoped })).status, 403);
+});
+
+test("G16a scoped human reviews only the exact task with a distinct agent executor", async () => {
+  const f = await prepareReviewFixture();
+  const other = await prisma.task.create({ data: { workspaceId: f.workspaceId, title: "Other review task" } });
+  await prisma.workspaceMembership.delete({ where: {
+    workspaceId_userId: { workspaceId: f.workspaceId, userId: f.user.id }
+  } });
+  await prisma.workspaceMembership.create({ data: {
+    workspaceId: f.workspaceId, userId: f.user.id, role: "member", taskScopeId: f.task.id
+  } });
+  await prepareRiskFixture(`${f.root}/risk`, f.input, f.auth);
+  const admission = await request(`${f.root}/risk-admission`, { headers: f.auth });
+  assert.equal(admission.status, 200, JSON.stringify(admission.body));
+  const composition = await request(`${f.root}/procedure-composition`, { headers: f.auth });
+  const risk = await request(`${f.root}/risk`, { headers: f.auth });
+  assert.ok((admission.body as any).data.operations.review_decision.seal,
+    JSON.stringify({ admission: (admission.body as any).data.operations.review_decision,
+      composition: (composition.body as any).data.operations.review_decision,
+      risk: { currentId: (risk.body as any).data.currentId, history: (risk.body as any).data.history.length } }));
+  const view = await request(`${f.root}/review`, { headers: f.reviewerAuth });
+  assert.equal(view.status, 200, JSON.stringify(view.body));
+  assert.equal((view.body as any).data.canReview, true);
+  assert.equal("specialists" in (view.body as any).data, false);
+  assert.equal((await request(`/v1/agent-runtime/tasks/${other.id}/review`, { headers: f.reviewerAuth })).status, 403);
+  const decision = await f.post(`${f.root}/actions/review`, await f.rejection(), f.reviewerAuth);
+  assert.equal(decision.status, 200, JSON.stringify(decision.body));
+  assert.equal((decision.body as any).data.decision.actorUserId, f.user.id);
+  assert.notEqual(f.execution.metadata && (f.execution.metadata as any).executionContract.assignment.agentId, f.verifier.id);
+  assert.equal((await f.post(`${f.root}/actions/review-return`, { requestId: randomUUID() }, f.reviewerAuth)).status, 403);
+});
 
 const clarificationFixtureContent=(extra:any={})=>({type:"question",text:"Which recorded test covers empty input?",references:[],expectedResponse:{kind:"answer",instruction:"Identify the recorded fixture evidence",dueAt:null},material:null,...extra});
 async function prepareClarificationFixture(agentMode=false){

@@ -100,6 +100,14 @@ Migration files must be UTF-8 without BOM. A fresh `prisma migrate deploy`
 test is required because TypeScript build does not prove migration SQL can be
 applied.
 
+G16a scoped human access uses `COMPANYCORE_TEST_NAME_PATTERN='G16a'` with
+`npm run test:api:local` for invite, exact-task denial and independent review
+on disposable PostgreSQL. Run `node --test
+scripts/task-scoped-human-migration.test.mjs` while the local Compose
+PostgreSQL service is available to verify a populated predecessor schema.
+`npm run test:task-scoped-human-ui` builds the console, checks review command
+models and runs the focused PL/EN browser flow with synthetic API responses.
+
 Decision authority (RF-CTX-018) uses
 `npx tsx --test src/tests/decision-authority-policy.test.ts`, the `decision authority`
 API fixture and existing Decision/interview/Ready/risk/review regressions. Browser
