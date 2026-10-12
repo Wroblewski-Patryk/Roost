@@ -97,7 +97,21 @@ path; both were removed before final review. The final Security review found
 no remaining confirmed P0-P2 in the inspected diff. Independent UX review
 confirmed the proposal warning and translation repairs; the manual local
 digest remains an assisted workflow. No production model or company-data
-write was made. Release and read-only production smoke remain pending.
+write was made.
+
+The scoped implementation commit `e2e49988fc9542ec684ad4e44bdbfaa896904e0c`
+was fast-forward pushed to `main`. Coolify's standard deployment finished at
+15:18 UTC. Public `/health` and `/v1/health` both returned `ok` with that exact
+commit, the web root returned 200, and PostgreSQL was healthy on the retained
+volume. The prior backend image remained available and about 6.7 GB was free
+after the build; no VPS cache cleanup ran. An unauthenticated policy GET
+returned 401, and the signed-in owner console loaded an existing application
+view without a write. No production policy proposal for a current information
+task, owner override, Worker attempt or model answer was exercised by this
+read-only smoke; the isolated native and browser tests are the positive proof.
+The retained backup evidence predates this release, and no fresh backup or
+restore was claimed. G23 meets its approved native plus deployed read-only
+boundary; stop before G24.
 
 ## Comparison outcome (2026-10-12)
 
