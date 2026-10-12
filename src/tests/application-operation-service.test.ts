@@ -223,10 +223,12 @@ function readyProjectionDb(managerPresent: boolean, count = 1) {
     assignedWorkforceEntityId: id(4), assignedWorkforceEntity: { id: id(4), role: 'executor', name: 'Executor' },
     executionReadiness: { status: 'ready', contract: { taskRoles: { accountableManager: { id: manager.id, revision: at } } } }, agentExecutions: [] }));
   const forbidden = () => { throw Error('Projection must only read'); };
-  const db: any = { taskRiskScope: { findMany: async (input: any) => tasks.map(t => ({ taskId: t.id, applicationId: input.where.applicationId ?? id(9) })) },
+  const db: any = { taskRiskScope: { findMany: forbidden },
     task: { findMany: async (input: any) => { taskReads.push(input); return tasks.filter(task => input.where.id.in.includes(task.id)); }, update: forbidden },
     workspace: { findUnique: async () => ({ ownerUserId: id(2) }) }, workforceEntity: { findMany: async (input: any) => { calls.push(input); return managerPresent ? [manager] : []; } },
-    $queryRaw: async (sql: TemplateStringsArray) => { const text = sql.join('?'); assert.ok(text.includes('d.workspace_id=') || text.includes('r.workspace_id=')); return []; }, $executeRaw: forbidden };
+    $queryRaw: async (sql: TemplateStringsArray) => { const text = sql.join('?');
+      if (text.includes('DISTINCT ON (task_id)')) return tasks.map(task => ({ taskId: task.id }));
+      assert.ok(text.includes('d.workspace_id=') || text.includes('r.workspace_id=')); return []; }, $executeRaw: forbidden };
   return { db, manager, calls, taskReads };
 }
 test('Ready accountable manager is shown before the first native execution and managers are read once as a batch', async () => {
@@ -244,9 +246,8 @@ test('missing declared manager remains unknown rather than relabelling the execu
 
 test('the latest risk scope removes a reassigned task from its former application', async () => {
   const { db, taskReads } = readyProjectionDb(true);
-  db.taskRiskScope.findMany = async (input: any) => input.where.applicationId
-    ? [{ taskId: id(100), applicationId: id(9) }]
-    : [{ taskId: id(100), applicationId: id(10) }];
+  const originalQuery = db.$queryRaw;
+  db.$queryRaw = async (sql: TemplateStringsArray) => sql.join('?').includes('DISTINCT ON (task_id)') ? [] : originalQuery(sql);
   const operation = await loadApplicationOperation(db, id(1), id(9));
   assert.equal(operation.nearestOutcome, null);
   assert.deepEqual(taskReads[0].where.id.in, []);

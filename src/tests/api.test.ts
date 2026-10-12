@@ -32,6 +32,7 @@ import { runProductMapProjectionCleanupIfDue } from "../integrations/clickup/cli
 import { consumeProjectionAdmission, expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion, tryAcquireProjectionWorkspaceLock } from "../modules/product-map/product-map-projection.service";
 import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../modules/company-os/lifecycle-procedure-definition";
 import { calculateApplicationReadiness } from "../modules/product-engineering/readiness";
+import { loadApplicationOperation } from "../modules/product-engineering/application-operation.service";
 import { env } from "../config/env";
 import { registerFindingTests } from "./finding-api";
 import { registerFixedPublicTests, fixedAdmissionCommits } from "./fixed-public-api";
@@ -528,6 +529,26 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
     try { await request(`/v1/agent-runtime/executions/${marker}`, { headers: auth }); } finally { console.error = original; }
     assert.equal(JSON.stringify(logs).includes(marker), false);
   } finally { delete process.env.ROOST_REDACTION_TEST_SECRET; if (previousPwd === undefined) delete process.env.PWD; else process.env.PWD = previousPwd; }
+});
+
+test("G21 owner operation retains an older current task after 101 newer scope revisions", { timeout: 180000 }, async () => {
+  const owner = await registerOwner(`g21-history-${randomUUID()}@example.test`, "G21 scope history fixture");
+  const workspaceId = owner.workspace.id, ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId!;
+  const app = await prisma.application.create({ data: { workspaceId, name: "History fixture app", slug: `history-${randomUUID()}` } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "History fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: app.id, projectId: project.id } });
+  const component = await prisma.applicationArchitectureComponent.create({ data: { applicationId: app.id, name: "History fixture component", type: "backend" } });
+  const audit = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Older current audit task" } });
+  const noise = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Frequently reassessed completed task", status: "done" } });
+  const addScope = (taskId: string, version: number) => prisma.taskRiskScope.create({ data: {
+    id: randomUUID(), workspaceId, taskId, version, applicationId: app.id, componentId: component.id,
+    input: {}, inputHash: randomUUID(), actorUserId: ownerUserId, requestId: randomUUID(), requestHash: randomUUID()
+  } });
+  await addScope(audit.id, 1);
+  for (let version = 1; version <= 101; version++) await addScope(noise.id, version);
+  const operation = await loadApplicationOperation(prisma, workspaceId, app.id);
+  assert.equal(operation.nearestOutcome?.taskId, audit.id);
+  assert.equal(operation.blockers.some(blocker => blocker.code === "evidence_unavailable"), false);
 });
 
 test("G21 native Worker context and owner operation reject a task moved to another application", { timeout: 180000 }, async () => {
