@@ -3,12 +3,13 @@ import type { ApplicationBaseline, ApplicationBaselineStage } from './applicatio
 export type ApplicationOperation = {
   schemaVersion: 'roost-application-operation-v1';
   stage: { key: ApplicationBaselineStage | 'unverified'; claim: 'unverified' | 'owner_accepted_baseline' | 'bounded_release_proof';
-    scope: string | null; decisionId: string | null; asOf: string | null };
+    scope: string | null; decisionId: string | null; relatedTask: { id: string; title: string } | null; asOf: string | null };
   gateState: 'unmet' | 'in_progress' | 'met' | 'blocked' | 'explicitly_deferred';
   nearestOutcome: { taskId: string; title: string; status: string } | null;
   accountable: { id: string | null; role: string; label: string } | null;
-  blockers: Array<{ code: string; reference: string | null }>;
-  decisions: Array<{ id: string; title: string; state: string; href: string }>;
+  blockers: Array<{ code: string; reference: string | null; target: { kind: 'decision' | 'task'; title: string; href: string } | null }>;
+  decisions: Array<{ id: string; title: string; state: string; href: string;
+    relatedTask: { id: string; title: string } | null }>;
   evidence: Array<{ kind: 'audit' | 'independent_review' | 'release'; id: string; commit: string | null; at: string; href: string }>;
   productReadiness: 'unverified'; saleReadiness: 'unverified'; limitations: string[];
 };
@@ -30,6 +31,7 @@ export type OperationFacts = {
 export function applicationOperation(facts: OperationFacts): ApplicationOperation {
   const evidenceHref = `/areas?area=11-innowacje&view=overview&applicationId=${facts.applicationId}&cockpit=evidence`;
   const baseline = facts.baseline?.current ? facts.baseline : null;
+  const baselineTask = baseline ? facts.tasks.find(row => row.id === baseline.body.auditTaskId) : null;
   const certified = facts.releases.find(release => release.certified && !release.failed);
   const decisions = facts.decisions.filter(decision => ['pending', 'proposed', 'deferred'].includes(decision.state));
   const pendingTasks = new Set(decisions.flatMap(decision => decision.taskIds));
@@ -46,15 +48,24 @@ export function applicationOperation(facts: OperationFacts): ApplicationOperatio
   const reviewedRiskChange = approved && task?.readiness === 'needs_revalidation' && task.readinessReason === 'risk_context_changed'
     && Number.isFinite(invalidatedAt) && Number.isFinite(reviewedAt) && invalidatedAt <= reviewedAt;
   const blockers: ApplicationOperation['blockers'] = [];
-  if (!baseline && !certified) blockers.push({ code: facts.baseline ? 'takeover_baseline_stale' : 'takeover_baseline_missing', reference: facts.baseline?.id ?? null });
-  for (const decision of decisions) blockers.push({ code: decision.state === 'deferred' ? 'owner_decision_deferred' : 'owner_decision_pending', reference: decision.id });
-  if (!task && !certified) blockers.push({ code: 'outcome_not_defined', reference: null });
-  if (task?.status === 'blocked') blockers.push({ code: 'task_blocked', reference: task.id });
-  if (task && ['needs_revalidation', 'needs_decision'].includes(task.readiness) && !reviewedRiskChange) blockers.push({ code: 'task_needs_revalidation', reference: task.id });
-  if (task?.readiness === 'needs_context') blockers.push({ code: 'task_needs_context', reference: task.id });
-  if (task?.latestExecution?.status === 'failed') blockers.push({ code: 'native_execution_failed', reference: task.latestExecution.id });
-  if (task?.review?.current && task.review.decision === 'reject') blockers.push({ code: 'independent_review_rejected', reference: task.review.id });
-  if (facts.truncated) blockers.push({ code: 'evidence_unavailable', reference: null });
+  const taskTarget = task ? { kind: 'task' as const, title: task.title,
+    href: `/areas?area=04-operacje&view=tasks&taskId=${task.id}` } : null;
+  const decisionTarget = (id: string) => {
+    const decision = facts.decisions.find(row => row.id === id);
+    return decision ? { kind: 'decision' as const, title: decision.title,
+      href: `/areas?area=01-strategia&view=decisions&decisionId=${decision.id}` } : null;
+  };
+  if (!baseline && !certified) blockers.push({ code: facts.baseline ? 'takeover_baseline_stale' : 'takeover_baseline_missing',
+    reference: facts.baseline?.id ?? null, target: facts.baseline ? decisionTarget(facts.baseline.id) : null });
+  for (const decision of decisions) blockers.push({ code: decision.state === 'deferred' ? 'owner_decision_deferred' : 'owner_decision_pending',
+    reference: decision.id, target: decisionTarget(decision.id) });
+  if (!task && !certified) blockers.push({ code: 'outcome_not_defined', reference: null, target: null });
+  if (task?.status === 'blocked') blockers.push({ code: 'task_blocked', reference: task.id, target: taskTarget });
+  if (task && ['needs_revalidation', 'needs_decision'].includes(task.readiness) && !reviewedRiskChange) blockers.push({ code: 'task_needs_revalidation', reference: task.id, target: taskTarget });
+  if (task?.readiness === 'needs_context') blockers.push({ code: 'task_needs_context', reference: task.id, target: taskTarget });
+  if (task?.latestExecution?.status === 'failed') blockers.push({ code: 'native_execution_failed', reference: task.latestExecution.id, target: taskTarget });
+  if (task?.review?.current && task.review.decision === 'reject') blockers.push({ code: 'independent_review_rejected', reference: task.review.id, target: taskTarget });
+  if (facts.truncated) blockers.push({ code: 'evidence_unavailable', reference: null, target: null });
   const deferredOnly = decisions.length > 0 && decisions.every(decision => decision.state === 'deferred')
     && blockers.every(blocker => blocker.code === 'owner_decision_deferred');
   const historicalOnly = new Set(['takeover_baseline_missing', 'outcome_not_defined']);
@@ -64,12 +75,17 @@ export function applicationOperation(facts: OperationFacts): ApplicationOperatio
     : approved || certified && !task ? 'met' : active ? 'in_progress' : 'unmet';
   return {
     schemaVersion: 'roost-application-operation-v1',
-    stage: baseline ? { key: baseline.body.stage, claim: 'owner_accepted_baseline', scope: baseline.body.scopeDescription, decisionId: baseline.id, asOf: baseline.acceptedAt }
-      : certified ? { key: 'operation_improvement', claim: 'bounded_release_proof', scope: 'Exact bounded release only; whole application readiness remains unverified.', decisionId: null, asOf: certified.at }
-      : { key: 'unverified', claim: 'unverified', scope: null, decisionId: null, asOf: null },
+    stage: baseline ? { key: baseline.body.stage, claim: 'owner_accepted_baseline', scope: baseline.body.scopeDescription, decisionId: baseline.id,
+      relatedTask: baselineTask ? { id: baselineTask.id, title: baselineTask.title } : null, asOf: baseline.acceptedAt }
+      : certified ? { key: 'operation_improvement', claim: 'bounded_release_proof', scope: 'Exact bounded release only; whole application readiness remains unverified.', decisionId: null, relatedTask: null, asOf: certified.at }
+      : { key: 'unverified', claim: 'unverified', scope: null, decisionId: null, relatedTask: null, asOf: null },
     gateState, nearestOutcome: task ? { taskId: task.id, title: task.title, status: approved ? 'accepted' : task.status } : null,
     accountable: task?.accountable ?? null, blockers,
-    decisions: decisions.map(({ id, title, state }) => ({ id, title, state, href: `/areas?area=01-strategia&view=decisions&decisionId=${id}` })),
+    decisions: decisions.map(({ id, title, state, taskIds }) => {
+      const scopedTask = taskIds.map(taskId => facts.tasks.find(row => row.id === taskId)).find(Boolean);
+      return { id, title, state, href: `/areas?area=01-strategia&view=decisions&decisionId=${id}`,
+        relatedTask: scopedTask ? { id: scopedTask.id, title: scopedTask.title } : null };
+    }),
     evidence: [
       ...(baseline ? [{ kind: 'audit' as const, id: baseline.body.verifierExecutionId, commit: baseline.body.baselineCommit, at: baseline.acceptedAt, href: evidenceHref }] : []),
       ...facts.tasks.filter(task => task.review?.current && task.review.decision === 'approve' && task.review.commit

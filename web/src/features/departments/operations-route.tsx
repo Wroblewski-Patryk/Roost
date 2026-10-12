@@ -1,6 +1,6 @@
 import { DragEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "../../api/client";
-import { recordIdFromQuery, validateTaskPacketNavigation } from '../../owner-record-navigation';
+import { recordIdFromQuery, validateApplicationReturn, validateTaskPacketNavigation } from '../../owner-record-navigation';
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
@@ -1486,6 +1486,7 @@ function OperationsCalendar({
 export function OperationsRoute() {
   const { t, locale } = useLanguage();
   const fromAttention = new URLSearchParams(window.location.search).get("from") === "attention";
+  const fromApplicationId = recordIdFromQuery(window.location.search, "fromApplicationId");
   const [archive, setArchive] = useState("exclude");
   const activeView = currentOperationsView();
   const departmentScope = new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null;
@@ -1496,12 +1497,20 @@ export function OperationsRoute() {
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
   const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => new URLSearchParams(window.location.search).has('taskId'));
   const [navigationError, setNavigationError] = useState(false);
+  const [applicationReturn, setApplicationReturn] = useState<string | null>(null);
   useEffect(() => {
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
     if (new URLSearchParams(window.location.search).has('taskId') && !taskId) { setNavigationError(true); return; }
     if (!taskId) return;
     let active = true;
-    validateTaskPacketNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(id => {
+    validateTaskPacketNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(async id => {
+      if (fromApplicationId && !fromAttention) {
+        try {
+          const path = await validateApplicationReturn(fromApplicationId, id, "task",
+            applicationId => api(`/v1/product-engineering/applications/${applicationId}`));
+          if (active) setApplicationReturn(path);
+        } catch { if (active) setApplicationReturn(null); }
+      }
       if (active) setReadinessTask(id);
     }).catch(() => { if (active) setNavigationError(true); });
     return () => { active = false; };
@@ -1624,7 +1633,7 @@ export function OperationsRoute() {
         </section>
       ) : null}
 
-      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); }} onSaved={refresh} /> : null}
+      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} returnToApplication={Boolean(applicationReturn)} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (applicationReturn) navigateApp(applicationReturn); else if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); }} onSaved={refresh} /> : null}
       {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}

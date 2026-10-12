@@ -71,7 +71,14 @@ export function applicationReleaseCertified(release: any, journal: any[], revoke
 export async function loadApplicationOperation(db: Db, workspaceId: string, applicationId: string) {
   const scopes = await db.taskRiskScope.findMany({ where: { workspaceId, applicationId },
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 101, select: { taskId: true } });
-  const taskIds = [...new Set(scopes.slice(0, 100).map(scope => scope.taskId))];
+  const candidateIds = [...new Set(scopes.slice(0, 100).map(scope => scope.taskId))];
+  // A task can be reassessed for a different application. Historical scope
+  // evidence remains intact, but must not make it another application's next task.
+  const latestScopes = candidateIds.length ? await db.taskRiskScope.findMany({
+    where: { workspaceId, taskId: { in: candidateIds } }, orderBy: [{ version: 'desc' }],
+    distinct: ['taskId'], select: { taskId: true, applicationId: true }
+  }) : [];
+  const taskIds = latestScopes.filter(scope => scope.applicationId === applicationId).map(scope => scope.taskId);
   const tasks = await db.task.findMany({ where: { workspaceId, id: { in: taskIds } }, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], take: 101,
     include: { assignedWorkforceEntity: { select: { id: true, name: true, role: true } },
       agentExecutions: { where: { applicationId }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 1,

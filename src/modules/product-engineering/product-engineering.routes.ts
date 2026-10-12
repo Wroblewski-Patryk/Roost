@@ -1,4 +1,5 @@
 import { retryContextRead } from "../agent-runtime/context-read-retry";
+import { inspectReady, readyTransaction } from "../agent-runtime/task-execution-readiness";
 import { loadApplicationAgentContext } from "./application-agent-context";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import {
@@ -632,8 +633,30 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
   if (executionId && !execution) return sendApiError(res, 404, "agent_execution_not_found");
   if (req.auth!.workerTicketIdentity && (!execution || !["queued", "claimed", "running"].includes(execution.status)))
     return sendApiError(res, 403, "task_bound_source_read_required");
+  if (req.auth!.workerTicketIdentity && execution?.contextInvalidatedAt)
+    return sendApiError(res, 409, "agent_execution_context_invalidated");
   const pinnedComponentId = (execution?.metadata as any)?.executionContract?.singleTask?.component?.id;
   if (execution && (req.query.profile !== "execution" || typeof pinnedComponentId !== "string" || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(pinnedComponentId))) return sendApiError(res, 409, "task_ready_contract_mismatch");
+  if (req.auth!.workerTicketIdentity && execution) {
+    const guarded = await retryContextRead(() => readyTransaction(async tx => {
+      const current = await tx.agentExecution.findFirst({ where: { id: execution.id, workspaceId: req.auth!.workspaceId,
+        taskId: execution.taskId, applicationId: String(req.params.id) } });
+      if (!current || !["queued", "claimed", "running"].includes(current.status) || current.completedAt)
+        return { error: "task_bound_source_read_required" };
+      if (current.contextInvalidatedAt) return { error: "agent_execution_context_invalidated" };
+      const ready = await inspectReady(tx, req.auth!.workspaceId, current.taskId, current, true);
+      if ("error" in ready && ready.error) return { error: ready.error };
+      const data = await loadApplicationAgentContext(req.auth!.workspaceId, String(req.params.id), true,
+        query, tx, pinnedComponentId, current.taskId);
+      return data ? { data } : { error: "application_not_found" };
+    }));
+    if ("error" in guarded) {
+      const code = guarded.error ?? "task_ready_context_conflict";
+      return sendApiError(res, code === "application_not_found" ? 404 : code === "task_bound_source_read_required" ? 403 : 409, code);
+    }
+    requireRuntimeContent(guarded.data, "model.application_context");
+    return res.json({ data: guarded.data });
+  }
   const context = await loadApplicationAgentContext(req.auth!.workspaceId, String(req.params.id), req.query.profile === "execution", query, prisma, pinnedComponentId,
     req.auth!.workerTicketIdentity ? execution?.taskId : undefined);
   if (!context) return sendApiError(res, 404, "application_not_found");

@@ -530,6 +530,166 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
   } finally { delete process.env.ROOST_REDACTION_TEST_SECRET; if (previousPwd === undefined) delete process.env.PWD; else process.env.PWD = previousPwd; }
 });
 
+test("G21 native Worker context and owner operation reject a task moved to another application", { timeout: 180000 }, async () => {
+  const owner = await registerOwner(`g21-${randomUUID()}@example.test`, "G21 two-application fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const first = await prisma.application.create({ data: { workspaceId, name: "First fixture app", slug: `first-${randomUUID()}` } });
+  const second = await prisma.application.create({ data: { workspaceId, name: "Second fixture app", slug: `second-${randomUUID()}` } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Transferred fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: first.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "One bounded fixture task" } });
+  const fixture = await prepareReadyFixture(workspaceId, task.id, first.id, auth, false);
+  assert.equal(fixture.input.contract.objective.goalId, (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).goalId);
+  assert.equal(fixture.input.contract.singleTask.applicationId, first.id);
+  assert.equal(fixture.input.contract.singleTask.component.id, fixture.component.id);
+  assert.equal(fixture.input.contract.singleTask.component.revision, (await prisma.applicationArchitectureComponent.findUniqueOrThrow({ where: { id: fixture.component.id } })).updatedAt.toISOString());
+  const submitRoute = `/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`;
+  const readyInput = await submissionInput(submitRoute, fixture.input, auth);
+  const risk = await request(`/v1/agent-runtime/tasks/${task.id}/risk`, { headers: auth });
+  assert.ok((risk.body as any).data?.currentId, JSON.stringify(risk.body));
+  const submitted = await request(submitRoute, { method: "POST", headers: auth,
+    body: JSON.stringify(readyInput) });
+  assert.equal(submitted.status, 200, JSON.stringify(submitted.body));
+  const foreign = await prisma.companyRecord.create({ data: { workspaceId, applicationId: second.id,
+    recordType: "requirement", key: `g21-foreign-${randomUUID()}`, title: "Second app private source",
+    description: "G21_SECOND_APP_PRIVATE" } });
+  const { ownerTicketFixture } = await import("./owner-ticket-fixture"), { hashApiKey } = await import("../auth/api-key");
+  const key = (await ownerTicketFixture()).state().key;
+  await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...key } });
+  const host = await prisma.agentHost.create({ data: { workspaceId, name: "G21 fixture Worker", slug: `g21-${randomUUID()}`,
+    platform: "win32", status: "online", lastSeenAt: new Date(), metadata: validHostMetadata(),
+    capabilities: protocol.requiredHostCapabilities, applicationSlugs: [first.slug] } });
+  const raw = randomUUID();
+  await prisma.apiKey.create({ data: { workspaceId, name: "G21 bound Worker", keyHash: hashApiKey(raw),
+    scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600000),
+    workerHostId: host.id, workerInstallationId: key.installationId, workerBindingEpoch: 1 } });
+  const worker = { "X-API-Key": raw, ...hostProtocolHeaders };
+  const execution = await historicalRiskExecution({ data: { workspaceId, taskId: task.id, applicationId: first.id,
+    agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
+    startedAt: new Date(), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() + 600000),
+    metadata: await fixtureExecutionMetadata(task.id) } });
+  const taskRoute = `/v1/company-intelligence/tasks/${task.id}/agent-context?executionId=${execution.id}`;
+  const firstRoute = `/v1/product-engineering/applications/${first.id}/agent-context?profile=execution&executionId=${execution.id}`;
+  const secondRoute = `/v1/product-engineering/applications/${second.id}/agent-context?profile=execution&executionId=${execution.id}`;
+  const packet = await request(taskRoute, { headers: worker });
+  assert.equal(packet.status, 200, JSON.stringify(packet.body));
+  assert.equal(JSON.stringify(packet.body).includes(foreign.id), false);
+  assert.equal(JSON.stringify(packet.body).includes("G21_SECOND_APP_PRIVATE"), false);
+  const context = await request(firstRoute, { headers: worker });
+  assert.equal(context.status, 200, JSON.stringify(context.body));
+  assert.equal((context.body as any).data.application.id, first.id);
+  assert.equal(JSON.stringify(context.body).includes(foreign.id), false);
+  const terminalExecution = await historicalRiskExecution({ data: { workspaceId, taskId: task.id, applicationId: first.id,
+    agentHostId: host.id, requestedByType: "user", status: "failed", attempt: 2,
+    startedAt: new Date(Date.now() - 1000), completedAt: new Date(), metadata: await fixtureExecutionMetadata(task.id) } });
+  const terminalRoute = `/v1/product-engineering/applications/${first.id}/agent-context?profile=execution&executionId=${terminalExecution.id}`;
+  const terminal = await request(terminalRoute, { headers: worker });
+  assert.equal(terminal.status, 403, JSON.stringify(terminal.body));
+  assert.equal((terminal.body as any).error, "task_bound_source_read_required");
+  assert.equal((await request(secondRoute, { headers: worker })).status, 403);
+  const firstBefore = await request(`/v1/product-engineering/applications/${first.id}`, { headers: auth });
+  assert.equal((firstBefore.body as any).data.operation.nearestOutcome.taskId, task.id);
+  const { chromium } = await import("playwright");
+  const screenshotDir = path.join((await import("node:os")).tmpdir(), "roost-g21-ux");
+  await (await import("node:fs/promises")).mkdir(screenshotDir, { recursive: true });
+  const browser = await chromium.launch({ headless: true });
+  try {
+    for (const locale of ["pl", "en"] as const) {
+      await prisma.user.update({ where: { id: (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId! },
+        data: { preferredLanguage: locale } });
+      for (const width of [390, 834, 1440]) {
+        const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 960 } });
+        await context.addInitScript(({ token, language }) => {
+          window.sessionStorage.setItem("companycoreOwnerToken", token);
+          window.localStorage.setItem("companycoreLocale", language);
+        }, { token: owner.token, language: locale });
+        const page = await context.newPage();
+        const pageErrors: string[] = [];
+        page.on("pageerror", error => pageErrors.push(error.message));
+        try {
+          const appPath = `/areas?area=11-innowacje&view=overview&applicationId=${first.id}&cockpit=overview`;
+          await page.goto(`${baseUrl}${appPath}`, { waitUntil: "domcontentloaded" });
+          await page.getByRole("heading", { name: first.name }).waitFor({ timeout: 15000 });
+          assert.equal(await page.locator("html").getAttribute("lang"), locale);
+          await page.screenshot({ path: path.join(screenshotDir, `${locale}-${width}-application.png`) });
+          const taskLink = page.getByRole("link", { name: task.title }).first();
+          await taskLink.focus();
+          await page.keyboard.press("Enter");
+          await page.waitForURL(url => url.searchParams.get("taskId") === task.id, { timeout: 15000 });
+          const back = page.getByRole("button", { name: locale === "pl" ? "Wróć do aplikacji" : "Back to application" }).first();
+          await back.waitFor({ timeout: 15000 });
+          await page.getByRole("heading", { name: task.title }).waitFor({ timeout: 15000 });
+          await page.screenshot({ path: path.join(screenshotDir, `${locale}-${width}-task.png`) });
+          await back.click();
+          await page.waitForURL(url => url.searchParams.get("applicationId") === first.id, { timeout: 15000 });
+          await page.getByRole("heading", { name: first.name }).waitFor({ timeout: 15000 });
+          await page.reload({ waitUntil: "domcontentloaded" });
+          await page.getByRole("heading", { name: first.name }).waitFor({ timeout: 15000 });
+          assert.deepEqual(pageErrors, [], `${locale}/${width}: browser errors`);
+        } finally { await context.close(); }
+      }
+    }
+  } finally { await browser.close(); }
+  const previous = await prisma.taskRiskScope.findFirstOrThrow({ where: { taskId: task.id }, orderBy: { version: "desc" } });
+  const secondComponent = await prisma.applicationArchitectureComponent.create({ data: { applicationId: second.id,
+    name: "Second fixture component", type: "backend" } });
+  await prisma.applicationProject.deleteMany({ where: { applicationId: first.id, projectId: project.id } });
+  await prisma.applicationProject.create({ data: { applicationId: second.id, projectId: project.id } });
+  await prisma.taskRiskScope.create({ data: { id: randomUUID(), workspaceId, taskId: task.id,
+    version: previous.version + 1, applicationId: second.id, componentId: secondComponent.id,
+    input: previous.input as Prisma.InputJsonValue, inputHash: previous.inputHash,
+    actorUserId: (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId!,
+    requestId: randomUUID(), requestHash: randomUUID() } });
+  const firstAfter = await request(`/v1/product-engineering/applications/${first.id}`, { headers: auth });
+  const secondAfter = await request(`/v1/product-engineering/applications/${second.id}`, { headers: auth });
+  assert.equal((firstAfter.body as any).data.operation.nearestOutcome, null);
+  assert.equal((secondAfter.body as any).data.operation.nearestOutcome.taskId, task.id);
+  const invalidated = await prisma.agentExecution.findUniqueOrThrow({ where: { id: execution.id } });
+  assert.equal(invalidated.status, "running");
+  assert.ok(invalidated.contextInvalidatedAt, "the native scope change invalidates the still-running attempt");
+  const denied = await request(firstRoute, { headers: worker });
+  assert.equal(denied.status, 409, JSON.stringify(denied.body));
+  assert.equal((denied.body as any).error, "agent_execution_context_invalidated");
+  assert.equal((await request(taskRoute, { headers: worker })).status, 409);
+  const post = (route: string, body: unknown) => request(route, { method: "POST", headers: auth, body: JSON.stringify(body) });
+  const proposal = await decisionFixtureProposal({ workspaceId, task, app: second, auth, post });
+  assert.equal(proposal.response.status, 201, JSON.stringify(proposal.response.body));
+  const secondDecision = await request(`/v1/product-engineering/applications/${second.id}`, { headers: auth });
+  assert.equal((secondDecision.body as any).data.operation.decisions[0].id, proposal.id);
+  assert.equal((secondDecision.body as any).data.operation.decisions[0].relatedTask.id, task.id);
+  const decisionBrowser = await chromium.launch({ headless: true });
+  try {
+    for (const locale of ["pl", "en"] as const) {
+      await prisma.user.update({ where: { id: (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId! },
+        data: { preferredLanguage: locale } });
+      for (const width of [390, 834, 1440]) {
+      const context = await decisionBrowser.newContext({ viewport: { width, height: width === 390 ? 844 : 960 } });
+      await context.addInitScript(({ token, language }) => {
+        window.sessionStorage.setItem("companycoreOwnerToken", token);
+        window.localStorage.setItem("companycoreLocale", language);
+      }, { token: owner.token, language: locale });
+      const page = await context.newPage();
+      try {
+        await page.goto(`${baseUrl}/areas?area=11-innowacje&view=overview&applicationId=${second.id}&cockpit=overview`);
+        await page.getByRole("heading", { name: second.name }).waitFor({ timeout: 15000 });
+        await page.getByRole("link", { name: proposal.body.title }).first().focus();
+        await page.keyboard.press("Enter");
+        await page.waitForURL(url => url.searchParams.get("decisionId") === proposal.id, { timeout: 15000 });
+        const taskFromDecision = page.getByRole("link", { name: locale === "pl" ? /Otwórz powiązane zadanie/ : /Open related task/ });
+        await taskFromDecision.waitFor({ timeout: 15000 });
+        await page.screenshot({ path: path.join(screenshotDir, `${locale}-${width}-decision.png`) });
+        await taskFromDecision.focus();
+        await page.keyboard.press("Enter");
+        await page.waitForURL(url => url.searchParams.get("taskId") === task.id, { timeout: 15000 });
+        await page.getByRole("button", { name: locale === "pl" ? "Wróć do aplikacji" : "Back to application" }).first().click();
+        await page.waitForURL(url => url.searchParams.get("applicationId") === second.id, { timeout: 15000 });
+        await page.getByRole("heading", { name: second.name }).waitFor({ timeout: 15000 });
+      } finally { await context.close(); }
+      }
+    }
+  } finally { await decisionBrowser.close(); }
+});
+
 test("production environment validation fails closed when required secrets are missing", async () => {
   const result = await runNodeScript(`
     try {

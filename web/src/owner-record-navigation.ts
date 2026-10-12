@@ -1,6 +1,6 @@
 const recordIdPattern = /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 
-export function recordIdFromQuery(search: string, key: "applicationId" | "decisionId" | "taskId" | "recordId") {
+export function recordIdFromQuery(search: string, key: "applicationId" | "fromApplicationId" | "decisionId" | "taskId" | "recordId") {
   const values = new URLSearchParams(search).getAll(key);
   return values.length === 1 && recordIdPattern.test(values[0]) ? values[0].toLowerCase() : null;
 }
@@ -9,8 +9,37 @@ export function innovationRecordPath(search: string, canonicalPath: string) {
   const query = new URLSearchParams(search);
   const applicationId = recordIdFromQuery(search, "applicationId");
   const cockpits = query.getAll("cockpit");
-  if (!applicationId || cockpits.length !== 1 || cockpits[0] !== "evidence") return canonicalPath;
-  return `${canonicalPath}&applicationId=${encodeURIComponent(applicationId)}&cockpit=evidence`;
+  if (!applicationId || cockpits.length !== 1 || !["overview", "evidence"].includes(cockpits[0])) return canonicalPath;
+  return `${canonicalPath}&applicationId=${encodeURIComponent(applicationId)}&cockpit=${cockpits[0]}`;
+}
+
+export function applicationReturnPath(applicationId: string) {
+  return recordIdPattern.test(applicationId)
+    ? `/areas?area=11-innowacje&view=overview&applicationId=${encodeURIComponent(applicationId.toLowerCase())}&cockpit=overview`
+    : null;
+}
+
+type ApplicationNavigation = { id?: string; operation?: {
+  nearestOutcome?: { taskId: string } | null;
+  blockers?: Array<{ target?: { kind: string; href: string } | null }>;
+  decisions?: Array<{ id: string; relatedTask?: { id: string } | null }>;
+  stage?: { decisionId?: string | null; relatedTask?: { id: string } | null };
+} };
+
+export async function validateApplicationReturn(applicationId: string, recordId: string, kind: "task" | "decision",
+  read: (id: string) => Promise<{ data?: ApplicationNavigation }>) {
+  if (!recordIdPattern.test(applicationId) || !recordIdPattern.test(recordId)) throw new Error("invalid_application_return");
+  const application = (await read(applicationId)).data;
+  if (application?.id !== applicationId) throw new Error("application_return_unavailable");
+  const operation = application.operation;
+  const linked = kind === "task" ? operation?.nearestOutcome?.taskId === recordId
+    || operation?.stage?.relatedTask?.id === recordId
+    || operation?.decisions?.some(decision => decision.relatedTask?.id === recordId)
+    || operation?.blockers?.some(blocker => blocker.target?.kind === "task" && blocker.target.href.endsWith(`&taskId=${recordId}`))
+    : operation?.stage?.decisionId === recordId || operation?.decisions?.some(decision => decision.id === recordId)
+      || operation?.blockers?.some(blocker => blocker.target?.kind === "decision" && blocker.target.href.endsWith(`&decisionId=${recordId}`));
+  if (!linked) throw new Error("application_return_unavailable");
+  return applicationReturnPath(applicationId)!;
 }
 
 export async function validateDecisionNavigation(

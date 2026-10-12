@@ -3,7 +3,7 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** none.
+**Active gate:** G21 application control, owner-authorized 2026-10-12. For an application with an accepted baseline, prove its blocker/Decision-to-Task-to-application owner path and a task-bound agent packet limited to that application. Reuse current records and adapters. Isolated/native denial, PL/EN UX, independent Security/UX review, scoped release and read-only production smoke are required. No G22, application-repository edits or production business writes.
 
 **G20 accepted outcome:** One owner-adopted, versioned Goal states a measurable result, metric, numeric target, evidence source and accountable person. Impact preview and a separate owner confirmation precede adoption. A verified evidence record supports each accepted measurement; unknown or stale evidence cannot silently become progress. The owner can inspect linked tasks and attributable execution/review economics while provider tokens, cost and human effort remain unknown where not observed. The assigned agent can read only the current accepted mandate for its task and propose a measurement, never accept its own progress or change the target. The owner has not supplied a real numeric target or baseline, so isolated fictional fixtures are the positive test; production must not create a fictitious goal.
 

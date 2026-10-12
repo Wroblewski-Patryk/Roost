@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { innovationRecordPath, recordIdFromQuery, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation, validateGovernedDecisionPacketNavigation } from "./owner-record-navigation";
+import { applicationReturnPath, innovationRecordPath, recordIdFromQuery, validateApplicationReturn, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation, validateGovernedDecisionPacketNavigation } from "./owner-record-navigation";
 import { canonicalPostAuthPath } from "./app-route-registry";
 
 const id = "00000000-0000-4000-8000-000000000001";
@@ -40,8 +40,40 @@ test("the canonical task route validates the actual HTTP data envelope", async (
 
 test("application evidence navigation retains only the exact record and supported cockpit", () => {
   assert.equal(innovationRecordPath(`?area=11-innowacje&view=overview&applicationId=${id}&cockpit=evidence&redirect=https://other.example&write=1`, canonical), `${canonical}&applicationId=${id}&cockpit=evidence`);
+  assert.equal(innovationRecordPath(`?area=11-innowacje&view=overview&applicationId=${id}&cockpit=overview`, canonical), applicationReturnPath(id));
   assert.equal(innovationRecordPath(`?applicationId=${id}&cockpit=execution`, canonical), canonical);
   assert.equal(innovationRecordPath(`?applicationId=${id}`, canonical), canonical);
+});
+
+test("application links survive sign-in only with one exact record and return hint", () => {
+  const task = `/areas?area=04-operacje&view=tasks&taskId=${id}&fromApplicationId=${other}`;
+  const decision = `/areas?area=01-strategia&view=decisions&decisionId=${id}&fromApplicationId=${other}`;
+  assert.equal(canonicalPostAuthPath(task), task);
+  assert.equal(canonicalPostAuthPath(decision), decision);
+  assert.equal(canonicalPostAuthPath(`${task}&fromApplicationId=${id}`), `/areas?area=04-operacje&view=tasks&taskId=${id}`);
+  assert.equal(canonicalPostAuthPath(`${decision}&fromApplicationId=../other`), `/areas?area=01-strategia&view=decisions&decisionId=${id}`);
+  assert.equal(canonicalPostAuthPath(applicationReturnPath(id)), applicationReturnPath(id));
+  assert.equal(canonicalPostAuthPath(`${canonical}&applicationId=${id}&cockpit=evidence`), `${canonical}&applicationId=${id}&cockpit=evidence`);
+  assert.equal(canonicalPostAuthPath(`${canonical}&applicationId=${id}&cockpit=write`), canonical);
+});
+
+test("return to application requires the same workspace projection to link the exact Task or Decision", async () => {
+  const operation = { nearestOutcome: { taskId: id }, decisions: [{ id: other, relatedTask: { id: other } }], stage: { decisionId: null } };
+  const read = async () => ({ data: { id: other, operation } });
+  assert.equal(await validateApplicationReturn(other, id, "task", read), applicationReturnPath(other));
+  assert.equal(await validateApplicationReturn(other, other, "decision", read), applicationReturnPath(other));
+  await assert.rejects(validateApplicationReturn(id, id, "task", read), /application_return_unavailable/);
+  await assert.rejects(validateApplicationReturn(other, id, "decision", read), /application_return_unavailable/);
+  assert.equal(await validateApplicationReturn(other, other, "task", read), applicationReturnPath(other));
+  await assert.rejects(validateApplicationReturn("../other", id, "task", read), /invalid_application_return/);
+  await assert.rejects(validateApplicationReturn(other, id, "task", async () => { throw Error("request_403"); }), /request_403/);
+});
+test("accepted baseline Decision and its audit Task return to the same application", async () => {
+  const read = async () => ({ data: { id, operation: { stage: { decisionId: other, relatedTask: { id } },
+    nearestOutcome: null, decisions: [] } } });
+  assert.equal(await validateApplicationReturn(id, other, "decision", read), applicationReturnPath(id));
+  assert.equal(await validateApplicationReturn(id, id, "task", read), applicationReturnPath(id));
+  await assert.rejects(validateApplicationReturn(id, other, "task", read), /application_return_unavailable/);
 });
 
 test("ambiguous or malformed record targets cannot be preserved", () => {

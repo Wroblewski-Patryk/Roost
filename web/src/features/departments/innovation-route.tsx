@@ -9,6 +9,8 @@ import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-
 import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
 import { useLanguage } from "../../i18n/i18n";
+import { navigateApp, useAppLocation } from "../../app-navigation";
+import { applicationReturnPath, recordIdFromQuery } from "../../owner-record-navigation";
 import { FindingWorkbench } from "./finding-workbench";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import {
@@ -144,26 +146,26 @@ function Meter({ value, label }: { value: number; label: string }) {
   );
 }
 
-export function ApplicationOperationSummary({ operation, locale }: { operation?: ApplicationOperation; locale: "pl" | "en" }) {
+export function ApplicationOperationSummary({ operation, locale, applicationId }: { operation?: ApplicationOperation; locale: "pl" | "en"; applicationId?: string }) {
   const pl = locale === "pl", current = portfolioOperation(operation);
   const copy = (polish: string, english: string) => pl ? polish : english;
   const label = (value: string) => operationLabel(value, locale);
   const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(pl ? "pl-PL" : "en-GB") : copy("Nieznana data", "Unknown date");
   const link = (href: string | null, text: string) => href ? <a className="link link-primary [overflow-wrap:anywhere]" href={href}>{text}</a> : <span className="[overflow-wrap:anywhere]">{text}</span>;
   return <section className="mt-4 grid gap-3 border-t border-base-300 pt-4 text-sm" aria-label={copy("Stan operacyjny aplikacji", "Application operation status")}>
+    <div className={current?.blockers.length ? "rounded-company border border-warning/40 bg-warning/10 p-3" : ""}><h4 className="font-bold">{copy("Blokady tej aplikacji", "This application's blockers")}</h4>{current?.blockers.length ? <ul className="mt-1 list-disc space-y-1 pl-4">{current.blockers.map((blocker, index) => <li className="[overflow-wrap:anywhere]" key={`${blocker.code}-${index}`}>{label(blocker.code)}{blocker.target ? <span className="block text-xs">{link(portfolioRecordHref(blocker.target.href, applicationId), blocker.target.title)}</span> : null}</li>)}</ul> : <p className="text-company-muted">{current ? copy("Brak zgłoszonych blokad", "No reported blockers") : copy("Stan blokad nie został zweryfikowany", "Blocker state is unverified")}</p>}</div>
     <dl className="grid gap-3">
       <div><dt className="text-company-muted">{copy("Etap potwierdzony dowodami", "Stage supported by evidence")}</dt><dd className="font-bold">{label(current?.stage.key ?? "unverified")}</dd>{current ? <dd className="mt-1 text-xs text-company-muted">{label(current.stage.claim)}</dd> : null}</div>
       <div><dt className="text-company-muted">{copy("Brama najbliższego wyniku", "Nearest outcome gate")}</dt><dd className={`font-bold ${current?.gateState === "blocked" ? "text-error" : current?.gateState === "met" ? "text-success" : ""}`}>{current ? label(current.gateState) : copy("Niezweryfikowana", "Unverified")}</dd></div>
-      <div><dt className="text-company-muted">{copy("Najbliższy wynik", "Nearest outcome")}</dt><dd>{current?.nearestOutcome ? <>{link(portfolioTaskHref(current.nearestOutcome.taskId), current.nearestOutcome.title)}<span className="ml-2 text-xs text-company-muted">{label(current.nearestOutcome.status)}</span></> : copy("Brak wskazanego wyniku", "No outcome identified")}</dd></div>
+      <div><dt className="text-company-muted">{copy("Najbliższy wynik", "Nearest outcome")}</dt><dd>{current?.nearestOutcome ? <>{link(portfolioTaskHref(current.nearestOutcome.taskId, applicationId), current.nearestOutcome.title)}<span className="ml-2 text-xs text-company-muted">{label(current.nearestOutcome.status)}</span></> : copy("Brak wskazanego wyniku", "No outcome identified")}</dd></div>
       <div><dt className="text-company-muted">{copy("Odpowiedzialność", "Accountability")}</dt><dd>{current?.accountable ? <>{current.accountable.label} · {label(current.accountable.role)}</> : copy("Nieustalona", "Not established")}</dd></div>
     </dl>
     <p className="text-xs text-company-muted">{copy("Stan bramy dotyczy wyłącznie najbliższego wyniku.", "Gate state applies only to the nearest outcome.")}</p>
     {current?.stage.scope ? <p className="[overflow-wrap:anywhere]"><strong>{copy("Zakres dowodu", "Evidence scope")}:</strong> {current.stage.scope}</p> : null}
     {current?.stage.asOf ? <p className="text-xs text-company-muted">{copy("Stan na", "As of")}: <time dateTime={current.stage.asOf}>{date(current.stage.asOf)}</time></p> : null}
-    {current?.stage.decisionId ? <p>{link(portfolioRecordHref(`/areas?area=01-strategia&view=decisions&decisionId=${encodeURIComponent(current.stage.decisionId)}`), copy("Decyzja dotycząca stanu bazowego", "Baseline decision"))}</p> : null}
+    {current?.stage.decisionId ? <p>{link(portfolioRecordHref(`/areas?area=01-strategia&view=decisions&decisionId=${encodeURIComponent(current.stage.decisionId)}`, applicationId), copy("Decyzja dotycząca stanu bazowego", "Baseline decision"))}</p> : null}
     <p className="text-xs text-company-muted">{copy("Gotowość produktu: niezweryfikowana · Gotowość do sprzedaży: niezweryfikowana", "Product readiness: unverified · Sale readiness: unverified")}</p>
-    <div><h4 className="font-bold">{copy("Blokady", "Blockers")}</h4>{current?.blockers.length ? <ul className="mt-1 list-disc space-y-1 pl-4">{current.blockers.map((blocker, index) => <li className="[overflow-wrap:anywhere]" key={`${blocker.code}-${index}`}>{label(blocker.code)}{blocker.reference ? <span className="block text-xs text-company-muted">{blocker.reference}</span> : null}</li>)}</ul> : <p className="text-company-muted">{current ? copy("Brak zgłoszonych blokad", "No reported blockers") : copy("Brak zweryfikowanego stanu blokad", "Blocker state is unverified")}</p>}</div>
-    <div><h4 className="font-bold">{copy("Decyzje wymagające uwagi", "Decisions needing attention")}</h4>{current?.decisions.length ? <ul className="mt-1 space-y-1">{current.decisions.map(decision => <li key={decision.id}>{link(portfolioRecordHref(decision.href), decision.title)}<span className="ml-2 text-xs text-company-muted">{label(decision.state)}</span></li>)}</ul> : <p className="text-company-muted">{current ? copy("Brak zgłoszonych decyzji", "No reported decisions") : copy("Brak zweryfikowanego stanu decyzji", "Decision state is unverified")}</p>}</div>
+    <div><h4 className="font-bold">{copy("Decyzje wymagające uwagi", "Decisions needing attention")}</h4>{current?.decisions.length ? <ul className="mt-1 space-y-1">{current.decisions.map(decision => <li key={decision.id}>{link(portfolioRecordHref(decision.href, applicationId), decision.title)}<span className="ml-2 text-xs text-company-muted">{label(decision.state)}</span></li>)}</ul> : <p className="text-company-muted">{current ? copy("Brak zgłoszonych decyzji", "No reported decisions") : copy("Brak zweryfikowanego stanu decyzji", "Decision state is unverified")}</p>}</div>
     <div><h4 className="font-bold">{copy("Dowody", "Evidence")}</h4>{current?.evidence.length ? <ul className="mt-1 space-y-2">{current.evidence.map(evidence => <li key={`${evidence.kind}-${evidence.id}`}>{link(portfolioRecordHref(evidence.href), label(evidence.kind))}<span className="ml-2 text-xs text-company-muted"><time dateTime={evidence.at}>{date(evidence.at)}</time></span>{evidence.commit ? <code className="block break-all text-xs">{evidence.commit}</code> : null}</li>)}</ul> : <p className="text-company-muted">{copy("Brak dowodów zakończenia", "No completion evidence")}</p>}</div>
     {current?.limitations.length ? <details className="text-xs text-company-muted"><summary className="cursor-pointer py-1">{copy("Granice dowodu", "Evidence limitations")}</summary><ul className="list-disc space-y-1 pl-4">{current.limitations.map((limitation, index) => <li className="[overflow-wrap:anywhere]" key={index}>{limitation}</li>)}</ul></details> : null}
   </section>;
@@ -190,7 +192,7 @@ function ApplicationCard({
         </div>
         <CcButton size="sm" variant="outline" onClick={onOpen}>{locale === "pl" ? "Otwórz aplikację" : "Open application"}</CcButton>
       </div>
-      <ApplicationOperationSummary operation={application.operation} locale={locale} />
+      <ApplicationOperationSummary operation={application.operation} locale={locale} applicationId={application.id} />
       <details className="mt-5 border-t border-base-300 pt-3 text-xs text-company-muted"><summary className="cursor-pointer">{locale === "pl" ? "Ocena funkcji i zadeklarowany etap" : "Capability score and declared stage"}</summary>
       <p className="mt-3">{locale === "pl" ? "Zadeklarowany etap profilu" : "Declared profile stage"}: {humanize(application.innovationStage)}</p>
       <div className="mt-3 grid gap-3">
@@ -1103,6 +1105,7 @@ function ExecutionWorkbench({
 
 export function InnovationRoute() {
   const { locale, t } = useLanguage();
+  const appLocation = useAppLocation();
   const [portfolio, setPortfolio] = useState<PortfolioPacket | null>(null);
   const [catalog, setCatalog] = useState<ProductEngineeringCatalog | null>(
     null,
@@ -1119,6 +1122,8 @@ export function InnovationRoute() {
     "loading",
   );
   const [error, setError] = useState<string | null>(null);
+  const [navigationError, setNavigationError] = useState(false);
+  const [cockpitIncomplete, setCockpitIncomplete] = useState(false);
 
   const loadBase = useCallback(async () => {
     try {
@@ -1144,11 +1149,12 @@ export function InnovationRoute() {
   }, []);
 
   const loadCockpit = useCallback(async (applicationId: string) => {
-    const [applicationResponse, mapResponse, gapResponse, readinessResponse] =
-      await Promise.all([
-        api<{ data: ProductApplication }>(
-          `/v1/product-engineering/applications/${applicationId}`,
-        ),
+    const applicationResponse = await api<{ data: ProductApplication }>(
+      `/v1/product-engineering/applications/${applicationId}`,
+    );
+    setSelected(applicationResponse.data);
+    const [mapResponse, gapResponse, readinessResponse] =
+      await Promise.allSettled([
         api<{ data: { capabilities: ApplicationCapability[] } }>(
           `/v1/product-engineering/applications/${applicationId}/capability-map`,
         ),
@@ -1159,21 +1165,27 @@ export function InnovationRoute() {
           `/v1/product-engineering/applications/${applicationId}/readiness`,
         ),
       ]);
-    setSelected(applicationResponse.data);
-    setCapabilities(mapResponse.data.capabilities);
-    setGaps(gapResponse.data.gaps);
-    setReadiness(readinessResponse.data.readiness);
+    setCapabilities(mapResponse.status === "fulfilled" ? mapResponse.value.data.capabilities : []);
+    setGaps(gapResponse.status === "fulfilled" ? gapResponse.value.data.gaps : []);
+    setReadiness(readinessResponse.status === "fulfilled" ? readinessResponse.value.data.readiness : null);
+    setCockpitIncomplete([mapResponse, gapResponse, readinessResponse].some(result => result.status === "rejected"));
   }, []);
 
   useEffect(() => {
     void loadBase();
   }, [loadBase]);
   useEffect(()=>{
-    const query=new URLSearchParams(window.location.search),applicationId=query.get("applicationId");
-    if(applicationId&&/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(applicationId)&&query.get("cockpit")==="evidence"){
-      setView("evidence");void loadCockpit(applicationId).catch(()=>setSelected(null));
+    const search=new URL(appLocation,window.location.origin).search;
+    const query=new URLSearchParams(search),applicationId=recordIdFromQuery(search,"applicationId");
+    const cockpit=query.get("cockpit");
+    if(applicationId&&(cockpit==="overview"||cockpit==="evidence")){
+      setView(cockpit);void loadCockpit(applicationId).then(()=>setNavigationError(false)).catch(()=>{setSelected(null);setNavigationError(true);});
+    } else {
+      setSelected(null);
+      setNavigationError(false);
+      setCockpitIncomplete(false);
     }
-  },[loadCockpit]);
+  },[loadCockpit,appLocation]);
   const refreshAll = useCallback(async () => {
     await loadBase();
     if (selected) await loadCockpit(selected.id);
@@ -1265,6 +1277,8 @@ export function InnovationRoute() {
       {status === "error" ? (
         <CcNotice tone="error" title={error || "Innovation could not load"} />
       ) : null}
+      {navigationError ? <CcNotice tone="error" title={locale === "pl" ? "Wskazana aplikacja jest niedostępna w tym workspace." : "The requested application is unavailable in this workspace."} /> : null}
+      {selected && cockpitIncomplete ? <CcNotice tone="warning" title={locale === "pl" ? "Część danych aplikacji nie została wczytana." : "Some application details could not be loaded."} /> : null}
       {catalogOpen ? (
         <CatalogView catalog={catalog} onRefresh={loadBase} />
       ) : selected ? (
@@ -1272,16 +1286,18 @@ export function InnovationRoute() {
           <div className="rounded-company border border-base-300 bg-base-100 p-5">
             <button
               className="btn btn-ghost btn-sm mb-3"
-              onClick={() => setSelected(null)}
+              onClick={() => { setSelected(null); navigateApp("/areas?area=11-innowacje&view=overview"); }}
             >
-              ← Portfolio
+              {locale === "pl" ? "← Portfolio aplikacji" : "← Application portfolio"}
             </button>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h2 className="text-3xl font-black">{selected.name}</h2>
                 <p className="mt-2 max-w-3xl text-company-muted">
                   {selected.description ||
-                    "Application definition is incomplete."}
+                    (locale === "pl"
+                      ? "Definicja aplikacji jest niepełna."
+                      : "Application definition is incomplete.")}
                 </p>
               </div>
               <div className="grid gap-2">
@@ -1301,7 +1317,7 @@ export function InnovationRoute() {
                 </select>
               </div>
             </div>
-            <ApplicationOperationSummary operation={selected.operation} locale={locale} />
+            <ApplicationOperationSummary operation={selected.operation} locale={locale} applicationId={selected.id} />
             <div className="tabs tabs-box mt-5 overflow-x-auto">
               {(
                 [
@@ -1619,7 +1635,8 @@ export function InnovationRoute() {
                 onOpen={() => {
                   setCatalogOpen(false);
                   setView("overview");
-                  void loadCockpit(application.id);
+                  setNavigationError(false);
+                  navigateApp(applicationReturnPath(application.id)!);
                 }}
               />
             ))}

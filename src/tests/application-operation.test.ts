@@ -18,7 +18,34 @@ test('owner pending decision blocks an independently reviewed outcome and links 
   const value = applicationOperation(f); assert.equal(value.gateState, 'blocked');
   assert.equal(value.nearestOutcome?.taskId, id(2)); assert.equal(value.accountable?.id, id(3));
   assert.equal(value.decisions[0].href, `/areas?area=01-strategia&view=decisions&decisionId=${id(6)}`);
+  assert.deepEqual(value.blockers.find(blocker => blocker.code === 'owner_decision_pending')?.target,
+    { kind: 'decision', title: 'Actual owner decision', href: value.decisions[0].href });
   assert.equal(value.evidence[0].commit, 'a'.repeat(40));
+});
+test('a decision links its own scoped application task even when another task is the nearest outcome', () => {
+  const f = facts();
+  f.tasks = [task(), { ...task(), id: id(8), title: 'Task scoped by decision', status: 'done' }];
+  f.decisions = [
+    { id: id(6), title: 'Decision for nearest task', state: 'pending', taskIds: [id(2)] },
+    { id: id(7), title: 'Decision for second task', state: 'pending', taskIds: [id(8)] }
+  ];
+  const value = applicationOperation(f);
+  assert.deepEqual(value.decisions[1].relatedTask, { id: id(8), title: 'Task scoped by decision' });
+  assert.equal(value.nearestOutcome?.taskId, id(2));
+});
+test('an accepted takeover Decision retains its exact audit Task even when a later Decision targets another Task', () => {
+  const f = facts();
+  f.tasks = [task(), { ...task(), id: id(8), title: 'Later outcome', status: 'in_progress' }];
+  f.baseline = { id: id(6), acceptedAt: '2026-10-04T00:00:00Z', current: true,
+    body: { stage: 'implementation', scopeDescription: 'Audited scope', auditTaskId: id(2),
+      verifierExecutionId: id(9), baselineCommit: 'a'.repeat(40), limitations: [] } as any };
+  f.decisions = [{ id: id(6), title: 'Accepted baseline', state: 'accepted', taskIds: [id(2)] },
+    { id: id(7), title: 'Later decision', state: 'proposed', taskIds: [id(8)] }];
+  const value = applicationOperation(f);
+  assert.equal(value.stage.decisionId, id(6));
+  assert.deepEqual(value.stage.relatedTask, { id: id(2), title: 'Bounded outcome' });
+  assert.equal(value.nearestOutcome?.taskId, id(8));
+  assert.deepEqual(value.decisions.map(decision => decision.id), [id(7)]);
 });
 test('invalidated native result and stale review never establish a met gate', () => {
   const f = facts(); f.tasks = [task()]; f.tasks[0].latestExecution!.invalidated = true;
@@ -73,6 +100,8 @@ test('a newly incomplete submission preserves a visible context blocker over its
   const value = applicationOperation(f);
   assert.equal(value.gateState, 'blocked');
   assert.ok(value.blockers.some(blocker => blocker.code === 'task_needs_context'));
+  assert.equal(value.blockers.find(blocker => blocker.code === 'task_needs_context')?.target?.href,
+    `/areas?area=04-operacje&view=tasks&taskId=${id(2)}`);
 });
 
 test('current exact acceptance after a group-risk invalidation resolves only the result, never later risk or owner waiting', () => {

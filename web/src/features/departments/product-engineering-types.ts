@@ -20,13 +20,15 @@ export type ApplicationOperation = {
     claim: "unverified" | "owner_accepted_baseline" | "bounded_release_proof";
     scope: string | null;
     decisionId: string | null;
+    relatedTask: { id: string; title: string } | null;
     asOf: string | null;
   };
   gateState: "unmet" | "in_progress" | "met" | "blocked" | "explicitly_deferred";
   nearestOutcome: { taskId: string; title: string; status: string } | null;
   accountable: { id: string | null; role: string; label: string } | null;
-  blockers: Array<{ code: string; reference: string | null }>;
-  decisions: Array<{ id: string; title: string; state: string; href: string }>;
+  blockers: Array<{ code: string; reference: string | null; target: { kind: "decision" | "task"; title: string; href: string } | null }>;
+  decisions: Array<{ id: string; title: string; state: string; href: string;
+    relatedTask: { id: string; title: string } | null }>;
   evidence: Array<{ kind: "audit" | "independent_review" | "release"; id: string; commit: string | null; at: string; href: string }>;
   productReadiness: "unverified";
   saleReadiness: "unverified";

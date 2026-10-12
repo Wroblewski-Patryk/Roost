@@ -45,13 +45,22 @@ export function portfolioOperation(operation?: ApplicationOperation): Applicatio
   return operation?.schemaVersion === "roost-application-operation-v1" ? operation : null;
 }
 
-export function portfolioRecordHref(href: string) {
+const uuid = /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
+
+export function portfolioRecordHref(href: string, applicationId?: string) {
   if (!href.startsWith("/areas?") || /[\\\u0000-\u0020]/.test(href)) return null;
   const url = new URL(href, "https://roost.invalid");
-  return url.origin === "https://roost.invalid" && url.pathname === "/areas" ? `${url.pathname}${url.search}` : null;
+  if (url.origin !== "https://roost.invalid" || url.pathname !== "/areas") return null;
+  if (applicationId && uuid.test(applicationId)) {
+    const query = url.searchParams;
+    const task = query.get("area") === "04-operacje" && query.get("view") === "tasks" && uuid.test(query.get("taskId") ?? "");
+    const decision = query.get("area") === "01-strategia" && query.get("view") === "decisions" && uuid.test(query.get("decisionId") ?? "");
+    if (task || decision) query.set("fromApplicationId", applicationId.toLowerCase());
+  }
+  return `${url.pathname}${url.search}`;
 }
 
-export function portfolioTaskHref(taskId: string) {
-  return /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(taskId)
-    ? `/areas?area=04-operacje&view=tasks&taskId=${encodeURIComponent(taskId)}` : null;
+export function portfolioTaskHref(taskId: string, applicationId?: string) {
+  return uuid.test(taskId)
+    ? portfolioRecordHref(`/areas?area=04-operacje&view=tasks&taskId=${encodeURIComponent(taskId)}`, applicationId) : null;
 }

@@ -1,4 +1,4 @@
-import { recordIdFromQuery } from "./owner-record-navigation";
+import { innovationRecordPath, recordIdFromQuery } from "./owner-record-navigation";
 
 export type AppRouteMeta = {
   id: string;
@@ -329,17 +329,19 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     const area = params.get("area");
     const view = params.get("view");
     const fromAttention = params.getAll("from").length === 1 && params.get("from") === "attention" ? "&from=attention" : "";
+    const fromApplicationId = recordIdFromQuery(rawQuery, "fromApplicationId");
+    const fromApplication = !fromAttention && fromApplicationId ? `&fromApplicationId=${fromApplicationId}` : "";
     const recordId = recordIdFromQuery(rawQuery, "recordId");
     const taskId = recordIdFromQuery(rawQuery, "taskId");
     const decisionId = recordIdFromQuery(rawQuery, "decisionId");
     if (area && view === "decisions" && contextualDecisionAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=decisions${decisionId ? `&decisionId=${decisionId}${fromAttention}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=decisions${decisionId ? `&decisionId=${decisionId}${fromAttention}${fromApplication}` : ""}`;
     }
     if (area && view && contextualRecordViews[area]?.includes(view)) {
       return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}${recordId ? `&recordId=${recordId}${fromAttention}` : ""}`;
     }
     if (area && view === "tasks" && contextualTaskAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=tasks${taskId ? `&taskId=${taskId}${fromAttention}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=tasks${taskId ? `&taskId=${taskId}${fromAttention}${fromApplication}` : ""}`;
     }
     if (area && view === "procedures" && contextualProcedureAreas.has(area)) {
       return `/areas?area=${encodeURIComponent(area)}&view=procedures`;
@@ -363,7 +365,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       const view = params.get("view");
       const department = params.get("department");
       const base = view === "calendar" ? "/areas?area=04-operacje&view=calendar" : view === "procedures" ? "/areas?area=04-operacje&view=procedures" : canonicalOperationsPath;
-      if (view === "tasks" && taskId) return `${canonicalOperationsPath}&taskId=${taskId}${fromAttention}`;
+      if (view === "tasks" && taskId) return `${canonicalOperationsPath}&taskId=${taskId}${fromAttention}${fromApplication}`;
       return department ? `${base}&department=${encodeURIComponent(department)}` : base;
     }
     if (area === "05-relacje") {
@@ -392,7 +394,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       return canonicalLegalPath;
     }
     if (area === "11-innowacje") {
-      return view === "application-graph" ? canonicalApplicationGraphPath : canonicalInnovationPath;
+      return view === "application-graph" ? canonicalApplicationGraphPath : innovationRecordPath(`?${rawQuery}`, canonicalInnovationPath);
     }
     if (area === "12-zarzadzanie") {
       return canonicalManagementDepartmentsPath;
