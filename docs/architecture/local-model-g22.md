@@ -1,7 +1,9 @@
-# G22 local model: bounded checkpoint
+# G22 local model: bounded native and deployed evidence
 
-2026-10-12. This is implementation and test evidence for the active G22 gate,
-not a release record or a model-policy decision for G23.
+2026-10-12. This records the authorized G22 implementation, isolated native
+trial and read-only production release verification. Earlier failed-trial and
+pre-release checkpoints remain below as historical evidence. This is not a
+model-quality qualification or routing-policy decision for G23.
 
 ## Accepted boundary
 
