@@ -23,6 +23,17 @@ if (process.env.ROOST_G22_NATIVE_RUNTIME === '1') {
   environment.ROOST_G22_MODEL_DIGEST = process.env.ROOST_G22_MODEL_DIGEST;
   environment.ROOST_G11_REVIEW_ACTION = 'local-approve';
 }
+if (process.env.ROOST_G23_POLICY_ONLY === '1') environment.ROOST_G23_POLICY_ONLY = '1';
+if (process.env.ROOST_G23_COMPARISON === '1') {
+  if (!['plain_status', 'unsupported_readiness_claim'].includes(process.env.ROOST_G23_CASE)
+    || !['local', 'codex'].includes(process.env.ROOST_G23_BACKEND)
+    || !process.env.ROOST_G23_EVIDENCE_DIR
+    || !path.isAbsolute(process.env.ROOST_G23_EVIDENCE_DIR)
+    || !path.relative(process.cwd(), process.env.ROOST_G23_EVIDENCE_DIR).startsWith('..'))
+    throw Error('g23_comparison_configuration_invalid');
+  environment.ROOST_G23_COMPARISON = '1';
+  for (const key of ['ROOST_G23_CASE', 'ROOST_G23_BACKEND', 'ROOST_G23_EVIDENCE_DIR']) environment[key] = process.env[key];
+}
 if (process.env.ROOST_G12_CONTINUATION === '1') environment.ROOST_G12_CONTINUATION = '1';
 if ((process.env.ROOST_G6_NATIVE_RUNTIME === '1' || process.env.ROOST_G22_NATIVE_RUNTIME === '1') && process.env.ROOST_G7_REVIEW_ONLY !== '1') {
   if (!process.env.ROOST_G6_NATIVE_HOST_CONFIG) throw Error('native_host_config_required');

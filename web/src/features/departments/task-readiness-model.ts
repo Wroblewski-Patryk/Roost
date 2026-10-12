@@ -1,6 +1,17 @@
 export type Reference = { id: string; revision: string; evidence?: string };
 export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
 export type RoleCatalogEntry = CatalogEntry & { principalKey: string | null; type: string; role: string | null; competencies: string[]; mandates: string[] };
+export type ModelPolicyProposal = {
+  schemaVersion: "roost-model-policy-proposal-v1";
+  backend: "codex_responses" | "ollama_loopback";
+  model: string;
+  modelDigest?: string | null;
+  reasoningEffort: string;
+  reasonCode: string;
+  reason: string;
+  localQualification: string | null;
+  eligible: boolean;
+};
 export type ReadyEditor = {
   executionClass?: "application" | "roost-company-information-v1" | "roost-company-information-runtime-v1";
   decisionAuthorities?: { decisionId: string; title?: string; current: boolean; acceptedAuthority: unknown }[];
@@ -15,6 +26,7 @@ export type ReadyEditor = {
   activeExecution: boolean; catalogTruncated: boolean;
   sources: CatalogEntry[]; procedures: CatalogEntry[]; dependencies: CatalogEntry[]; decisions: CatalogEntry[];
   models: { id: string; efforts: string[] }[];
+  modelPolicyProposal?: ModelPolicyProposal;
   accepted: { contract: Record<string, any>; prompt: string | null; baseBranch: string | null; applicationId: string | null } | null;
   acceptance: { validatedAt: string; authorName: string | null; authorType: string } | null;
 };
@@ -50,8 +62,33 @@ export type ScopeDraft = { component: Reference | null; manager: Reference | nul
 export type Draft = { taskRoles: { requester: Reference | null; executor: Reference | null; verifier: Reference | null; releaser: Reference | null }; singleTask: ScopeDraft; values: Record<FieldName, string>; backend: "codex_responses" | "ollama_loopback"; model: string; modelDigest: string; effort: string; competencies: string[]; tools: string[]; permissions: string[]; refs: Record<RefGroup, Reference[]>; none: Record<RefGroup, string>; rollbackMode: string };
 const lines = (value: string) => value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 const join = (value: unknown) => Array.isArray(value) ? value.join("\n") : typeof value === "string" || typeof value === "number" ? String(value) : "";
+export function modelPolicyProposalFor(editor: ReadyEditor): ModelPolicyProposal | null {
+  const proposal = editor.executionClass === companyInformationRuntimeClass ? editor.modelPolicyProposal : null;
+  return proposal?.schemaVersion === "roost-model-policy-proposal-v1"
+    && ["codex_responses", "ollama_loopback"].includes(proposal.backend)
+    && typeof proposal.model === "string" && proposal.model.length > 0
+    && typeof proposal.reasoningEffort === "string" && proposal.reasoningEffort.length > 0
+    ? proposal : null;
+}
+export function modelPolicyOverride(editor: ReadyEditor, draft: Draft): boolean {
+  const proposal = modelPolicyProposalFor(editor);
+  return Boolean(proposal && (draft.backend !== proposal.backend || draft.model !== proposal.model
+    || draft.effort !== proposal.reasoningEffort
+    || proposal.backend === "ollama_loopback" && draft.modelDigest !== (proposal.modelDigest ?? "")));
+}
+export function modelPolicyReasonText(reasonCode: string, locale: string): string {
+  const polish = locale === "pl";
+  switch (reasonCode) {
+    case "risk_low_required": return polish ? "Najpierw potrzebna jest aktualna ocena niskiego ryzyka." : "A current Low risk assessment is required first.";
+    case "local_qualification_missing": return polish ? "Brak przyjętego porównania jakości modelu lokalnego dla tej klasy zadań; proponowany jest Codex." : "No accepted local-model quality comparison exists for this task class; Codex is proposed.";
+    case "local_resources_unavailable": return polish ? "Model lokalny ma przyjęte porównanie, ale żaden host nie zgłasza wystarczających aktualnych zasobów; proponowany jest Codex." : "The local comparison is accepted, but no host reports enough current resources; Codex is proposed.";
+    case "local_quality_qualified": return polish ? "Przyjęte porównanie potwierdza model lokalny dla tej klasy zadań." : "An accepted comparison qualifies the local model for this task class.";
+    default: return polish ? "Propozycja polityki modelu wymaga przeglądu przed Ready." : "Review the model policy proposal before Ready.";
+  }
+}
 export function draftFrom(editor: ReadyEditor): Draft {
   const c = editor.accepted?.contract ?? {};
+  const proposal = editor.accepted ? null : modelPolicyProposalFor(editor);
   const s = c.singleTask ?? {}, m = s.measurement ?? {};
   const values = {
     version: c.version, outcome: c.objective?.outcome, allowed: c.scope?.allowed, forbidden: c.scope?.forbidden,
@@ -62,9 +99,9 @@ export function draftFrom(editor: ReadyEditor): Draft {
     taskRoles: { requester: c.taskRoles?.requester ?? (editor.requester ? { id: editor.requester.id, revision: editor.requester.revision } : null), executor: c.taskRoles?.executor ?? null, verifier: c.taskRoles?.verifier ?? null, releaser: c.taskRoles?.releaser ?? null },
     singleTask: { component: s.component ?? null, manager: s.accountableManager ?? null, metric: m.metric ?? "", comparison: m.comparison ?? "eq", target: m.target === undefined ? "" : String(m.target), unit: m.unit ?? "", method: m.method ?? "",
       problems: (s.problems ?? [{ statement: "" }]).map((p: any) => ({ statement: p.statement, causalLink: p.causalLink ?? "" })), mechanism: s.commonCause?.mechanism ?? "", inseparability: s.commonCause?.inseparability ?? "", evidence: s.commonCause?.evidence ?? null },
-    backend: c.modelSelection?.backend === "ollama_loopback" ? "ollama_loopback" : "codex_responses",
-    model: (c.modelSelection?.modelSelection ?? c.modelSelection)?.model ?? "", modelDigest: c.modelSelection?.modelSelection?.modelDigest ?? "",
-    effort: (c.modelSelection?.modelSelection ?? c.modelSelection)?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
+    backend: c.modelSelection?.backend === "ollama_loopback" ? "ollama_loopback" : proposal?.backend ?? "codex_responses",
+    model: (c.modelSelection?.modelSelection ?? c.modelSelection)?.model ?? proposal?.model ?? "", modelDigest: c.modelSelection?.modelSelection?.modelDigest ?? (proposal?.backend === "ollama_loopback" ? proposal.modelDigest ?? "" : ""),
+    effort: (c.modelSelection?.modelSelection ?? c.modelSelection)?.reasoningEffort ?? proposal?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
     refs: Object.fromEntries(groups.map(key => [key, key === "skills" ? (c.skills?.items ?? []).map((item: { name: string; version: string }) => ({ id: item.name, revision: item.version })) : c.context?.[key] ?? c[key]?.items ?? []])) as Draft["refs"],
     none: Object.fromEntries(groups.map(key => [key, c[key]?.noneReason ?? ""])) as Draft["none"], rollbackMode: isCompanyInformation(editor) ? "not_applicable" : c.recovery?.rollback?.mode ?? "" };
 }

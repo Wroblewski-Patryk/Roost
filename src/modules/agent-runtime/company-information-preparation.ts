@@ -8,6 +8,7 @@ import { requireRuntimeContent } from "./runtime-redaction-policy";
 import { companyRuntimeClass, isInformationRuntime, informationApproval } from "./company-information-runtime";
 import { riskAdmission } from "./task-risk";
 import { riskLevelAdmission } from "./task-risk-admission";
+import { informationModelProposalForTask, selectionDiffersFromProposal } from "./information-model-policy";
 
 export const companyInformationClass = "roost-company-information-v1";
 export const isCompanyInformation = (contract: any) => [companyInformationClass, companyRuntimeClass].includes(contract?.executionClass);
@@ -60,8 +61,22 @@ export async function submitCompanyPreparation(db: Prisma.TransactionClient, wor
   if (risk && "error" in risk) return { error: risk.error };
   const admission = runtime ? await riskLevelAdmission(db, task.id, "runtime_execute") : null;
   if (admission?.error) return { error: admission.error };
+  const policy = runtime ? await informationModelProposalForTask(db, workspaceId, task.id) : null;
+  if (policy && !policy.eligible) return { error: "company_model_policy_risk_required" };
+  const override = policy ? selectionDiffersFromProposal(input.contract.modelSelection, policy) : false;
+  if (override) {
+    const workspace = await db.workspace.findUnique({ where: { id: workspaceId }, select: { ownerUserId: true } });
+    if (actor.requestedByType !== "user" || actor.requestedById !== workspace?.ownerUserId)
+      return { error: "company_model_policy_owner_override_required" };
+  }
+  const policyChoice = policy ? { proposal: policy, override,
+    selected: { backend: input.contract.modelSelection?.backend === "ollama_loopback" ? "ollama_loopback" : "codex_responses",
+      model: (input.contract.modelSelection?.modelSelection ?? input.contract.modelSelection)?.model,
+      reasoningEffort: (input.contract.modelSelection?.modelSelection ?? input.contract.modelSelection)?.reasoningEffort },
+    ...(override ? { overrideOwnerUserId: actor.requestedById } : {}) } : null;
   const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(),
     revision: context.revision, preparationOnly: !runtime, modelExecutionQualified: runtime, ...(approval ? { runtimeApproval: approval } : {}),
+    ...(policyChoice ? { modelPolicy: policyChoice } : {}),
     ...(runtime ? { riskAssessmentId: risk!.id, riskAdmissionSeal: admission!.seal, riskAdmissionCommit: null } : {}),
     applicationId: null, contract: input.contract, prompt: input.prompt ?? null, baseBranch: null,
     roleProvenance: context.taskContext.executionPacket.roleAuthorities.provenance,
@@ -71,7 +86,8 @@ export async function submitCompanyPreparation(db: Prisma.TransactionClient, wor
   await receipt(result, pin);
   await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin, executionRoleProvenance: pin.roleProvenance } });
   await db.event.create({ data: { workspaceId, taskId: task.id, type: "task_execution_ready", source: "roost", resourceType: "task", resourceId: task.id,
-    payload: { pinId: pin.pinId, revision: pin.revision, executionClass: companyInformationClass, preparationOnly: true, ...actor } } });
+    payload: { pinId: pin.pinId, revision: pin.revision, executionClass: runtime ? companyRuntimeClass : companyInformationClass,
+      preparationOnly: !runtime, ...(policyChoice ? { modelPolicy: policyChoice } : {}), ...actor } } });
   return result;
 }
 

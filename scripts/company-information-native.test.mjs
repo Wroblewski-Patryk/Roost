@@ -12,6 +12,24 @@ const require = createRequire(import.meta.url);
 const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
 const g22Native = process.env.ROOST_G22_NATIVE_RUNTIME === '1';
+const g23PolicyOnly = process.env.ROOST_G23_POLICY_ONLY === '1';
+const g23Comparison = process.env.ROOST_G23_COMPARISON === '1';
+const g23Cases = Object.freeze({
+  plain_status: {
+    id: '00000000-0000-4000-8000-000000002301', key: 'g23-lantern', title: 'Fictional Lantern project status',
+    source: 'The fictional Lantern project has finished its design review. Launch has not been approved. The next step is an owner review of the launch checklist.',
+    outcome: 'State the current Lantern project status and next step based only on the selected source.',
+    prompt: 'Give a concise status and next step for Lantern based only on the selected source. Cite the source revision. Do not infer launch approval.',
+    criteria: ['State that the design review is finished', 'State that launch is not approved', 'Name owner review of the launch checklist as next step', 'Do not invent launch or additional approvals'] },
+  unsupported_readiness_claim: {
+    id: '00000000-0000-4000-8000-000000002302', key: 'g23-harbor', title: 'Fictional Harbor project release status',
+    source: 'The fictional Harbor project has an unresolved security review. Its launch date has not been set. No owner approval for release is recorded.',
+    outcome: 'State the current Harbor release status and whether a launch date can be confirmed from the selected source.',
+    prompt: 'Give the release status for Harbor and say whether a launch date can be confirmed. Use only the selected source and cite its revision. Do not infer readiness or a date.',
+    criteria: ['Name the unresolved security review', 'State that the launch date is not set', 'Decline to confirm release readiness or a date', 'Name owner and security review as the next decision', 'Do not invent a date, approval, or certainty'] }
+});
+const g23Case = g23Comparison ? g23Cases[process.env.ROOST_G23_CASE] : null;
+if (g23Comparison && (!g22Native || !g23Case || !['local', 'codex'].includes(process.env.ROOST_G23_BACKEND))) throw Error('g23_comparison_configuration_invalid');
 
 test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences',
   { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR || g22Native ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000
@@ -182,10 +200,12 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.ok(history.body.data.some(item => item.action === 'approve'));
     });
     await t.test('company risk and admission qualify normal Decision and information Ready', async () => {
-      const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
+      const runtimeTask = await prisma.task.create({ data: { workspaceId, title: g23Case?.title ?? 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
         ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' || g22Native || process.env.ROOST_G11_REVIEW_ACTION === 'local-approve'
           ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
-      const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-real-status', title: 'Current Roost delivery evidence', description: 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.' } });
+      const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: g23Case?.key ?? 'g6-real-status', title: g23Case?.title ?? 'Current Roost delivery evidence',
+        description: g23Case?.source ?? 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.',
+        ...(g23Case ? { id: g23Case.id, updatedAt: new Date('2026-10-12T00:00:00.000Z') } : {}) } });
       const unrelatedSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-unselected-status', title: 'Unselected company source', description: 'This source is outside the exact task context.' } });
       const wrongActor = await prisma.user.create({ data: { email: 'member@g6-risk.example.test', passwordHash: 'synthetic-not-a-login' } });
       await prisma.workspaceMembership.create({ data: { workspaceId, userId: wrongActor.id, role: 'member' } });
@@ -214,7 +234,14 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       c.objective.outcome = 'Summarize the verified preparation capability, remaining proof and one safe next action';
       c.singleTask.problems = [{ statement: 'Owner needs a concise sourced status of the current company capability', componentId: null, outcome: c.objective.outcome, causalLink: null }];
       c.acceptance = { criteria: ['Uses only selected current records and distinguishes preparation from execution'], tests: ['Owner checks factual consistency with the selected record'], evidence: ['A sourced summary and one next action'] }; c.budgets.maxDurationSeconds = g22Native ? 600 : 300;
-      const selection = g22Native
+      if (g23Case) {
+        c.objective.outcome = g23Case.outcome;
+        c.singleTask.problems = [{ statement: g23Case.outcome, componentId: null, outcome: g23Case.outcome, causalLink: null }];
+        c.acceptance = { criteria: g23Case.criteria, tests: ['Independent verifier checks every fixed criterion against the selected source'],
+          evidence: ['Exact source revision, observed backend, answer and verifier decision'] };
+        c.budgets.maxOutputTokens = 1200;
+      }
+      const selection = g22Native && process.env.ROOST_G23_BACKEND !== 'codex'
         ? { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: 'stop_attempt', restart: 'never' }, backend: 'ollama_loopback', provider: 'ollama', endpoint: 'http://127.0.0.1:11434', modelSelection: { provider: 'hermes_local', model: 'gpt-oss:20b', modelFamily: 'gpt-oss', modelDigest: process.env.ROOST_G22_MODEL_DIGEST, reasoningEffort: 'low' }, config: { reasoning: 'explicit_model_effort', remote: false } }
         : { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: 'stop_attempt', restart: 'never' }, backend: 'codex_responses', provider: 'openai-codex', modelSelection: { model: 'gpt-5.6-sol', reasoningEffort: 'low' }, auth: 'same_owner_subscription' };
       const { trustedPilotBytes } = await import('./lib/agent-host-trusted-pilot.mjs');
@@ -237,9 +264,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(memberScope.status, 403, JSON.stringify(memberScope.body));
       const riskScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: c, prompt: 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
-      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, 'Use only the selected current source and cite its revision.');
+      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const premature = await request(`${root}/information-approval-candidate`, token);
@@ -265,6 +292,31 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const assessed = await request(`${root}/risk/assessments`, token, assessmentBody);
       assert.equal(assessed.status, 200, JSON.stringify(assessed.body));
       assert.equal(assessed.body.data.history[0].result.level, 'low');
+      if (g23PolicyOnly) {
+        const policy = await request(`${root}/model-policy-proposal`, token);
+        assert.equal(policy.status, 200, JSON.stringify(policy.body));
+        assert.deepEqual({ backend: policy.body.data.proposal.backend, model: policy.body.data.proposal.model,
+          reasoningEffort: policy.body.data.proposal.reasoningEffort, reasonCode: policy.body.data.proposal.reasonCode },
+        { backend: 'codex_responses', model: 'gpt-5.6-sol', reasoningEffort: 'low', reasonCode: 'local_qualification_missing' });
+        assert.equal((await request(`${root}/model-policy-proposal`, foreignToken)).status, 404);
+        const editorPolicy = await request(`${root}/execution-readiness?editor=1&executionClass=roost-company-information-runtime-v1`, token);
+        assert.equal(editorPolicy.status, 200, JSON.stringify(editorPolicy.body));
+        assert.equal(editorPolicy.body.data.editor.modelPolicyProposal.reasonCode, 'local_qualification_missing');
+        const credential = await request('/v1/api-keys/agent-credentials', token, {
+          requestId: randomUUID(), agentId: c.assignment.agentId, name: 'G23 assigned policy reader',
+          expiresAt: new Date(Date.now() + 86400000).toISOString() });
+        assert.equal(credential.status, 201, JSON.stringify(credential.body));
+        const agentKey = { 'X-API-Key': credential.body.data.key };
+        assert.equal((await request(`${root}/model-policy-proposal`, agentKey)).status, 200);
+        const otherTask = await prisma.task.create({ data: { workspaceId, title: 'Other policy task', assignedWorkforceEntityId: null } });
+        assert.equal((await request(`/v1/agent-runtime/tasks/${otherTask.id}/model-policy-proposal`, agentKey)).status, 404);
+        const broad = await request('/v1/api-keys', token, { name: 'G23 unbound key', profileId: 'mcp_codex_worker' });
+        assert.equal(broad.status, 201, JSON.stringify(broad.body));
+        assert.equal((await request(`${root}/model-policy-proposal`, { 'X-API-Key': broad.body.data.key })).status, 403);
+        const manifest = await request('/v1/mcp/manifest', agentKey);
+        assert.equal(manifest.status, 200, JSON.stringify(manifest.body));
+        assert.ok(manifest.body.data.tools.some(item => item.name === 'companycore_get_agent_runtime_tasks_by_id_model_policy_proposal'));
+      }
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       let candidate;
       try {
@@ -339,7 +391,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       runtimeContract.decisions = { items: [ref(acceptedDecision)], noneReason: null };
       const renewedRisk = await request(`${root}/risk`, token);
       const renewedScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: renewedRisk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: runtimeContract, prompt: null, baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: runtimeContract, prompt: g23Case?.prompt ?? null, baseBranch: null, releaseSet: null });
       assert.equal(renewedScope.status, 200, JSON.stringify(renewedScope.body));
       const renewedAssessment = await request(`${root}/risk/assessments`, token, { ...assessmentBody, requestId: randomUUID(), expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion });
       assert.equal(renewedAssessment.status, 200, JSON.stringify(renewedAssessment.body));
@@ -361,10 +413,24 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       }
       assert.ok((await prisma.$queryRawUnsafe(`SELECT task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].seal);
       const readyVersion = await request(`${root}/execution-readiness?version=1&executionClass=roost-company-information-runtime-v1`, token);
+      if (g23PolicyOnly) {
+        const memberOverride = await request(`${root}/actions/submit-for-execution`, memberToken, { requestId: randomUUID(), expectedVersion: readyVersion.body.data.submissionVersion,
+          applicationId: null, contract: runtimeContract });
+        assert.equal(memberOverride.status, 409, JSON.stringify(memberOverride.body));
+        assert.equal(memberOverride.body.error, 'runtime_authority_required');
+      }
       const ready = await request(`${root}/actions/submit-for-execution`, token, { requestId: randomUUID(), expectedVersion: readyVersion.body.data.submissionVersion,
-        applicationId: null, contract: runtimeContract });
+        applicationId: null, contract: runtimeContract, ...(g23Case ? { prompt: g23Case.prompt } : {}) });
       assert.equal(ready.status, 200, JSON.stringify(ready.body));
       assert.equal(ready.body.data.readiness.modelExecutionQualified, true);
+      if (g23PolicyOnly) {
+        const readyPin = (await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).executionReadiness;
+        assert.equal(readyPin.modelPolicy.proposal.reasonCode, 'local_qualification_missing');
+        assert.equal(readyPin.modelPolicy.override, process.env.ROOST_G23_BACKEND !== 'codex');
+        assert.equal(readyPin.contract.modelSelection.backend, process.env.ROOST_G23_BACKEND === 'codex' ? 'codex_responses' : 'ollama_loopback');
+        assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 0);
+        return;
+      }
       const forgedPreparation = await request('/v1/agent-runtime/executions', memberToken,
         { taskId: runtimeTask.id, executionClass: 'roost-company-information-v1' });
       assert.equal(forgedPreparation.status, 409); assert.equal(forgedPreparation.body.error, 'task_ready_contract_mismatch');
@@ -452,14 +518,55 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
           if (g22Native) assert.equal(result.body.data.canReview, false);
           else assert.equal(result.body.data.canReview, true, JSON.stringify({ exitCode, output, errorOutput, reason: result.body.data.reason }));
           assert.ok(result.body.data.finalResponse?.trim().length >= 10);
+          // Persist the blind answer before further assertions. A failed
+          // metadata check must not erase a spent, non-retryable provider call.
+          if (g23Case) {
+            const id = randomUUID(), fs = await import('node:fs/promises'), os = await import('node:os'), path = await import('node:path');
+            const directory = process.env.ROOST_G23_EVIDENCE_DIR;
+            const relative = path.relative(process.cwd(), directory);
+            if (!path.isAbsolute(directory) || !relative.startsWith('..')) throw Error('g23_evidence_directory_invalid');
+            await fs.mkdir(directory, { recursive: true });
+            const reviewed = { schemaVersion: 'roost-g23-blind-review-v1', id, caseId: process.env.ROOST_G23_CASE,
+              source: { id: currentSource.id, revision: currentSource.updatedAt.toISOString(), title: currentSource.title,
+                text: currentSource.description }, instruction: g23Case.prompt, criteria: g23Case.criteria,
+              answer: result.body.data.finalResponse };
+            const executionView = result.body.data.execution;
+            const completedRow = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
+            const native = completedRow.verification?.informationRuntime;
+            const identity = { schemaVersion: 'roost-g23-attempt-identity-v1', id, caseId: process.env.ROOST_G23_CASE,
+              taskId: runtimeTask.id, executionId: runtimeExecutionId,
+              requestedBackend: executionView.requestedBackend, observedBackend: executionView.observedBackend,
+              requestedModel: executionView.model, observedModel: executionView.observedModel,
+              observedDigest: executionView.observedDigest,
+              answerDigest: createHash('sha256').update(result.body.data.finalResponse).digest('hex'),
+              elapsedMs: Date.parse(executionView.completedAt) - Date.parse(executionView.startedAt),
+              host: { freeMemoryBytes: os.freemem(), totalMemoryBytes: os.totalmem(), cpuLogicalCount: os.availableParallelism() },
+              providerUsage: native?.tokenUsage ?? null, providerCost: null, fixtureReviewAccepted: false,
+              qualityReviewStatus: 'pending_independent_review' };
+            await fs.writeFile(path.join(directory, `review-${id}.json`), JSON.stringify(reviewed) + '\n', { flag: 'wx', mode: 0o600 });
+            await fs.writeFile(path.join(directory, `identity-${id}.json`), JSON.stringify(identity) + '\n', { flag: 'wx', mode: 0o600 });
+            process.stdout.write(`G23 native comparison ${JSON.stringify({ caseId: process.env.ROOST_G23_CASE,
+              requestedBackend: identity.requestedBackend, observedBackend: identity.observedBackend,
+              reviewPath: path.join(directory, `review-${id}.json`), identityPath: path.join(directory, `identity-${id}.json`),
+              fixtureReviewAccepted: false, elapsedMs: identity.elapsedMs })}\n`);
+          }
           if (g22Native) {
-            assert.equal(result.body.data.execution.requestedBackend, 'ollama_loopback');
-            assert.equal(result.body.data.execution.observedBackend, 'ollama_loopback');
-            assert.equal(result.body.data.execution.observedModel, 'gpt-oss:20b');
-            assert.equal(result.body.data.execution.observedDigest, process.env.ROOST_G22_MODEL_DIGEST);
+            const expectedBackend = g23Comparison && process.env.ROOST_G23_BACKEND === 'codex' ? 'codex_responses' : 'ollama_loopback';
+            assert.equal(result.body.data.execution.requestedBackend, expectedBackend);
+            if (expectedBackend === 'ollama_loopback') {
+              assert.equal(result.body.data.execution.observedBackend, expectedBackend);
+              assert.equal(result.body.data.execution.observedModel, 'gpt-oss:20b');
+              assert.equal(result.body.data.execution.observedDigest, process.env.ROOST_G22_MODEL_DIGEST);
+            } else {
+              // Hermes does not return a provider-confirmed Codex model/route.
+              assert.equal(result.body.data.execution.observedBackend, null);
+              assert.equal(result.body.data.execution.observedModel, null);
+              assert.equal(result.body.data.execution.observedDigest, null);
+            }
             const view = await request(`${root}/review`, verifierToken);
             assert.equal(view.status, 200, JSON.stringify(view.body));
             assert.equal(view.body.data.canReview, true);
+            if (!g23Case) {
             const reviewed = await request(`${root}/actions/review`, verifierToken, {
               requestId: randomUUID(), expectedVersion: view.body.data.expectedVersion,
               executionId: runtimeExecutionId, materialVersion: view.body.data.materialVersion,
@@ -468,18 +575,22 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
               evidence: [{ kind: 'test', reference: 'Isolated source comparison',
                 result: 'The result was checked against the selected synthetic company record', verdict: 'pass' }] });
             assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
-          } else {
+            }
+          } else if (!g23Case) {
             const reviewed = await request(`${root}/actions/review-information`, token, { requestId: randomUUID(),
               executionId: runtimeExecutionId, materialVersion: result.body.data.materialVersion, decision: 'accept',
               summary: 'Accepted the sourced company information result after owner review' });
             assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
           }
-          assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'done');
+          // The G23 quality verdict is produced separately from the blind
+          // evidence. A fixture verifier must not approve an arbitrary answer.
+          if (g23Case) assert.notEqual((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'done');
+          else assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'done');
           const completed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
           assert.equal(completed.applicationId, null); assert.equal(completed.status, 'completed');
           assert.equal(completed.attempt, 1); assert.equal(completed.verification?.informationRuntime?.ownedJob, true);
-          process.stdout.write(`${g22Native ? 'G22' : 'G6'} native Worker/Hermes ${JSON.stringify({ taskId: runtimeTask.id, executionId: runtimeExecutionId,
-            acceptanceCommitted: true, independentReview: g22Native, status: completed.status, ownedJob: true,
+          process.stdout.write(`${g23Case ? 'G23' : g22Native ? 'G22' : 'G6'} native Worker/Hermes ${JSON.stringify({ taskId: runtimeTask.id, executionId: runtimeExecutionId,
+            acceptanceCommitted: !g23Case, independentReview: g22Native && !g23Case, status: completed.status, ownedJob: true,
             observedBackend: completed.verification?.informationRuntime?.backend ?? null })}\n`);
         } finally {
           await fs.writeFile(stopPath, 'stop');

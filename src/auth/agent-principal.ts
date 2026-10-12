@@ -12,6 +12,7 @@ export function agentPrincipalRoute(method: string, path: string) {
   if (method === "POST" && /^\/goal-mandates\/tasks\/[a-f0-9-]{36}\/measurements$/i.test(route)) return true;
   if (method === "POST" && /^\/google-drive\/tasks\/[a-f0-9-]{36}\/docs\/[a-f0-9-]{36}\/governed\/append$/i.test(route)) return true;
   if (method === "GET" && (route === "/mcp/manifest" || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/i.test(route))) return true;
+  if (method === "GET" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/model-policy-proposal$/i.test(route)) return true;
   if (method === "POST" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/proposals$/i.test(route)) return true;
   if (method === "GET" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/i.test(route)
     || method === "POST" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/i.test(route)) return true;

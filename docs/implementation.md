@@ -3,7 +3,7 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** none
+**Active gate:** G23 Model policy — [approved scope](architecture/model-policy-g23.md).
 
 **G22 release:** Native run/review and deployed read-only checks passed. [Evidence](architecture/local-model-g22.md).
 

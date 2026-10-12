@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, runtimeInformationInput, selectReferences, validationSections, visibleContextGroups, type ReadyEditor, type ReadyPacket } from "./task-readiness-model";
+import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, modelPolicyOverride, modelPolicyProposalFor, modelPolicyReasonText, runtimeInformationInput, selectReferences, validationSections, visibleContextGroups, type ReadyEditor, type ReadyPacket } from "./task-readiness-model";
 
 test("selecting another source preserves old revisions until explicit review", () => {
   const old = [{ id: "a", revision: "old", evidence: "Reviewed evidence" }];
@@ -107,6 +107,45 @@ test("local information selection keeps exact backend, tag, digest and effort th
   assert.equal(reopened.modelDigest, draft.modelDigest);
   assert.equal(reopened.effort, "low");
   assert.deepEqual(contractInput(runtime, reopened).contract.modelSelection, selection);
+});
+
+test("fresh runtime information draft selects the server proposal and marks an owner override", () => {
+  const runtime: ReadyEditor = { ...editorFixture(), executionClass: companyInformationRuntimeClass, applicationId: null,
+    modelPolicyProposal: { schemaVersion: "roost-model-policy-proposal-v1", backend: "codex_responses", model: "gpt-5.6-sol", reasoningEffort: "low",
+      reasonCode: "local_qualification_missing", reason: "untrusted server prose", localQualification: null, eligible: true } };
+  const draft = draftFrom(runtime);
+  assert.deepEqual([draft.backend, draft.model, draft.effort, draft.modelDigest], ["codex_responses", "gpt-5.6-sol", "low", ""]);
+  assert.equal(modelPolicyOverride(runtime, draft), false);
+  draft.effort = "medium";
+  assert.equal(modelPolicyOverride(runtime, draft), true);
+  assert.equal(modelPolicyReasonText(runtime.modelPolicyProposal!.reasonCode, "pl"), "Brak przyjętego porównania jakości modelu lokalnego dla tej klasy zadań; proponowany jest Codex.");
+  assert.equal(modelPolicyReasonText("untrusted server prose", "en"), "Review the model policy proposal before Ready.");
+});
+
+test("accepted Ready selection stays authoritative even if a later proposal changes", () => {
+  const digest = `sha256:${"a".repeat(64)}`;
+  const runtime: ReadyEditor = { ...editorFixture(), executionClass: companyInformationRuntimeClass, applicationId: null,
+    modelPolicyProposal: { schemaVersion: "roost-model-policy-proposal-v1", backend: "ollama_loopback", model: "gpt-oss:20b", modelDigest: digest,
+      reasoningEffort: "low", reasonCode: "local_quality_qualified", reason: "untrusted server prose", localQualification: "evidence-digest", eligible: true } };
+  const proposed = draftFrom(runtime);
+  assert.deepEqual([proposed.backend, proposed.model, proposed.effort, proposed.modelDigest], ["ollama_loopback", "gpt-oss:20b", "low", digest]);
+  assert.equal(modelPolicyOverride(runtime, proposed), false);
+  proposed.modelDigest = `sha256:${"b".repeat(64)}`;
+  assert.equal(modelPolicyOverride(runtime, proposed), true);
+  const accepted = { ...runtime, accepted: { contract: { executionClass: companyInformationRuntimeClass,
+    modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", backend: "codex_responses", modelSelection: { model: "gpt-5.6-sol", reasoningEffort: "low" } } },
+    prompt: null, baseBranch: null, applicationId: null } };
+  const reopened = draftFrom(accepted);
+  assert.deepEqual([reopened.backend, reopened.model, reopened.effort, reopened.modelDigest], ["codex_responses", "gpt-5.6-sol", "low", ""]);
+  assert.equal(modelPolicyOverride(accepted, reopened), true);
+});
+
+test("unrecognized model policy proposal cannot initialize a draft", () => {
+  const runtime: ReadyEditor = { ...editorFixture(), executionClass: companyInformationRuntimeClass, applicationId: null,
+    modelPolicyProposal: { schemaVersion: "unexpected" as "roost-model-policy-proposal-v1", backend: "ollama_loopback", model: "gpt-oss:20b",
+      reasoningEffort: "low", reasonCode: "local_quality_qualified", reason: "", localQualification: null, eligible: true } };
+  assert.equal(modelPolicyProposalFor(runtime), null);
+  assert.deepEqual([draftFrom(runtime).backend, draftFrom(runtime).model], ["codex_responses", ""]);
 });
 
 test("existing application input keeps its discriminator-free shape and application authority", () => {

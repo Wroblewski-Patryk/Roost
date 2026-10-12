@@ -17,6 +17,7 @@ import { composeProcedure, compositionVersion } from "./procedure-composition";
 import { admissionOperations } from "./task-risk-admission-contract";
 import { taskDecisionAuthorities } from "../decisions/decision-authority";
 import { isCompanyInformation, submitCompanyPreparation, inspectCompanyPreparation } from "./company-information-preparation";
+import { informationModelProposalForTask } from "./information-model-policy";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -333,6 +334,8 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     agent: agent ? { id: agent.id, name: "name" in agent ? agent.name : null, role: agent.role, eligible: agent.type === "agent" && agent.status === "active", competencies: strings(agent.skillIndex), tools: strings(agent.toolIndex).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)), permissions: strings(agent.authorityScope).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)) } : null,
     applications, projects, goals, agents, applicationId: selected, activeExecution: active > 0, catalogTruncated: records.length > 500,
     models,
+    ...(company && (executionClass === "roost-company-information-runtime-v1" || pin.contract?.executionClass === "roost-company-information-runtime-v1")
+      ? { modelPolicyProposal: await informationModelProposalForTask(db, workspaceId, taskId) } : {}),
     sources: records.slice(0, 500).map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), applicationId: item.applicationId })),
     procedures: context.procedures.map(item => ({ id: item.id, label: item.name, revision: String(item.version), eligible: item.status === "active" })),
     dependencies: context.dependencies.map(item => ({ id: item.id, label: item.dependencyType, revision: item.updatedAt.toISOString(), eligible: item.status !== "blocked" })),

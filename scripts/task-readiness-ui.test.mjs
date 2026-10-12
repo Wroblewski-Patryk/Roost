@@ -376,6 +376,9 @@ try {
   runtimeContract.recovery.rollback.mode='not_applicable';
   runtimePacket.editor.applicationId=null;runtimePacket.editor.executionClass=runtimeContract.executionClass;
   runtimePacket.editor.taskIdentity.branch=null;runtimePacket.editor.accepted.applicationId=null;runtimePacket.editor.task.project=null;
+  runtimePacket.editor.modelPolicyProposal={schemaVersion:'roost-model-policy-proposal-v1',backend:'codex_responses',
+    model:'gpt-5.6-sol',reasoningEffort:'low',reasonCode:'local_qualification_missing',
+    reason:'Synthetic server reason',localQualification:null,eligible:true};
   const runtimeQueries=[],runtimeSubmissions=[];
   await runtimePage.route('**/v1/**',async route=>{
     const url=route.request().url();
@@ -395,7 +398,7 @@ try {
   await runtimePage.goto(`http://127.0.0.1:${server.address().port}?executionClass=roost-company-information-v1`);
   await runtimePage.getByRole('button',{name:'Prepare execution',exact:true}).first().click();
   await runtimePage.getByLabel('Task execution type',{exact:true}).selectOption('roost-company-information-runtime-v1');
-  await runtimePage.getByLabel(/^Backend/).selectOption('ollama_loopback');
+  await runtimePage.getByLabel(/^Model backend/).selectOption('ollama_loopback');
   assert.deepEqual(await runtimePage.getByLabel(/^Reasoning effort/).evaluate(element =>
     Array.from(element.options).map(option => option.value)), ['', 'low']);
   await runtimePage.getByLabel(/^Reasoning effort/).selectOption('low');
@@ -415,6 +418,43 @@ try {
   assert.equal(runtimeSubmissions[0].contract.modelSelection.fallback,'none');
   assert.deepEqual(runtimeSubmissions[0].contract.access.tools,[]);
   await runtimePage.close();checked++;
+
+  for (const locale of ['pl', 'en']) {
+    const policyPage = await browser.newPage({viewport:{width:390,height:960}});
+    const errors=[];policyPage.on('pageerror',error=>errors.push(error.message));
+    await policyPage.addInitScript(value=>localStorage.setItem('companycoreLocale',value),locale);
+    const {packet:policyPacket}=fixture('changed');
+    policyPacket.editor.executionClass='roost-company-information-runtime-v1';
+    policyPacket.editor.applicationId=null;policyPacket.editor.accepted=null;policyPacket.editor.task.project=null;
+    policyPacket.editor.modelPolicyProposal={schemaVersion:'roost-model-policy-proposal-v1',backend:'codex_responses',
+      model:'gpt-5.6-sol',reasoningEffort:'low',reasonCode:'local_qualification_missing',
+      reason:'SYNTHETIC_SECRET_SERVER',localQualification:null,eligible:true};
+    await policyPage.route('**/v1/**',async route=>{
+      const url=route.request().url();
+      if(url.includes('/specialist-offer'))return route.fulfill({status:404,json:{error:'task_specialist_offer_not_found'}});
+      if(url.includes('execution-readiness'))return route.fulfill({json:{data:policyPacket}});
+      assert.equal(route.request().method(),'GET');
+      return route.fulfill({json:{data:url.includes('/v1/tasks?')?[{...policyPacket.editor.task,priority:'normal'}]:{departments:[]}}});
+    });
+    await policyPage.goto(`http://127.0.0.1:${server.address().port}?executionClass=roost-company-information-runtime-v1`);
+    await policyPage.getByRole('button',{name:locale==='pl'?'Przygotuj wykonanie':'Prepare execution',exact:true}).first().click();
+    await policyPage.getByText(locale==='pl'?'Propozycja przed Ready':'Proposal before Ready',{exact:true}).waitFor();
+    assert.equal(await policyPage.getByLabel(locale==='pl'?/^Środowisko modelu/:/^Model backend/).inputValue(),'codex_responses');
+    assert.equal(await policyPage.getByLabel(/^Model \*/).inputValue(),'gpt-5.6-sol');
+    const effort=policyPage.getByLabel(locale==='pl'?/^Poziom rozumowania/:/^Reasoning effort/);
+    assert.equal(await effort.inputValue(),'low');
+    assert.equal((await policyPage.locator('body').innerText()).includes('SYNTHETIC_SECRET_SERVER'),false);
+    await effort.selectOption('medium');
+    await policyPage.getByText(locale==='pl'?'Wybór właściciela różni się od propozycji; serwer sprawdzi minima przy Ready.':'Owner selection differs from the proposal; the server will check minima at Ready.',{exact:true}).waitFor();
+    assert.equal(await policyPage.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    await policyPage.getByText(locale==='pl'?'Propozycja przed Ready':'Proposal before Ready',{exact:true}).scrollIntoViewIfNeeded();
+    await policyPage.screenshot({path:path.join(output,`${locale}-model-policy-g23-390.png`),fullPage:true});
+    delete policyPacket.editor.modelPolicyProposal;
+    await policyPage.getByRole('button',{name:locale==='pl'?'Sprawdź bieżącą gotowość':'Check current readiness',exact:true}).first().click();
+    await policyPage.getByText(locale==='pl'?'Nie można odczytać propozycji modelu':'Model proposal unavailable',{exact:true}).waitFor();
+    assert.equal(await policyPage.getByRole('button',{name:locale==='pl'?'Przekaż do wykonania':'Submit for execution',exact:true}).isDisabled(),true);
+    assert.deepEqual(errors,[]);await policyPage.close();checked++;
+  }
 
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

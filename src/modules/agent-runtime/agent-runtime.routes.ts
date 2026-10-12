@@ -34,6 +34,7 @@ import { taskCompanySources } from "./company-source-read";
 import { taskSourceCandidate, taskSourceDigest, taskSourceEligible, taskSourceProvenance, taskSourceScope,
   taskSourceTypes, taskSourcesForAgent, type TaskSourceType } from "./task-source-trust";
 import { companyRuntimeClass, isInformationRuntime, informationNativeProven, informationApprovalCandidate, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
+import { informationModelProposalForTask } from "./information-model-policy";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
@@ -660,6 +661,30 @@ agentRuntimeRouter.post("/tasks/:id/execution-continuation", asyncHandler(async 
     z.string().uuid().parse(req.params.id), req.auth!.userId!, req.body));
   if ("error" in result) return sendApiError(res, result.error === "forbidden" ? 403 : result.error === "task_not_found" ? 404 : 409, result.error!);
   res.status(result.replayed ? 200 : 201).json({ data: result });
+}));
+
+// A bounded API/MCP projection: no source title or body, installation secret,
+// host inventory, or owner Decision. Agents can see only their assigned task.
+agentRuntimeRouter.get("/tasks/:id/model-policy-proposal", asyncHandler(async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const taskId = z.string().uuid().parse(req.params.id);
+  const result = await retryContextRead(() => readyTransaction(async tx => {
+    const task = await tx.task.findFirst({ where: { id: taskId, workspaceId: req.auth!.workspaceId },
+      select: { id: true, assignedWorkforceEntityId: true } });
+    if (!task || req.auth!.authType === "api_key" && task.assignedWorkforceEntityId !== req.auth!.agentId)
+      return { error: "task_not_found" };
+    if (req.auth!.authType === "user" && !roleAtLeast(req.auth!.workspaceRole, "member"))
+      return { error: "forbidden" };
+    const scoped = await tx.$queryRaw<Array<{ id: string }>>`SELECT s.id FROM task_risk_scopes s
+      WHERE s.workspace_id=${req.auth!.workspaceId}::uuid AND s.task_id=${taskId}::uuid
+        AND s.version=(SELECT max(version) FROM task_risk_scopes WHERE task_id=${taskId}::uuid)
+        AND s.scope_kind='company_information'
+        AND s.input->'contract'->>'executionClass'=${companyRuntimeClass} LIMIT 1`;
+    if (scoped.length !== 1) return { error: "company_information_scope_invalid" };
+    return { proposal: await informationModelProposalForTask(tx, req.auth!.workspaceId, taskId) };
+  }));
+  if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "forbidden" ? 403 : 409, result.error!);
+  res.json({ data: result });
 }));
 
 agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req, res) => {

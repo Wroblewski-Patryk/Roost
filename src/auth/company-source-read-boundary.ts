@@ -52,6 +52,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
     || /^\/strategy\/tasks\/[a-f0-9-]{36}\/direction$/.test(route)
     || /^\/goal-mandates\/tasks\/[a-f0-9-]{36}$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/model-policy-proposal$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/.test(route)
     || route === "/tasks" || /^\/tasks\/[a-f0-9-]{36}$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/review$/.test(route)

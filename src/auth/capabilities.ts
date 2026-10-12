@@ -518,6 +518,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/execution-continuation", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/execution-continuation", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/execution-readiness", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/agent-runtime/tasks/:id/model-policy-proposal", capability: "agent-runtime:read" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/company-sources", capability: "agent-runtime:read" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/company-sources/:recordId", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/proposals", capability: "agent-runtime:write" },
