@@ -11,6 +11,11 @@ import { admissionCommand,admissionVersion } from "../agent-runtime/task-risk-ad
 import { validateApplicationTakeoverBaseline } from "../product-engineering/application-takeover-validation";
 import { directionDecisionAcceptanceError } from "../strategy/company-direction";
 type Db=Prisma.TransactionClient;
+export function decisionTaskStateProjection(row:{id:string;title:string;executionReadiness:unknown}){
+ const readiness=row.executionReadiness;
+ const status=readiness&&typeof readiness==="object"&&!Array.isArray(readiness)&&"status" in readiness&&typeof readiness.status==="string"?readiness.status:null;
+ return {id:row.id,title:row.title,executionReadiness:{status}};
+}
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
 async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
  if(id&&!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))return {error:"decision_not_found"};
@@ -81,7 +86,7 @@ export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|nu
  }
  const supersededBy=id?await db.decision.findMany({where:{workspaceId:w,supersedesId:id},select:{id:true,title:true,status:true},take:51}):[];
  const taskIds:string[]=s.impact?.taskIds??[];
- const taskStates=taskIds.length?await db.task.findMany({where:{workspaceId:w,id:{in:taskIds}},select:{id:true,title:true,executionReadiness:true}}):[];
+ const taskStates=taskIds.length?(await db.task.findMany({where:{workspaceId:w,id:{in:taskIds}},select:{id:true,title:true,executionReadiness:true}})).map(decisionTaskStateProjection):[];
  const gates=await Promise.all(taskIds.map(async t=>({taskId:t,...(await db.$queryRaw<any[]>`SELECT task_admission_view(${t}::uuid,'decision_supersede') AS value`)[0].value})));
  const data={expectedVersion:s.expectedVersion,authorityCatalog:authorityCatalog?{workforce:authorityCatalog.workforce,departments:authorityCatalog.departments,entityCatalog:authorityCatalog.entityCatalog}:null,canWrite:s.role==="owner"&&u===s.ownerUserId,authority:s.authority,canAccept:!!s.principal&&"principal" in (s.authority??{})&&(s.authority as any).principal?.kind===s.principal.kind&&(s.authority as any).principal?.id===s.principal.id,selected:s.selected?wire(s.selected):null,
   revisions:s.revisions.slice(0,200).map(r=>({id:r.decision_id,title:r.body.title,state:r.state,version:r.version,supersedesId:r.supersedes_id})),
