@@ -2,7 +2,9 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G24b Website checklist, owner authorized and in progress. [Scope and evidence](architecture/reference-site-checklist-g24b.md).
+**Active gate:** none.
+
+**G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
 **G24a release:** [proof](architecture/reference-site-study-g24a.md).
 
