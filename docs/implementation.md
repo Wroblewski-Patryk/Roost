@@ -1,9 +1,8 @@
 # Current implementation
 
-This is the canonical delivery handoff: current facts, authorized outcome
-and required end-to-end evidence for the next owner-authorized gate.
+Current delivery status and evidence.
 
-**Active gate:** none.
+**Active gate:** G24b Website checklist, owner authorized and in progress. [Scope and evidence](architecture/reference-site-checklist-g24b.md).
 
 **G24a release:** [proof](architecture/reference-site-study-g24a.md).
 

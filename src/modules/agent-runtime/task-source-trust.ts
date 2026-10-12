@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { Prisma, TaskSourceReview } from "@prisma/client";
+import { referenceSiteChecklistScope } from "../product-engineering/reference-site-checklist-contract";
 
 export const taskSourceTypes = [
   "procedure", "policy", "decision", "evidence", "note", "knowledge_item",
@@ -110,6 +111,9 @@ export function taskSourceDigest(source: Source) {
 
 export function taskSourceEligible(source: Source, review: TaskSourceReview | undefined, workspaceId: string, taskId: string,
   applicationIds: ReadonlySet<string>, projectId: string | null, now = new Date()) {
+  // G24b Procedures carry source material bound to the authoring task. They
+  // enter agent context only through the dedicated current-source checklist read.
+  if (source.type === "procedure" && source.content.scope === referenceSiteChecklistScope) return false;
   if (!review || review.action !== "approve" || review.workspaceId !== workspaceId || review.taskId !== taskId
     || review.sourceType !== source.type || review.sourceId !== source.content.id
     || review.environment !== (process.env.NODE_ENV === "test" ? "isolated_test" : "production")

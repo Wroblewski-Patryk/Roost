@@ -5,6 +5,7 @@ import { inspectRuntime, redactionPolicy, requireRuntimeContent } from "./runtim
 import { reviewDigest } from "./task-review-contract";
 import { compositionExceptionSchema, compositionSelectionSchema, publishContractSchema, withdrawContractSchema } from "./procedure-composition-contract";
 import { admissionOperations } from "./task-risk-admission-contract";
+import { referenceSiteChecklistScope } from "../product-engineering/reference-site-checklist-contract";
 type Db = Prisma.TransactionClient;
 export async function composeProcedure(db:Db, taskId:string, operation="runtime_execute", fresh=false) {
  return (await db.$queryRaw<any[]>`SELECT task_composition(${taskId}::uuid,${operation},${!fresh}) AS value`)[0].value;
@@ -17,7 +18,7 @@ export async function compositionView(db:Db,workspaceId:string,taskId:string,use
  const membership=await db.workspaceMembership.findFirst({where:{workspaceId,userId}});
  const selections=await db.$queryRaw<any[]>`SELECT DISTINCT ON(operation) operation,base_procedure_id AS "baseProcedureId",extension_procedure_id AS "extensionProcedureId",rationale FROM task_composition_selections WHERE task_id=${taskId}::uuid ORDER BY operation,version DESC`;
  const operations=Object.fromEntries(await Promise.all(admissionOperations.map(async op=>[op,await composeProcedure(db,taskId,op,true)])));
- const procedures=await db.procedure.findMany({where:{workspaceId,status:"active"},select:{id:true,name:true,version:true},take:101,orderBy:{name:"asc"}});
+ const procedures=await db.procedure.findMany({where:{workspaceId,status:"active",OR:[{scope:null},{scope:{not:referenceSiteChecklistScope}}]},select:{id:true,name:true,version:true},take:101,orderBy:{name:"asc"}});
  const independent=(await db.$queryRaw<any[]>`SELECT task_admission_independent(${taskId}::uuid,${userId}::uuid) AS value`)[0].value;
  const active=await db.agentExecution.count({where:{workspaceId,taskId,status:{in:["queued","claimed","running","waiting_for_approval"]}}});
  const result={task:{id:task.id,title:task.title},expectedVersion:await compositionVersion(db,taskId),selections,operations,procedures:procedures.slice(0,100),catalogTruncated:procedures.length>100,
@@ -38,6 +39,8 @@ export async function compositionCommand(db:Db,workspaceId:string,taskId:string,
  const id=randomUUID();
  if(kind==="selection") {
   const s=compositionSelectionSchema.parse(input);
+  if(await db.procedure.count({where:{workspaceId,scope:referenceSiteChecklistScope,id:{in:[s.baseProcedureId,s.extensionProcedureId].filter((id):id is string=>Boolean(id))}}}))
+   return {error:"procedure_composition_scope_invalid"};
   await db.$executeRaw`INSERT INTO task_composition_selections(id,workspace_id,task_id,operation,version,scope_id,base_procedure_id,extension_procedure_id,rationale,actor_user_id,request_id,request_hash)
    VALUES(${id}::uuid,${workspaceId}::uuid,${taskId}::uuid,${s.operation},(SELECT COALESCE(max(version),0)+1 FROM task_composition_selections WHERE task_id=${taskId}::uuid AND operation=${s.operation}),
    (SELECT id FROM task_admission_scopes WHERE task_id=${taskId}::uuid ORDER BY version DESC LIMIT 1),${s.baseProcedureId}::uuid,${s.extensionProcedureId}::uuid,${s.rationale},${userId}::uuid,${s.requestId}::uuid,${hash})`;
@@ -51,7 +54,8 @@ export async function compositionCommand(db:Db,workspaceId:string,taskId:string,
  return compositionView(db,workspaceId,taskId,userId);
 }
 export async function procedureContractsView(db:Db,workspaceId:string,procedureId:string,userId:string) {
- const p=await db.procedure.findFirst({where:{id:procedureId,workspaceId},select:{id:true,name:true,version:true,status:true}}); if(!p)return {error:"procedure_not_found"};
+ const p=await db.procedure.findFirst({where:{id:procedureId,workspaceId},select:{id:true,name:true,version:true,status:true,scope:true}}); if(!p)return {error:"procedure_not_found"};
+ if(p.scope===referenceSiteChecklistScope)return {error:"procedure_composition_scope_invalid"};
  const sourceSteps=await db.procedureStep.findMany({where:{procedureId},select:{id:true,stepOrder:true,instruction:true},orderBy:{stepOrder:"asc"}});
  const versions=await db.$queryRaw<any[]>`SELECT v.id,v.version,v.body,v.rationale,v.source_version AS "sourceVersion",v.actor_user_id AS "issuerId",v.created_at AS "createdAt",procedure_contract_valid(v) AS valid FROM procedure_contract_versions v WHERE procedure_id=${procedureId}::uuid ORDER BY version DESC LIMIT 51`;
  const source=(await db.$queryRaw<any[]>`SELECT procedure_contract_source(${procedureId}::uuid) AS value`)[0].value;
@@ -59,7 +63,7 @@ export async function procedureContractsView(db:Db,workspaceId:string,procedureI
  const expectedVersion=reviewDigest({source,versions});
  const [applications,procedures]=await Promise.all([
   db.application.findMany({where:{workspaceId},select:{id:true,name:true},take:101,orderBy:{name:"asc"}}),
-  db.procedure.findMany({where:{workspaceId,status:"active",id:{not:procedureId}},select:{id:true,name:true},take:101,orderBy:{name:"asc"}})
+  db.procedure.findMany({where:{workspaceId,status:"active",id:{not:procedureId},OR:[{scope:null},{scope:{not:referenceSiteChecklistScope}}]},select:{id:true,name:true},take:101,orderBy:{name:"asc"}})
  ]);
  const components=await db.applicationArchitectureComponent.findMany({where:{applicationId:{in:applications.slice(0,100).map(a=>a.id)},status:"active"},select:{id:true,name:true,applicationId:true},take:501,orderBy:{name:"asc"}});
  // Catalogue labels are display metadata, not executable contract content.

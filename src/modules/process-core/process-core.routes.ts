@@ -11,6 +11,7 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
 import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
+import { isReferenceSiteChecklist } from "../product-engineering/reference-site-checklist-contract";
 
 type CoverageStatus = "covered" | "partial" | "missing" | "deferred";
 
@@ -322,6 +323,7 @@ processCoreRouter.get("/procedures/:id", asyncHandler(async (req, res) => {
 
 processCoreRouter.post("/procedures", asyncHandler(async (req, res) => {
   const input = procedureCommandSchema.parse(req.body);
+  if (isReferenceSiteChecklist(input.scope, input.steps)) return sendApiError(res, 403, "reference_site_checklist_owner_decision_required");
   const { organizationalContext, ...procedureInput } = input;
   const workspaceId = req.auth!.workspaceId;
   if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return sendApiError(res, 400, "invalid_department_key");
@@ -360,6 +362,8 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: { orderBy: { stepOrder: "asc" } } } });
   if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  if (isReferenceSiteChecklist(existing.scope, existing.steps) || isReferenceSiteChecklist(procedureInput.scope, procedureInput.steps))
+    return sendApiError(res, 403, "reference_site_checklist_owner_decision_required");
   const reviewedDraft = await prisma.$queryRaw<Array<{ id: string }>>`
     SELECT id FROM procedure_improvement_decisions
     WHERE workspace_id=${workspaceId}::uuid AND draft_procedure_id=${existing.id}::uuid`;
@@ -448,6 +452,7 @@ processCoreRouter.post("/procedures/:id/actions/activate", asyncHandler(async (r
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: true } });
   if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  if (isReferenceSiteChecklist(existing.scope, existing.steps)) return sendApiError(res, 403, "reference_site_checklist_owner_decision_required");
   const reviewedDraft = await prisma.$queryRaw<Array<{ id: string }>>`
     SELECT id FROM procedure_improvement_decisions
     WHERE workspace_id=${workspaceId}::uuid AND draft_procedure_id=${existing.id}::uuid`;
@@ -464,8 +469,9 @@ processCoreRouter.post("/procedures/:id/actions/activate", asyncHandler(async (r
 }));
 
 processCoreRouter.post("/procedures/:id/actions/archive", asyncHandler(async (req, res) => {
-  const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId } });
+  const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }, include: { steps: true } });
   if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  if (isReferenceSiteChecklist(existing.scope, existing.steps)) return sendApiError(res, 403, "reference_site_checklist_owner_decision_required");
   const procedure = await prisma.procedure.update({ where: { id: existing.id }, data: { status: OperatingStatus.archived } });
   await auditProcedure(req, "procedure.archive", procedure.id, { previousStatus: existing.status });
   await createEvent({ type: "procedure_archived", workspaceId: req.auth!.workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version } });

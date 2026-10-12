@@ -13,7 +13,7 @@ type Principal = NonNullable<Awaited<ReturnType<typeof resolveReviewPrincipal>>>
 const sha = (value: string) => createHash("sha256").update(value).digest("hex");
 const content = (value: unknown) => JSON.stringify(value);
 
-async function scope(db: Db, workspaceId: string, taskId: string, siteId: string, actor: ReviewActor,
+export async function referenceSiteScope(db: Db, workspaceId: string, taskId: string, siteId: string, actor: ReviewActor,
   allowOwnerPreview = false) {
   const principal = await resolveReviewPrincipal(db, workspaceId, actor);
   if (!principal) return { error: "reference_site_forbidden" } as const;
@@ -73,7 +73,7 @@ export async function referenceSiteList(workspaceId: string, taskId: string, act
 }
 
 export async function referenceSitePackageRead(workspaceId: string, taskId: string, siteId: string, actor: ReviewActor) {
-  const current = await prisma.$transaction(db => scope(db, workspaceId, taskId, siteId, actor, true),
+  const current = await prisma.$transaction(db => referenceSiteScope(db, workspaceId, taskId, siteId, actor, true),
     { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   if ("error" in current) return current;
   const value = { siteId, taskId, title: current.site.title, package: current.metadata.package,
@@ -85,7 +85,7 @@ export async function referenceSitePackageRead(workspaceId: string, taskId: stri
 export async function referenceSiteCreateFinding(workspaceId: string, taskId: string, siteId: string,
   actor: ReviewActor, raw: unknown) {
   const input = referenceSiteFindingInput.parse(raw);
-  const initial = await prisma.$transaction(db => scope(db, workspaceId, taskId, siteId, actor),
+  const initial = await prisma.$transaction(db => referenceSiteScope(db, workspaceId, taskId, siteId, actor),
     { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   if ("error" in initial) return initial;
   if (initial.principal.kind !== "agent") return { error: "reference_site_agent_required" };
@@ -111,7 +111,7 @@ export async function referenceSiteCreateFinding(workspaceId: string, taskId: st
   const requestHash = sha(content({ body, requestId: input.requestId, agentId: initial.principal.id }));
   try {
     return await prisma.$transaction(async db => {
-      const current = await scope(db, workspaceId, taskId, siteId, actor);
+      const current = await referenceSiteScope(db, workspaceId, taskId, siteId, actor);
       if ("error" in current || current.principal.kind !== "agent" ||
         current.site.updatedAt.getTime() !== initial.site.updatedAt.getTime() || current.review?.id !== initial.review?.id ||
         referenceSitePackageDigest(current.metadata.package) !== packageDigest)
@@ -158,14 +158,32 @@ export async function referenceSiteFindings(workspaceId: string, taskId: string,
       return { error: "reference_site_forbidden" };
     if (!await taskSourceScope(db, workspaceId, taskId, principal.kind === "agent" ? principal.id : undefined))
       return { error: "reference_site_forbidden" };
-    if (principal.kind === "agent" && "error" in await scope(db, workspaceId, taskId, siteId, actor))
-      return { error: "reference_site_forbidden" };
-    const rows = await db.$queryRaw<Array<{ id: string; body: unknown; created_at: Date; actor_id: string }>>`
-      SELECT v.observation_id AS id,v.body,v.created_at,v.actor_id FROM finding_versions v
+    const current = await referenceSiteScope(db, workspaceId, taskId, siteId, actor, true);
+    if (principal.kind === "agent" && "error" in current) return { error: "reference_site_forbidden" };
+    const approved = !("error" in current) && companySourceEligible(current.site, current.review ?? undefined, taskId, null);
+    const currentPackageDigest = "error" in current ? null : referenceSitePackageDigest(current.metadata.package);
+    const rows = await db.$queryRaw<Array<{ id: string; body: unknown; created_at: Date; actor_id: string;
+      finding_digest: string; review_id: string | null; verdict: string | null; reviewer_user_id: string | null;
+      review_rationale: string | null; review_evidence: string | null; reviewed_at: Date | null }>>`
+      SELECT v.observation_id AS id,v.body,v.created_at,v.actor_id,
+        encode(sha256(convert_to(v.body::text,'UTF8')),'hex') AS finding_digest,
+        r.id AS review_id,r.verdict,r.reviewer_user_id,r.rationale AS review_rationale,
+        r.evidence AS review_evidence,r.created_at AS reviewed_at
+      FROM finding_versions v LEFT JOIN reference_site_finding_reviews r ON r.version_id=v.id
       WHERE v.workspace_id=${workspaceId}::uuid AND v.reference_site_id=${siteId}::uuid
         AND v.body->>'taskId'=${taskId} ORDER BY v.created_at DESC,v.id DESC LIMIT 101`;
-    const items = rows.slice(0, 100).map(row => ({ id: row.id, body: row.body, createdAt: row.created_at,
-      state: "observed", verification: "unverified", actorId: row.actor_id }));
+    const currentFinding = (row: typeof rows[number]) => {
+      const body = row.body as { sourceReviewId?: string; source?: { recordRevision?: string; contentDigest?: string } };
+      return approved && !("error" in current) && body.sourceReviewId === current.review?.id &&
+        body.source?.recordRevision === current.site.updatedAt.toISOString() &&
+        body.source?.contentDigest === currentPackageDigest;
+    };
+    const visible = rows.slice(0, 100).filter(row => principal.kind !== "agent" || currentFinding(row));
+    const items = visible.map(row => ({ id: row.id, body: row.body, createdAt: row.created_at,
+      state: "observed", verification: currentFinding(row) ? row.verdict ?? "unverified" : "stale", actorId: row.actor_id,
+      findingDigest: row.finding_digest, review: row.review_id ? { id: row.review_id,
+        verdict: row.verdict, reviewerUserId: row.reviewer_user_id, rationale: row.review_rationale,
+        evidence: row.review_evidence, reviewedAt: row.reviewed_at } : null }));
     requireRuntimeContent(items, "reference_site.finding.list", { workspaceId });
     return { items, truncated: rows.length > 100 };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });

@@ -46,6 +46,7 @@ import { registerGovernedGoogleDocTests } from "./governed-google-doc-api";
 import { registerCompanyDirectionTests } from "./company-direction-api";
 import { registerGoalMandateTests } from "./goal-mandate-api";
 import { registerReferenceSiteG24aTests } from "./reference-site-g24a-api";
+import { registerReferenceSiteG24bTests } from "./reference-site-g24b-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerTaskProposalTests({ request, registerOwner });
@@ -54,6 +55,7 @@ registerGovernedGoogleDocTests({ request, registerOwner });
 registerCompanyDirectionTests({ request, registerOwner, prepareReviewFixture, decisionFixtureProposal, decisionFixtureProof, runMcpBridgeSmoke });
 registerGoalMandateTests({ request, registerOwner, runMcpBridgeSmoke });
 registerReferenceSiteG24aTests({ request, registerOwner });
+registerReferenceSiteG24bTests({ request, registerOwner });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });

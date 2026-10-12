@@ -1,0 +1,21 @@
+# G24b reference site checklist
+
+## Authorized outcome and boundary
+
+The owner authorized one bounded G24b on 2026-10-12: independently review selected G24a reference-site Findings, then let the owner preview and accept at most two exact items into the existing versioned Procedure registry. Each item carries an ID, applicability, acceptance criterion, source, status, owner and rollback. The same task-bound API/MCP authority applies to the agent read. G24c supervised use, actual application transfer, paid model calls and production business-record writes are outside this gate. Production smoke is read-only; a real source, Finding or checklist decision needs a later exact-content approval.
+
+## Runtime contract
+
+An owner review receipt references one immutable Finding version and its digest, current task, source approval, record revision, package digest and canonical record-metadata digest. The authoring agent cannot review its own Finding. A confirmed review is eligibility for a proposal, not a published checklist item. Rejected or inconclusive reviews cannot be promoted.
+
+Preview resolves every proposed item against the currently approved task source and confirmed review. It returns the exact typed text, provenance and a SHA-256 digest. A separate owner acceptance supplies the same item payload and digest. The service rechecks source and review, creates a draft Procedure with typed `ProcedureStep.validationRule` fields, records an owner decision receipt, and activates the version in one serializable transaction. Request IDs support exact replay and reject conflicting reuse. A successor version retires the old active version in that transaction. The database permits one active checklist per workspace and guards its accepted Procedure, steps and organizational context from generic mutation. Generic Procedure create, patch, activate and archive routes also reject the checklist marker.
+
+An agent key can read the checklist only under its assigned task. The read checks the current approved source, Finding and independent review receipt before returning any item. A stale source withholds all item content from the agent and appears as stale to the owner. Old Findings are hidden from the agent after a source change and labelled stale in the owner audit. The generic task-source and Procedure-composition paths reject this special task-bound Procedure, with API and database guards for new composition writes. Source-only observations remain labeled separately from supervised-click evidence. Accepted checklist content is a method candidate; this gate does not claim that a real supervised task used it.
+
+The migration adds `reference_site_finding_reviews` and `reference_site_checklist_decisions`, narrow functions, guards and indexes. It does not edit an applied migration, delete records, seed business data or create a second Procedure store. The exact item ID is stored with the Procedure version; the `(familyId, version, itemId)` tuple identifies its historical meaning.
+
+## Verification and release
+
+The focused disposable PostgreSQL API journey passed: an agent created a fictional Finding, a distinct owner reviewed it, the owner previewed and accepted one item, then accepted a successor with two reviewed items. The prior Procedure retired and the agent read version 2. Generic mutation and direct SQL step editing were denied. Cross-task preview and read were hidden; generic source approval and Procedure composition were denied. Direct SQL tests rejected receipt truncation and contract/selection insertion. A changed package followed by a new source approval labelled old Findings stale for the owner and withheld them from the agent; the checklist became stale. The additive migration applied from the current migration chain. The PL/EN browser fixture, `npm run validate` and `npm run codex:check` passed. Independent Security and UX reviews found concrete issues; fixes passed focused re-review. These are isolated tests, not production checklist adoption.
+
+The G24a focused regression, final local diff/checks, release preflight, commit/push, deployment and read-only production smoke are pending. No production source/Finding/checklist write is authorized by this gate.
