@@ -3,6 +3,10 @@ import { randomUUID } from "node:crypto";
 import test from "node:test";
 import { prisma } from "../db/prisma";
 import { referenceSitePackageDigest } from "../modules/product-engineering/reference-site-package";
+import { referenceSiteMetadata } from "../modules/product-engineering/reference-site-contract";
+import { referenceSiteChecklistForExecution } from "../modules/product-engineering/reference-site-runtime-context";
+import { readyEditorData } from "../modules/agent-runtime/task-execution-readiness";
+import { watchReadySources } from "../modules/agent-runtime/ready-source-watch";
 
 export function registerReferenceSiteG24bTests(helpers: {
   request: (path: string, init?: RequestInit) => Promise<{ status: number; body: any }>;
@@ -22,6 +26,8 @@ export function registerReferenceSiteG24bTests(helpers: {
         assignedWorkforceEntityId: agent.id } });
       const otherTask = await prisma.task.create({ data: { workspaceId, title: "Unrelated page task",
         assignedWorkforceEntityId: agent.id } });
+      await prisma.procedure.createMany({ data: Array.from({ length: 55 }, (_, index) => ({
+        workspaceId, name: `Unrelated fixture procedure ${index}`, purpose: "Catalog limit fixture", status: "active" })) });
       const key = await request("/v1/api-keys/agent-credentials", { method: "POST", headers: ownerHeaders,
         body: JSON.stringify({ requestId: randomUUID(), agentId: agent.id, name: "Checklist fixture key",
           expiresAt: new Date(Date.now() + 86400000).toISOString() }) });
@@ -44,8 +50,13 @@ export function registerReferenceSiteG24bTests(helpers: {
             observedAt: new Date().toISOString(), scope: "source_only" }] }],
         unknowns: ["Keyboard behavior was not inspected."] };
       const packageDigest = referenceSitePackageDigest(packageValue);
+      assert.equal(referenceSiteMetadata.safeParse({ referenceUrl: siteUrl, providerVersion: "v1",
+        sourceKind: "openai_sites", sourceId: "appgprj_checklistfixture",
+        package: { ...packageValue, source: { ...packageValue.source,
+          publishedUrl: "https://unapproved.example.org/" } } }).success, false);
       const siteCreated = await request("/v1/company-records", { method: "POST", headers: ownerHeaders,
         body: JSON.stringify({ recordType: "reference_site", title: "Fictional checklist site", status: "active",
+          description: "Fictional saved site version with a visible primary action.",
           source: "owner_note", metadata: { referenceUrl: siteUrl, providerVersion: "v1",
             sourceKind: "openai_sites", sourceId: "appgprj_checklistfixture", package: packageValue } }) });
       assert.equal(siteCreated.status, 201, JSON.stringify(siteCreated.body));
@@ -115,6 +126,32 @@ export function registerReferenceSiteG24bTests(helpers: {
       assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
       assert.equal(accepted.body.data.version, 1);
       const procedureId = accepted.body.data.procedureId;
+      const projection = await prisma.$transaction(async db => {
+        const watched = watchReadySources(db);
+        const value = await referenceSiteChecklistForExecution(watched.db, db,
+          workspaceId, task.id, agent.id, procedureId, "1");
+        await watched.persist(task.id);
+        return value;
+      });
+      assert.equal(projection?.procedure.decisionId, accepted.body.data.decision.id);
+      assert.equal(projection?.items[0].itemId, item.itemId);
+      assert.equal(projection?.items[0].observation.evidence[1].scope, "supervised_result");
+      assert.equal(projection?.items[0].source.packageDigest, packageDigest);
+      const proofEditor = await request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1&executionClass=roost-company-information-runtime-v1`,
+        { headers: ownerHeaders });
+      assert.equal(proofEditor.status, 200, JSON.stringify(proofEditor.body));
+      assert.equal(proofEditor.body.data.editor.procedures.find((entry: any) => entry.id === procedureId)?.eligible, true);
+      const foreignEditor = await request(`/v1/agent-runtime/tasks/${otherTask.id}/execution-readiness?editor=1&executionClass=roost-company-information-runtime-v1`,
+        { headers: ownerHeaders });
+      assert.equal(foreignEditor.status, 200, JSON.stringify(foreignEditor.body));
+      assert.equal(foreignEditor.body.data.editor.procedures.find((entry: any) => entry.id === procedureId), undefined);
+      assert.equal(foreignEditor.body.data.editor.referenceSiteChecklist.status, "none");
+      assert.equal(await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
+        workspaceId, otherTask.id, agent.id, procedureId, "1")), null);
+      assert.equal(await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
+        workspaceId, task.id, randomUUID(), procedureId, "1")), null);
+      assert.equal(await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
+        workspaceId, task.id, agent.id, procedureId, "2")), null);
       const replay = await request(`${checklistPath}/accept`, { method: "POST", headers: ownerHeaders,
         body: JSON.stringify(acceptInput) });
       assert.equal(replay.status, 200);
@@ -136,6 +173,14 @@ export function registerReferenceSiteG24bTests(helpers: {
       assert.equal(compositionView.status, 200, JSON.stringify(compositionView.body));
       assert.ok(!compositionView.body.data.procedures.some((procedure: any) => procedure.id === procedureId));
       const acceptedProcedure = await prisma.procedure.findUniqueOrThrow({ where: { id: procedureId } });
+      const editor = await prisma.$transaction(db => readyEditorData(db, workspaceId, task.id,
+        undefined, undefined, "roost-company-information-runtime-v1"));
+      if (!editor || "error" in editor) throw new Error("reference_site_ready_editor_unavailable");
+      assert.equal(editor.referenceSiteChecklist.status, "current");
+      assert.equal(editor.referenceSiteChecklist.id, procedureId);
+      assert.equal(editor.referenceSiteChecklist.decisionId, accepted.body.data.decision.id);
+      assert.ok(editor.procedures.some(candidate => candidate.id === procedureId && candidate.eligible));
+      assert.equal(editor.procedures.filter(candidate => "kind" in candidate && candidate.kind === "reference_site_checklist").length, 1);
       const genericApproval = await request("/v1/agent-runtime/source-reviews", { method: "POST", headers: ownerHeaders,
         body: JSON.stringify({ requestId: randomUUID(), taskId: otherTask.id, sourceType: "procedure",
           sourceId: procedureId, expectedRevision: acceptedProcedure.updatedAt.toISOString(), action: "approve",
@@ -208,6 +253,10 @@ export function registerReferenceSiteG24bTests(helpers: {
       assert.equal(replacement.status, 200, JSON.stringify(replacement.body));
       assert.equal(replacement.body.data.version, 2);
       assert.equal((await prisma.procedure.findUniqueOrThrow({ where: { id: procedureId } })).status, "retired");
+      assert.equal(await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
+        workspaceId, task.id, agent.id, procedureId, "1")), null);
+      assert.equal((await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
+        workspaceId, task.id, agent.id, replacement.body.data.procedureId, "2")))?.items.length, 2);
       const currentChecklist = await request(checklistPath, { headers: agentHeaders });
       assert.equal(currentChecklist.status, 200, JSON.stringify(currentChecklist.body));
       assert.equal(currentChecklist.body.data.procedure.version, 2);
@@ -220,6 +269,13 @@ export function registerReferenceSiteG24bTests(helpers: {
       assert.equal(stale.status, 200, JSON.stringify(stale.body));
       assert.equal(stale.body.data.status, "stale");
       assert.equal(stale.body.data.procedure, null);
+      assert.equal(await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
+        workspaceId, task.id, agent.id, replacement.body.data.procedureId, "2")), null);
+      const staleEditor = await prisma.$transaction(db => readyEditorData(db, workspaceId, task.id,
+        undefined, undefined, "roost-company-information-runtime-v1"));
+      if (!staleEditor || "error" in staleEditor) throw new Error("reference_site_ready_editor_unavailable");
+      assert.equal(staleEditor.referenceSiteChecklist.status, "stale");
+      assert.equal(staleEditor.referenceSiteChecklist.id, replacement.body.data.procedureId);
       const revisedSite = changed.body.data;
       const renewedSource = await request(`/v1/company-records/${site.id}/context-reviews`, {
         method: "POST", headers: ownerHeaders, body: JSON.stringify({ requestId: randomUUID(), taskId: task.id,

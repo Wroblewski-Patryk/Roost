@@ -1,5 +1,6 @@
 export type Reference = { id: string; revision: string; evidence?: string };
-export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
+export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean;
+  applicationId?: string | null; kind?: "reference_site_checklist" };
 export type RoleCatalogEntry = CatalogEntry & { principalKey: string | null; type: string; role: string | null; competencies: string[]; mandates: string[] };
 export type ModelPolicyProposal = {
   schemaVersion: "roost-model-policy-proposal-v1";
@@ -25,6 +26,9 @@ export type ReadyEditor = {
   projects: { id: string; name: string }[]; goals: { id: string; title: string }[]; agents: { id: string; name: string }[];
   activeExecution: boolean; catalogTruncated: boolean;
   sources: CatalogEntry[]; procedures: CatalogEntry[]; dependencies: CatalogEntry[]; decisions: CatalogEntry[];
+  referenceSiteChecklist?: { status: "none" | "current" | "stale" | "withdrawn";
+    id: string | null; label: string | null; version: number | null; decisionId: string | null;
+    selectedIds: string[] };
   models: { id: string; efforts: string[] }[];
   modelPolicyProposal?: ModelPolicyProposal;
   accepted: { contract: Record<string, any>; prompt: string | null; baseBranch: string | null; applicationId: string | null } | null;

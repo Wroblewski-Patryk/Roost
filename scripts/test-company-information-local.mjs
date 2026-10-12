@@ -24,6 +24,8 @@ if (process.env.ROOST_G22_NATIVE_RUNTIME === '1') {
   environment.ROOST_G11_REVIEW_ACTION = 'local-approve';
 }
 if (process.env.ROOST_G23_POLICY_ONLY === '1') environment.ROOST_G23_POLICY_ONLY = '1';
+if (process.env.ROOST_G24C_PACKET_ONLY === '1') environment.ROOST_G24C_PACKET_ONLY = '1';
+if (process.env.ROOST_G24C_HOST_INPUT === '1') environment.ROOST_G24C_HOST_INPUT = '1';
 if (process.env.ROOST_G23_COMPARISON === '1') {
   if (!['plain_status', 'unsupported_readiness_claim'].includes(process.env.ROOST_G23_CASE)
     || !['local', 'codex'].includes(process.env.ROOST_G23_BACKEND)

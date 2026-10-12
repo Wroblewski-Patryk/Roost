@@ -161,7 +161,38 @@ const companyPacketSchema = packetSchema.extend({
   scopeAuthorities: packetSchema.shape.scopeAuthorities.extend({ component: z.literal(null) }),
   sources: z.array(packetSchema.shape.sources.element.extend({ provenance: provenanceSchema })).max(10)
 });
-const companyRuntimePacketSchema = companyPacketSchema.extend({ contract: companyInformationRuntimeContractSchema });
+const checklistSourceSchema = z.object({ taskId: id, siteId: id, findingId: id, findingVersionId: id,
+  findingDigest: z.string().regex(/^[a-f0-9]{64}$/), reviewId: id, sourceReviewId: id,
+  packageDigest: z.string().regex(/^[a-f0-9]{64}$/), metadataDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  recordRevision: z.string().datetime(), observationId: text, providerVersion: text,
+  versionId: text, publishedUrl: z.string().url() }).strict();
+const checklistEvidenceSchema = z.object({ kind: z.enum(['source', 'published_screenshot', 'supervised_click']),
+  ref: z.string().min(1).max(300).regex(/^[A-Za-z0-9._/-]+$/).refine(value =>
+    !value.startsWith('/') && !value.split('/').some(part => !part || part === '.' || part === '..')),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/), observedAt: z.string().datetime(),
+  providerRef: z.string().regex(/^sediment:\/\/file_[a-z0-9]+$/).optional(),
+  scope: z.enum(['source_only', 'published_render', 'supervised_result']),
+  result: z.string().trim().min(3).max(1000).optional() }).strict().superRefine((value, ctx) => {
+  const expected = { source: 'source_only', published_screenshot: 'published_render',
+    supervised_click: 'supervised_result' }[value.kind];
+  if (value.scope !== expected || (value.kind === 'supervised_click') !== Boolean(value.result) ||
+    (value.kind === 'published_screenshot') !== Boolean(value.providerRef))
+    ctx.addIssue({ code: 'custom', message: 'checklist_evidence_scope_mismatch' });
+});
+const referenceSiteChecklistSchema = z.object({ schemaVersion: z.literal('roost-reference-site-execution-context-v1'),
+  workspaceId: id, taskId: id, agentId: id,
+  procedure: z.object({ id, familyId: id, version: z.number().int().positive(), decisionId: id }).strict(),
+  items: z.array(z.object({ id, order: z.number().int().positive(), itemId: text,
+    instruction: text, applicability: text, acceptanceCriterion: text,
+    expectedInput: text, expectedOutput: text, rollback: text,
+    source: checklistSourceSchema,
+    finding: z.object({ observed: text, interpretation: text, uncertainty: text, applicability: text }).strict(),
+    observation: z.object({ id: text, category: z.enum(['content', 'function', 'journey', 'failure']),
+      route: text, language: text, text: z.string().trim().min(3).max(3000),
+      evidence: z.array(checklistEvidenceSchema).min(1).max(8) }).strict() }).strict()).min(1).max(2)
+}).strict();
+const companyRuntimePacketSchema = companyPacketSchema.extend({ contract: companyInformationRuntimeContractSchema,
+  referenceSiteChecklist: referenceSiteChecklistSchema.optional() });
 
 const list = (value) => Array.isArray(value) ? value : [];
 export function validateExecutionPacket(packet, claimed, taskContext, applicationContext, options = {}) {
@@ -272,7 +303,24 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
         else if (!accepted(source)) add(`contract.${field}`, "blocked");
       }
     };
-    checkRefs("procedures", list(taskContext?.procedures), "version", (item) => item.status === "active");
+    const checklist = p.referenceSiteChecklist;
+    if (checklist) {
+      const sourceIds = new Set(checklist.items.map(item => item.source.siteId));
+      if (checklist.workspaceId !== p.identity.workspaceId || checklist.taskId !== p.identity.taskId ||
+        checklist.agentId !== p.identity.agentId || checklist.items.some((item, index) =>
+          item.order !== index + 1 || item.source.taskId !== p.identity.taskId ||
+          item.source.observationId !== item.observation.id ||
+          !p.sources.some(source => source.id === item.source.siteId && source.recordType === 'reference_site'
+            && source.revision === item.source.recordRevision && source.provenance.reviewId === item.source.sourceReviewId)) ||
+        sourceIds.size > 2 || new Set(checklist.items.map(item => item.itemId)).size !== checklist.items.length ||
+        new Set(checklist.items.map(item => item.source.findingId)).size !== checklist.items.length)
+        add('referenceSiteChecklist', 'mismatch');
+      if (!runtime || !c.procedures.items.some(ref => ref.id === checklist.procedure.id && ref.revision === String(checklist.procedure.version)))
+        add('referenceSiteChecklist', 'selection_missing');
+    }
+    checkRefs("procedures", [...list(taskContext?.procedures), ...(checklist ? [{ id: checklist.procedure.id,
+      workspaceId: checklist.workspaceId, version: checklist.procedure.version, status: 'active' }] : [])],
+      "version", (item) => item.status === "active");
     for (const skill of c.skills.items) if (!list(agent?.skillIndex).includes(`${skill.name}@${skill.version}`)) add("contract.skills", "unavailable");
     checkRefs("dependencies", list(taskContext?.dependencies), "updatedAt", (item) => item.status !== "blocked", true);
     checkRefs("decisions", list(taskContext?.decisions), "updatedAt", (item) => company

@@ -24,7 +24,7 @@ async function resolve(db: Prisma.TransactionClient, workspaceId: string, taskId
   const watched = watchReadySources(db);
   const envelope = execution ?? { id: taskId, workspaceId, taskId, applicationId: null, attempt: 1, prompt: input.prompt ?? null, baseBranch: null,
     metadata: { executionContract: input.contract } } as unknown as AgentExecution;
-  const taskContext: any = wire(await loadCompanyInformationContext(workspaceId, taskId, envelope, watched.db, author));
+  const taskContext: any = wire(await loadCompanyInformationContext(workspaceId, taskId, envelope, watched.db, author, db));
   if (!taskContext) throw new Error("task_not_found");
   const runtime = isInformationRuntime(input.contract);
   const approval = runtime ? await informationApproval(db, workspaceId, taskId, input.contract.modelSelection) : null;

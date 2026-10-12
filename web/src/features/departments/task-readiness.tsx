@@ -136,15 +136,43 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
     return <CcField label={tr(key)} required>{({ id }) => <CcMultiSelect id={id} name={key} popupLabel={tr(key)} placeholder={tr("choose")} searchPlaceholder={tr("choose")} emptyLabel={tr("empty")} clearLabel={tr("clear")} doneLabel={tr("done")} selectedLabel={tr("selected")} showValues={false} disabled={!writable || Boolean(busy)} value={draft![key]} onChange={value => update({ ...draft!, [key]: value })} options={values.map(value => ({ value, label: key === "competencies" ? value : tr(`operation.${value}`), disabled: !options.includes(value) }))} />}</CcField>;
   }
   function refs(group: RefGroup) {
-    const catalog = catalogFor(e!, group), selected = draft!.refs[group];
+    const checklist = group === "procedures" && runtimeInformation ? e!.referenceSiteChecklist : undefined;
+    const checklistIds = new Set([...(checklist?.selectedIds ?? []), ...(checklist?.id ? [checklist.id] : [])]);
+    const catalog = catalogFor(e!, group).filter(item => item.kind !== "reference_site_checklist");
+    const selected = draft!.refs[group].filter(item => !checklistIds.has(item.id));
+    const selectedChecklist = checklist ? draft!.refs.procedures.find(item => checklistIds.has(item.id)) : undefined;
     const stale = selected.some(item => !catalog.some(current => current.id === item.id && current.revision === item.revision));
     const options = [...catalog, ...selected.filter(item => !catalog.some(current => current.id === item.id)).map(item => ({ ...item, label: tr("staleRefs"), eligible: false }))];
-    function select(ids: string[], refresh = false) { update({ ...draft!, refs: { ...draft!.refs, [group]: selectReferences(selected, catalog, ids, refresh) } }); }
+    function select(ids: string[], refresh = false) { update({ ...draft!, refs: { ...draft!.refs,
+      [group]: [...selectReferences(selected, catalog, ids, refresh), ...(selectedChecklist ? [selectedChecklist] : [])] } }); }
+    function chooseChecklist(useCurrent: boolean) {
+      if (!checklist) return;
+      const chosen = useCurrent && checklist.status === "current" && checklist.id && checklist.version
+        ? [{ id: checklist.id, revision: String(checklist.version) }] : [];
+      const procedures = [...draft!.refs.procedures.filter(item => !checklistIds.has(item.id)), ...chosen];
+      update({ ...draft!, refs: { ...draft!.refs, procedures },
+        none: { ...draft!.none, procedures: procedures.length ? "" : draft!.none.procedures } });
+    }
     const revisionLabel = (value: string) => Number.isFinite(Date.parse(value)) && value.length > 12 ? new Date(value).toLocaleString(locale) : value;
     return <section className="grid gap-3 border-t border-base-300 pt-4" key={group}>
       <CcField label={tr(group)} hint={tr("sourceHint")} error={stale ? tr("staleRefs") : issues.includes(group) ? tr(`issue.${group}`) : undefined} required={group === "company" || group === "product" || group === "technical"}>{({ id, describedBy }) => <CcMultiSelect id={id} name={group} popupLabel={tr(group)} invalid={stale || issues.includes(group)} describedBy={describedBy} placeholder={tr("choose")} searchPlaceholder={tr("choose")} emptyLabel={tr("empty")} clearLabel={tr("clear")} doneLabel={tr("done")} selectedLabel={tr("selected")} showValues={false} disabled={!writable || Boolean(busy)} value={selected.map(item => item.id)} onChange={select} options={options.map(item => ({ value: item.id, label: `${humanizeBusinessValue(item.label, undefined, locale)} · ${revisionLabel(selected.find(row => row.id === item.id)?.revision ?? item.revision)}`, description: selected.some(row => row.id === item.id && row.revision !== item.revision) ? `${tr("currentRevision")}: ${revisionLabel(item.revision)}` : undefined, disabled: item.eligible === false }))} />}</CcField>
+      {checklist ? <div className="rounded-lg border border-base-300 bg-base-200 p-3 text-sm">
+        <CcField label={locale === "pl" ? "Checklista strony dla tego zadania" : "Site checklist for this task"}
+          hint={checklist.status === "none" ? locale === "pl" ? "Brak przyjętej checklisty. Otwórz w tym zadaniu panel stron referencyjnych i checklisty." : "No accepted checklist. Open this task's reference sites and checklist panel."
+            : checklist.status === "stale" ? locale === "pl" ? "Źródło lub przegląd straciły aktualność. Sprawdź panel stron referencyjnych i checklisty, a potem odśwież Ready." : "Source or review is stale. Check the reference sites and checklist panel, then refresh Ready."
+            : checklist.status === "withdrawn" ? locale === "pl" ? "Ta wersja jest wycofana lub niedostępna. Sprawdź panel stron referencyjnych i checklisty." : "This version is withdrawn or unavailable. Check the reference sites and checklist panel."
+            : locale === "pl" ? `Przyjęta wersja ${checklist.version}; decyzja ${checklist.decisionId}.` : `Accepted version ${checklist.version}; decision ${checklist.decisionId}.`}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy)}
+            value={selectedChecklist?.id === checklist.id && selectedChecklist.revision === String(checklist.version)
+              && checklist.status === "current" ? checklist.id : ""}
+            onChange={event => chooseChecklist(Boolean(event.target.value))}><option value="">{locale === "pl" ? "Nie używaj checklisty" : "Do not use a checklist"}</option>
+            {checklist.status === "current" && checklist.id ? <option value={checklist.id}>{checklist.label} · v{checklist.version}</option> : null}</CcSelect>}</CcField>
+        {selectedChecklist && (selectedChecklist.id !== checklist.id || checklist.status !== "current" || selectedChecklist.revision !== String(checklist.version))
+          ? <div className="mt-2 grid gap-2"><p role="status" className="text-warning">{locale === "pl" ? "W Ready wybrano nieaktualną checklistę. Usuń wybór lub użyj bieżącej wersji przed ponownym zatwierdzeniem." : "Ready contains a stale checklist. Remove it or use the current version before approving again."}</p>
+            <div className="flex flex-wrap gap-2"><CcButton size="sm" variant="outline" disabled={!writable || Boolean(busy)} onClick={() => chooseChecklist(false)}>{locale === "pl" ? "Usuń nieaktualny wybór" : "Remove stale selection"}</CcButton>
+              {checklist.status === "current" ? <CcButton size="sm" variant="outline" disabled={!writable || Boolean(busy)} onClick={() => chooseChecklist(true)}>{locale === "pl" ? "Użyj bieżącej wersji" : "Use current version"}</CcButton> : null}</div></div> : null}
+      </div> : null}
       {stale && writable ? <CcButton size="sm" variant="outline" onClick={() => select(selected.filter(item => catalog.some(row => row.id === item.id)).map(item => item.id), true)}>{tr("refreshRefs")}</CcButton> : null}
-      {!["company", "product", "technical"].includes(group) && !selected.length ? <CcField label={tr("none")} required>{({ id }) => <input className="input input-bordered w-full" id={id} required maxLength={2000} value={draft!.none[group]} onChange={event => update({ ...draft!, none: { ...draft!.none, [group]: event.target.value } })} />}</CcField> : null}
+      {!["company", "product", "technical"].includes(group) && !draft!.refs[group].length ? <CcField label={tr("none")} required>{({ id }) => <input className="input input-bordered w-full" id={id} required maxLength={2000} value={draft!.none[group]} onChange={event => update({ ...draft!, none: { ...draft!.none, [group]: event.target.value } })} />}</CcField> : null}
       {group === "dependencies" ? selected.map(item => <CcField key={item.id} label={`${tr("dependencyEvidence")}: ${humanizeBusinessValue(catalog.find(row => row.id === item.id)?.label || "dependency", undefined, locale)}`} required>{({ id }) => <textarea id={id} className="textarea textarea-bordered w-full" required maxLength={2000} value={item.evidence ?? ""} onChange={event => update({ ...draft!, refs: { ...draft!.refs, dependencies: selected.map(row => row.id === item.id ? { ...row, evidence: event.target.value } : row) } })} />}</CcField>) : null}
     </section>;
   }

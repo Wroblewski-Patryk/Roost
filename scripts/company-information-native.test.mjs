@@ -13,6 +13,8 @@ const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
 const g22Native = process.env.ROOST_G22_NATIVE_RUNTIME === '1';
 const g23PolicyOnly = process.env.ROOST_G23_POLICY_ONLY === '1';
+const g24cPacketOnly = process.env.ROOST_G24C_PACKET_ONLY === '1';
+const g24cHostInput = g24cPacketOnly && process.env.ROOST_G24C_HOST_INPUT === '1';
 const g23Comparison = process.env.ROOST_G23_COMPARISON === '1';
 const g23Cases = Object.freeze({
   plain_status: {
@@ -42,6 +44,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
     return { status: response.status, body: response.status === 204 ? null : await response.json() };
   }
   const ref = row => ({ id: row.id, revision: row.updatedAt.toISOString() });
+  const priorReferenceUrls = process.env.ROOST_REFERENCE_SITE_URLS;
   const approveSource = async (row, taskId, ownerToken) => request(`/v1/company-records/${row.id}/context-reviews`, ownerToken, {
     requestId: randomUUID(), taskId, expectedRevision: row.updatedAt.toISOString(), action: 'approve',
     classification: 'fact', provenance: 'Isolated native test owner review', environment: 'isolated_test',
@@ -250,6 +253,70 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const procedure = await prisma.procedure.create({ data: { workspaceId, name: 'Synthetic company information check', purpose: 'Check selected source before one information task', status: 'active', steps: { create: { stepOrder: 1, instruction: 'Compare the selected source with the exact proposed summary' } } } });
       assert.equal((await approveTaskSource('procedure', procedure, runtimeTask.id, token)).status, 201);
       c.procedures = { items: [{ id: procedure.id, revision: String(procedure.version) }], noneReason: null };
+      let siteRecord, checklistProcedureId;
+      if (g24cPacketOnly) {
+        const siteUrl = 'https://method-proof.example.org/';
+        process.env.ROOST_REFERENCE_SITE_URLS = JSON.stringify([siteUrl, 'https://other-method.example.org/']);
+        const { referenceSitePackageDigest } = require('../dist/modules/product-engineering/reference-site-package.js');
+        const saved = { schemaVersion: 'roost-reference-site-package-v1', source: {
+          provider: 'openai_sites', projectId: 'appgprj_methodfixture',
+          versionId: 'appgprj_methodfixture~appgver_v1', versionNumber: 1,
+          commitSha: 'a'.repeat(40), archiveSha256: 'b'.repeat(64),
+          deploymentId: 'appgdep_methodfixture', publishedUrl: siteUrl },
+          preparedAt: new Date().toISOString(), observations: [{ id: 'visible-primary-action',
+            category: 'journey', route: '/', language: 'en',
+            text: 'The visible primary action opens the intended detail view.', evidence: [{
+              kind: 'supervised_click', ref: 'evidence/action.json', sha256: 'c'.repeat(64),
+              observedAt: new Date().toISOString(), scope: 'supervised_result',
+              result: 'The detail view opened after one click.' }] }], unknowns: ['Other devices were not inspected.'] };
+        const packageDigest = referenceSitePackageDigest(saved);
+        const createdSite = await request('/v1/company-records', token, { recordType: 'reference_site',
+          title: 'Fictional method-proof site', description: 'Saved version with a visible primary action.',
+          status: 'active', source: 'owner_note', metadata: { referenceUrl: siteUrl, providerVersion: 'v1',
+            sourceKind: 'openai_sites', sourceId: 'appgprj_methodfixture', package: saved } });
+        assert.equal(createdSite.status, 201, JSON.stringify(createdSite.body));
+        siteRecord = createdSite.body.data;
+        const reviewedSite = await approveSource({ ...siteRecord, updatedAt: new Date(siteRecord.updatedAt) }, runtimeTask.id, token);
+        assert.equal(reviewedSite.status, 201, JSON.stringify(reviewedSite.body));
+        const agentCredential = await request('/v1/api-keys/agent-credentials', token, {
+          requestId: randomUUID(), agentId: c.assignment.agentId, name: 'Method proof fixture agent',
+          expiresAt: new Date(Date.now() + 86400000).toISOString() });
+        assert.equal(agentCredential.status, 201, JSON.stringify(agentCredential.body));
+        const agentKey = { 'X-API-Key': agentCredential.body.data.key };
+        const siteRoot = `/v1/product-engineering/tasks/${runtimeTask.id}/reference-sites/${siteRecord.id}`;
+        const finding = await request(`${siteRoot}/findings`, agentKey, {
+          requestId: randomUUID(), packageDigest, observationId: 'visible-primary-action',
+          siteRevision: siteRecord.updatedAt, sourceReviewId: reviewedSite.body.data.id,
+          title: 'Visible primary action', category: 'journey', language: 'en',
+          observed: 'The visible primary action opened the detail view in a supervised click.',
+          sourceExcerpt: 'visible primary action', interpretation: 'The action leads to the intended detail.',
+          uncertainty: 'Other devices were not inspected.', applicability: 'Public entry pages.' });
+        assert.equal(finding.status, 201, JSON.stringify(finding.body));
+        const findingId = finding.body.data.record.id;
+        const listed = await request(`${siteRoot}/findings`, token);
+        assert.equal(listed.status, 200, JSON.stringify(listed.body));
+        const reviewedFinding = await request(`${siteRoot}/findings/${findingId}/review`, token, {
+          requestId: randomUUID(), expectedFindingDigest: listed.body.data.items[0].findingDigest,
+          verdict: 'confirmed', rationale: 'The saved click result supports the observed action.',
+          evidence: 'The detail view opened after the supervised click.' });
+        assert.equal(reviewedFinding.status, 200, JSON.stringify(reviewedFinding.body));
+        const checklistPath = `/v1/product-engineering/tasks/${runtimeTask.id}/reference-site-checklist`;
+        const item = { findingId, itemId: 'primary-action-proof',
+          instruction: 'Check the primary action against the saved evidence.',
+          applicability: 'Public entry pages with one primary action.',
+          acceptanceCriterion: 'A supervised click opens the intended detail view.',
+          expectedInput: 'Saved site version and action evidence.',
+          expectedOutput: 'A sourced assessment with evidence scope.',
+          rollback: 'Restore the previous approved action if the destination differs.' };
+        const preview = await request(`${checklistPath}/preview`, token, { items: [item] });
+        assert.equal(preview.status, 200, JSON.stringify(preview.body));
+        const acceptedChecklist = await request(`${checklistPath}/accept`, token, {
+          requestId: randomUUID(), expectedDigest: preview.body.data.digest, items: [item] });
+        assert.equal(acceptedChecklist.status, 200, JSON.stringify(acceptedChecklist.body));
+        checklistProcedureId = acceptedChecklist.body.data.procedureId;
+        c.procedures.items.push({ id: checklistProcedureId, revision: String(acceptedChecklist.body.data.version) });
+        c.context.company.push({ id: siteRecord.id, revision: siteRecord.updatedAt });
+      }
       c.executionClass = 'roost-company-information-runtime-v1'; c.modelSelection = selection;
       const root = `/v1/agent-runtime/tasks/${runtimeTask.id}`;
       assert.equal((await request(`${root}/risk`, foreignToken)).status, 404);
@@ -302,6 +369,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         const editorPolicy = await request(`${root}/execution-readiness?editor=1&executionClass=roost-company-information-runtime-v1`, token);
         assert.equal(editorPolicy.status, 200, JSON.stringify(editorPolicy.body));
         assert.equal(editorPolicy.body.data.editor.modelPolicyProposal.reasonCode, 'local_qualification_missing');
+        if (!g24cPacketOnly) {
         const credential = await request('/v1/api-keys/agent-credentials', token, {
           requestId: randomUUID(), agentId: c.assignment.agentId, name: 'G23 assigned policy reader',
           expiresAt: new Date(Date.now() + 86400000).toISOString() });
@@ -316,6 +384,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         const manifest = await request('/v1/mcp/manifest', agentKey);
         assert.equal(manifest.status, 200, JSON.stringify(manifest.body));
         assert.ok(manifest.body.data.tools.some(item => item.name === 'companycore_get_agent_runtime_tasks_by_id_model_policy_proposal'));
+        }
       }
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       let candidate;
@@ -426,10 +495,34 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       if (g23PolicyOnly) {
         const readyPin = (await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).executionReadiness;
         assert.equal(readyPin.modelPolicy.proposal.reasonCode, 'local_qualification_missing');
-        assert.equal(readyPin.modelPolicy.override, process.env.ROOST_G23_BACKEND !== 'codex');
-        assert.equal(readyPin.contract.modelSelection.backend, process.env.ROOST_G23_BACKEND === 'codex' ? 'codex_responses' : 'ollama_loopback');
+        assert.equal(readyPin.modelPolicy.override, g24cPacketOnly ? false : process.env.ROOST_G23_BACKEND !== 'codex');
+        assert.equal(readyPin.contract.modelSelection.backend, g24cPacketOnly || process.env.ROOST_G23_BACKEND === 'codex' ? 'codex_responses' : 'ollama_loopback');
         assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 0);
-        return;
+        if (g24cPacketOnly) {
+          const { inspectCompanyPreparation } = require('../dist/modules/agent-runtime/company-information-preparation.js');
+          const inspected = await prisma.$transaction(async db => inspectCompanyPreparation(db, workspaceId,
+            await db.task.findUniqueOrThrow({ where: { id: runtimeTask.id } }), undefined, true));
+          assert.equal(inspected.error, undefined, JSON.stringify(inspected));
+          const packet = inspected.taskContext.executionPacket;
+          assert.equal(packet.referenceSiteChecklist.taskId, runtimeTask.id);
+          assert.equal(packet.referenceSiteChecklist.procedure.id, checklistProcedureId);
+          assert.equal(packet.referenceSiteChecklist.items[0].source.siteId, siteRecord.id);
+          assert.equal(packet.referenceSiteChecklist.items[0].observation.evidence[0].scope, 'supervised_result');
+          const { revision: _revision, ...body } = packet;
+          assert.equal(createHash('sha256').update(JSON.stringify(body)).digest('hex'), packet.revision);
+          if (!g24cHostInput) {
+            await prisma.companyRecord.update({ where: { id: siteRecord.id }, data: {
+              description: 'Saved site changed after the accepted checklist and Ready.' } });
+            const invalidated = await request(`${root}/execution-readiness`, token);
+            assert.equal(invalidated.status, 200);
+            assert.notEqual(invalidated.body.data.status, 'ready');
+            assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 0);
+            process.stdout.write(`G24c sealed packet ${JSON.stringify({ taskId: runtimeTask.id,
+              procedureId: checklistProcedureId, packetRevision: packet.revision,
+              readyRevision: readyPin.revision, sourceChangedBeforeStart: true, providerInvoked: false })}\n`);
+          }
+        }
+        if (!g24cHostInput) return;
       }
       const forgedPreparation = await request('/v1/agent-runtime/executions', memberToken,
         { taskId: runtimeTask.id, executionClass: 'roost-company-information-v1' });
@@ -640,18 +733,31 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const sealed = buildCompanyInformationInput({ claimed: claimed.body.data, taskContext: fetched.taskContext,
         secrets: [apiKey.body.data.key] });
       const finalInput = JSON.parse(sealed.input);
-      assert.deepEqual(finalInput.sources.map(item => item.id), [currentSource.id]);
-      assert.equal(finalInput.sources[0].provenance.environment, 'isolated_test');
-      assert.equal(finalInput.sources[0].provenance.originSource, currentSource.source);
-      assert.equal(finalInput.sources[0].provenance.recordVerificationState, 'not_started');
-      assert.equal(finalInput.sources[0].provenance.verificationLevel, 'owner_attested');
-      assert.equal(finalInput.sources[0].provenance.inclusionReason, 'Explicit source selected for this task');
+      assert.deepEqual(finalInput.sources.map(item => item.id), g24cHostInput ? [currentSource.id, siteRecord.id] : [currentSource.id]);
+      const selectedSource = finalInput.sources.find(item => item.id === currentSource.id);
+      assert.equal(selectedSource.provenance.environment, 'isolated_test');
+      assert.equal(selectedSource.provenance.originSource, currentSource.source);
+      assert.equal(selectedSource.provenance.recordVerificationState, 'not_started');
+      assert.equal(selectedSource.provenance.verificationLevel, 'owner_attested');
+      assert.equal(selectedSource.provenance.inclusionReason, 'Explicit source selected for this task');
       assert.equal(sealed.input.includes(unrelatedSource.title), false);
       assert.equal(sealed.input.includes(apiKey.body.data.key), false);
       const sink = spawnSync(process.execPath, ['-e', 'let s="";process.stdin.setEncoding("utf8");process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>process.stdout.write(require("node:crypto").createHash("sha256").update(s).digest("hex")))'],
         { input: sealed.input, encoding: 'utf8', windowsHide: true });
       assert.equal(sink.status, 0, sink.stderr);
       assert.equal(sink.stdout, sealed.inputSeal);
+      if (g24cHostInput) {
+        assert.equal(finalInput.referenceSiteChecklist.taskId, runtimeTask.id);
+        assert.equal(finalInput.referenceSiteChecklist.procedure.id, checklistProcedureId);
+        assert.equal(finalInput.referenceSiteChecklist.items[0].source.siteId, siteRecord.id);
+        assert.deepEqual(finalInput.contract.access.tools, []);
+        assert.deepEqual(finalInput.contract.access.permissions, []);
+        process.stdout.write(`G24c native host input ${JSON.stringify({ taskId: runtimeTask.id,
+          executionId: runtimeExecutionId, inputSeal: sealed.inputSeal,
+          readyRevision: sealed.readyRevision, packetRevision: sealed.packetRevision,
+          procedureId: checklistProcedureId, providerInvoked: false })}\n`);
+        return;
+      }
       process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64 = signer.privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
@@ -991,5 +1097,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.notEqual(invalidated.body.data.status, 'ready');
       process.stdout.write(`G6 native risk/admission ${JSON.stringify({ taskId: runtimeTask.id, decisionId, executionId: runtimeExecutionId, hostId: host.id, acceptanceCommitted: true, ready: true, claimed: true, providerInvoked: false, providerTaskStatus: 'todo' })}\n`);
     });
-  } finally { await new Promise(resolve => server.close(resolve)); await prisma.$disconnect(); }
+  } finally {
+    if (priorReferenceUrls === undefined) delete process.env.ROOST_REFERENCE_SITE_URLS;
+    else process.env.ROOST_REFERENCE_SITE_URLS = priorReferenceUrls;
+    await new Promise(resolve => server.close(resolve)); await prisma.$disconnect();
+  }
 });

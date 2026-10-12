@@ -7,6 +7,8 @@ import { taskDecisionAuthorities } from "../decisions/decision-authority";
 import { currentCompanyDirection } from "../strategy/company-direction";
 import { currentGoalMandate } from "../goals/goal-mandate";
 import { projectTaskSource, taskSourceCandidate, taskSourceEligible, taskSourceProvenance, taskSourceReviews, type TaskSourceType } from "../agent-runtime/task-source-trust";
+import { referenceSiteChecklistScope } from "../product-engineering/reference-site-checklist-contract";
+import { referenceSiteChecklistForExecution } from "../product-engineering/reference-site-runtime-context";
 
 export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission, authorities?: Awaited<ReturnType<typeof taskDecisionAuthorities>>) {
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { project: true, goal: true, target: true, taskList: true, assignedWorkforceEntity: true, reviewerUser: { select: { id: true } } } });
@@ -103,7 +105,8 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
   };
 }
 
-export async function loadCompanyInformationContext(workspaceId: string, taskId: string, execution: AgentExecution, db: Prisma.TransactionClient, submission?: import("../agent-runtime/task-role-context").RoleSubmission) {
+export async function loadCompanyInformationContext(workspaceId: string, taskId: string, execution: AgentExecution, db: Prisma.TransactionClient,
+  submission?: import("../agent-runtime/task-role-context").RoleSubmission, rawDb: Prisma.TransactionClient = db) {
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { goal: true, assignedWorkforceEntity: true } });
   if (!task) return null;
   const contract = (execution?.metadata as any)?.executionContract;
@@ -123,6 +126,13 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
       const source = projectTaskSource(type, row);
       return taskSourceEligible(source, reviews.get(`${type}:${row.id}`), workspaceId, taskId, applicationIds, task.projectId);
     });
+    const selectedChecklist = procedures.filter(row => row.scope === referenceSiteChecklistScope);
+    if (selectedChecklist.length > 1 || selectedChecklist.length && contract.executionClass !== "roost-company-information-runtime-v1")
+      throw new Error("reference_site_checklist_selection_invalid");
+    const checklist = selectedChecklist.length ? await referenceSiteChecklistForExecution(db, rawDb, workspaceId,
+      taskId, task.assignedWorkforceEntityId ?? "", selectedChecklist[0].id,
+      String(contract.procedures.items.find((ref: any) => ref.id === selectedChecklist[0].id)?.revision ?? "")) : null;
+    if (selectedChecklist.length && !checklist) throw new Error("reference_site_checklist_context_invalid");
     return { schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(),
       companyDirection: await currentCompanyDirection(db, workspaceId),
       goalMandate: task.goalId ? await currentGoalMandate(db, workspaceId, task.goalId) : null,
@@ -131,7 +141,8 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
         assignedWorkforceEntityId: task.assignedWorkforceEntityId, assignedWorkforceEntity: task.assignedWorkforceEntity ? {
           id: task.assignedWorkforceEntity.id, workspaceId, type: task.assignedWorkforceEntity.type, status: task.assignedWorkforceEntity.status,
           role: task.assignedWorkforceEntity.role, skillIndex: task.assignedWorkforceEntity.skillIndex, toolIndex: [], authorityScope: [] } : null },
-      executionPacket: await prepareExecutionPacket(execution!, task, db, submission),
+      executionPacket: { ...await prepareExecutionPacket(execution!, task, db, submission),
+        ...(checklist ? { referenceSiteChecklist: checklist } : {}) },
       procedures: admitted("procedure", procedures).map(row => {
         const source = projectTaskSource("procedure", row);
         return { ...source.content, provenance: taskSourceProvenance(source, reviews.get(`procedure:${row.id}`)!) };

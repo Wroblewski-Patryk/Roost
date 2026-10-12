@@ -16,7 +16,8 @@ export const referenceSiteMetadata = z.object({
   package: referenceSitePackage
 }).strict().superRefine((value, ctx) => {
   if (value.sourceId !== value.package.source.projectId ||
-      value.providerVersion !== `v${value.package.source.versionNumber}`)
+      value.providerVersion !== `v${value.package.source.versionNumber}` ||
+      value.referenceUrl !== value.package.source.publishedUrl)
     ctx.addIssue({ code: "custom", message: "reference_site_package_identity_mismatch" });
 });
 

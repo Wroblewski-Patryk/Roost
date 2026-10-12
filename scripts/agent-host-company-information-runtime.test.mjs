@@ -31,6 +31,32 @@ function seal(f) {
   f.claimed.metadata = { executionContract: f.packet.contract, readyContextPin: pin };
   f.taskContext.readyAdmission = { status: 'ready', ...pin, validationRevision: revision };
 }
+function checklistFixture() {
+  const f = fixture(), procedureId = randomUUID(), decisionId = randomUUID(), findingId = randomUUID();
+  const source = f.packet.sources[0];
+  source.recordType = 'reference_site';
+  const siteId = source.id, taskId = f.claimed.taskId;
+  f.packet.contract.procedures = { items: [{ id: procedureId, revision: '1' }], noneReason: null };
+  f.packet.referenceSiteChecklist = { schemaVersion: 'roost-reference-site-execution-context-v1',
+    workspaceId: f.claimed.workspaceId, taskId, agentId: f.packet.identity.agentId,
+    procedure: { id: procedureId, familyId: randomUUID(), version: 1, decisionId }, items: [{
+      id: randomUUID(), order: 1, itemId: 'primary-action',
+      instruction: 'Check the primary action.', applicability: 'Public entry page.',
+      acceptanceCriterion: 'The action opens its intended view.', expectedInput: 'Saved site version.',
+      expectedOutput: 'Sourced observation.', rollback: 'Restore the prior action.',
+      source: { taskId, siteId, findingId, findingVersionId: randomUUID(), findingDigest: 'a'.repeat(64),
+        reviewId: randomUUID(), sourceReviewId: source.provenance.reviewId, packageDigest: 'b'.repeat(64),
+        metadataDigest: 'c'.repeat(64), recordRevision: source.revision, observationId: 'primary-action',
+        providerVersion: 'v1', versionId: 'appgprj_fixture~appgver_v1', publishedUrl: 'https://example.org/' },
+      finding: { observed: 'The action opened its intended view.', interpretation: 'The action is clear.',
+        uncertainty: 'Other devices were not observed.', applicability: 'Public entry page.' },
+      observation: { id: 'primary-action', category: 'journey', route: '/', language: 'en',
+        text: 'The primary action opens the intended view.', evidence: [{ kind: 'supervised_click',
+          ref: 'evidence/click.json', sha256: 'd'.repeat(64), observedAt: new Date().toISOString(),
+          scope: 'supervised_result', result: 'The intended view opened.' }] }
+    }] };
+  seal(f); return f;
+}
 const keys = generateKeyPairSync('ed25519');
 const publicKey = keys.publicKey.export({ type: 'spki', format: 'pem' });
 function signedFixture() {
@@ -52,6 +78,31 @@ test('informational stdin contains exactly selected company records and no lease
   assert.equal(Object.hasOwn(body, 'applicationContext'), false);
   assert.equal(Object.hasOwn(body, 'nativeObservation'), false);
   assert.ok(body.rules.some(rule => /Never claim.*token or cost budget/.test(rule)));
+});
+test('task-bound checklist enters sealed no-tool input with exact version and saved evidence', () => {
+  const f = checklistFixture(), first = buildCompanyInformationInput(f), replay = buildCompanyInformationInput(f);
+  const body = JSON.parse(first.input);
+  assert.deepEqual(body.referenceSiteChecklist, f.packet.referenceSiteChecklist);
+  assert.equal(body.referenceSiteChecklist.items[0].observation.evidence[0].scope, 'supervised_result');
+  assert.deepEqual(body.contract.access.tools, []);
+  assert.deepEqual(body.contract.access.permissions, []);
+  assert.equal(first.inputSeal, replay.inputSeal);
+  assert.equal(first.readyRevision, replay.readyRevision);
+  f.packet.referenceSiteChecklist.items[0].instruction = 'Changed after Ready.';
+  assert.throws(() => buildCompanyInformationInput(f));
+});
+for (const [name, mutate] of [
+  ['foreign checklist task', f => { f.packet.referenceSiteChecklist.taskId = randomUUID(); }],
+  ['foreign checklist agent', f => { f.packet.referenceSiteChecklist.agentId = randomUUID(); }],
+  ['foreign finding task', f => { f.packet.referenceSiteChecklist.items[0].source.taskId = randomUUID(); }],
+  ['unselected checklist version', f => { f.packet.contract.procedures.items[0].revision = '2'; }],
+  ['changed source review', f => { f.packet.referenceSiteChecklist.items[0].source.sourceReviewId = randomUUID(); }],
+  ['unselected source record', f => { f.packet.referenceSiteChecklist.items[0].source.siteId = randomUUID(); }],
+  ['source evidence disguised as supervised result', f => { f.packet.referenceSiteChecklist.items[0].observation.evidence[0].kind = 'source'; }],
+  ['extra checklist item', f => { f.packet.referenceSiteChecklist.items.push({ ...f.packet.referenceSiteChecklist.items[0], id: randomUUID(), order: 2, itemId: 'second-action' }); }]
+]) test(name + ' denied before model admission', () => {
+  const f = checklistFixture(); mutate(f); seal(f);
+  assert.throws(() => buildCompanyInformationInput(f), /(company_information_runtime_blocked|execution_packet_invalid)/);
 });
 for (const [name, mutate] of [
   ['preparation cannot borrow runtime authority', f => { f.packet.contract.executionClass = 'roost-company-information-v1'; }],

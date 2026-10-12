@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none.
+**Active gate:** G24c.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 

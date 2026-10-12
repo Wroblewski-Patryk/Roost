@@ -17,6 +17,8 @@ import { composeProcedure, compositionVersion } from "./procedure-composition";
 import { admissionOperations } from "./task-risk-admission-contract";
 import { taskDecisionAuthorities } from "../decisions/decision-authority";
 import { isCompanyInformation, submitCompanyPreparation, inspectCompanyPreparation } from "./company-information-preparation";
+import { referenceSiteChecklistScope } from "../product-engineering/reference-site-checklist-contract";
+import { referenceSiteChecklistForExecution } from "../product-engineering/reference-site-runtime-context";
 import { informationModelProposalForTask } from "./information-model-policy";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
@@ -301,6 +303,21 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     db.workforceEntity.findMany({ where: { workspaceId, status: "active" }, select: { id: true, name: true, type: true, role: true, source: true, externalId: true, authorityScope: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 })
   ]);
   const agent = task.assignedWorkforceEntity;
+  const runtime = company && (executionClass === "roost-company-information-runtime-v1"
+    || !executionClass && pin.contract?.executionClass === "roost-company-information-runtime-v1");
+  const checklistRows = company ? await db.$queryRaw<Array<{ decision_id: string; procedure_id: string }>>`
+    SELECT d.id AS decision_id,d.procedure_id FROM reference_site_checklist_decisions d
+    WHERE d.workspace_id=${workspaceId}::uuid AND d.task_id=${taskId}::uuid
+    ORDER BY d.created_at DESC,d.id DESC LIMIT 1` : [];
+  const latestChecklist = checklistRows[0] ? await db.procedure.findFirst({ where: {
+    workspaceId, id: checklistRows[0].procedure_id, scope: referenceSiteChecklistScope } }) : null;
+  const checklistEligible = Boolean(runtime && agent && latestChecklist?.status === "active"
+    && await referenceSiteChecklistForExecution(db, db, workspaceId, taskId, agent.id,
+      latestChecklist.id, String(latestChecklist.version)));
+  const selectedProcedureIds = Array.isArray((pin.contract as any)?.procedures?.items)
+    ? (pin.contract as any).procedures.items.map((item: any) => item?.id).filter((id: unknown): id is string => typeof id === "string") : [];
+  const selectedChecklists = selectedProcedureIds.length ? await db.procedure.findMany({ where: {
+    workspaceId, id: { in: selectedProcedureIds }, scope: referenceSiteChecklistScope }, select: { id: true } }) : [];
   const strings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
   const provenance = object(task.executionRoleProvenance), requesterId = provenance.requesterUserId ?? userId;
   const requester = members.find(item => item.userId === requesterId);
@@ -337,7 +354,15 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     ...(company && (executionClass === "roost-company-information-runtime-v1" || pin.contract?.executionClass === "roost-company-information-runtime-v1")
       ? { modelPolicyProposal: await informationModelProposalForTask(db, workspaceId, taskId) } : {}),
     sources: records.slice(0, 500).map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), applicationId: item.applicationId })),
-    procedures: context.procedures.map(item => ({ id: item.id, label: item.name, revision: String(item.version), eligible: item.status === "active" })),
+    procedures: [...context.procedures.filter(item => item.scope !== referenceSiteChecklistScope).map(item => ({
+      id: item.id, label: item.name, revision: String(item.version), eligible: item.status === "active" })),
+      ...(latestChecklist ? [{ id: latestChecklist.id, label: latestChecklist.name,
+        revision: String(latestChecklist.version), eligible: checklistEligible, kind: "reference_site_checklist" }] : [])],
+    referenceSiteChecklist: { status: !latestChecklist ? "none" : latestChecklist.status !== "active" ? "withdrawn"
+      : checklistEligible ? "current" : "stale", id: latestChecklist?.id ?? null,
+      label: latestChecklist?.name ?? null, version: latestChecklist?.version ?? null,
+      decisionId: checklistRows[0]?.decision_id ?? null,
+      selectedIds: selectedChecklists.map(item => item.id) },
     dependencies: context.dependencies.map(item => ({ id: item.id, label: item.dependencyType, revision: item.updatedAt.toISOString(), eligible: item.status !== "blocked" })),
     decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),decisions: context.decisions.map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), eligible: item.status === "approved" || item.status === "accepted" && item.source === "roost_decision" })),
     accepted: accepted.success ? { contract: accepted.data, applicationId: pin.applicationId, prompt: pin.prompt, baseBranch: pin.baseBranch } : null,

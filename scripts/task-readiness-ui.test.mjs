@@ -456,5 +456,42 @@ try {
     assert.deepEqual(errors,[]);await policyPage.close();checked++;
   }
 
+  for (const locale of ['pl', 'en']) for (const state of ['stale', 'new_version']) {
+    const checklistPage = await browser.newPage({ viewport: { width: 390, height: 960 } });
+    const errors=[]; checklistPage.on('pageerror',error=>errors.push(error.message));
+    await checklistPage.addInitScript(value=>localStorage.setItem('companycoreLocale',value),locale);
+    const {packet:checklistPacket}=fixture('changed');
+    const checklistId='00000000-0000-4000-8000-000000000901';
+    checklistPacket.editor.executionClass='roost-company-information-runtime-v1';
+    checklistPacket.editor.applicationId=null; checklistPacket.editor.task.project=null;
+    checklistPacket.editor.accepted.contract.executionClass='roost-company-information-runtime-v1';
+    checklistPacket.editor.accepted.contract.procedures={items:[{id:checklistId,revision:'1'}],noneReason:null};
+    checklistPacket.editor.referenceSiteChecklist={status:state==='stale'?'stale':'current',
+      id:checklistId,label:'Fictional task checklist',version:state==='stale'?1:2,
+      decisionId:'00000000-0000-4000-8000-000000000902',selectedIds:[checklistId]};
+    checklistPacket.editor.procedures=[{id:checklistId,label:'Fictional task checklist',
+      revision:String(checklistPacket.editor.referenceSiteChecklist.version),
+      eligible:state!=='stale',kind:'reference_site_checklist'}];
+    await checklistPage.route('**/v1/**',async route=>{
+      const url=route.request().url();
+      if(url.includes('/specialist-offer'))return route.fulfill({status:404,json:{error:'task_specialist_offer_not_found'}});
+      if(url.includes('execution-readiness'))return route.fulfill({json:{data:checklistPacket}});
+      assert.equal(route.request().method(),'GET');
+      return route.fulfill({json:{data:url.includes('/v1/tasks?')?[{...checklistPacket.editor.task,priority:'normal'}]:{departments:[]}}});
+    });
+    await checklistPage.goto(`http://127.0.0.1:${server.address().port}?executionClass=roost-company-information-runtime-v1`);
+    await checklistPage.getByRole('button',{name:locale==='pl'?'Przygotuj wykonanie':'Prepare execution',exact:true}).first().click();
+    const staleText=locale==='pl'?'W Ready wybrano nieaktualną checklistę':'Ready contains a stale checklist';
+    await checklistPage.getByText(staleText,{exact:false}).waitFor();
+    if(state==='new_version') {
+      await checklistPage.getByRole('button',{name:locale==='pl'?'Użyj bieżącej wersji':'Use current version'}).click();
+      assert.equal(await checklistPage.getByLabel(locale==='pl'?'Checklista strony dla tego zadania':'Site checklist for this task').inputValue(),checklistId);
+      await checklistPage.getByLabel(locale==='pl'?'Checklista strony dla tego zadania':'Site checklist for this task').selectOption('');
+    } else await checklistPage.getByRole('button',{name:locale==='pl'?'Usuń nieaktualny wybór':'Remove stale selection'}).click();
+    assert.equal(await checklistPage.getByText(staleText,{exact:false}).count(),0);
+    assert.equal(await checklistPage.getByLabel(locale==='pl'?'Checklista strony dla tego zadania':'Site checklist for this task').inputValue(),'');
+    assert.deepEqual(errors,[]);await checklistPage.close();checked++;
+  }
+
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
