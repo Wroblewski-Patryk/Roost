@@ -1,16 +1,29 @@
 #!/usr/bin/env node
 
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
+import { startReferenceSiteApprovalServer } from "./lib/reference-site-mcp-approval.mjs";
+import { loadReferenceSiteMcpGuard } from "./lib/reference-site-mcp-guard.mjs";
 
 const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3102").replace(/\/+$/, "");
 const apiKey = process.env.COMPANYCORE_API_KEY;
 const manifestPath = process.env.COMPANYCORE_MCP_MANIFEST_PATH ?? "/v1/mcp/manifest";
 const requestTimeoutMs = Number(process.env.COMPANYCORE_MCP_TIMEOUT_MS ?? 30000);
 const commandMode = process.env.COMPANYCORE_MCP_COMMAND_MODE ?? "read_only";
+const findingGuard = loadReferenceSiteMcpGuard(process.env.COMPANYCORE_MCP_FINDING_GUARD_CONFIG,
+  fileURLToPath(new URL("..", import.meta.url)));
+const requireFindingGuard = process.argv.includes("--require-finding-guard");
+if (requireFindingGuard && !findingGuard) throw new Error("Finding guard is required for this MCP session.");
 
 let cachedManifest = null;
 
 const serverInstructions = "Use Roost as the workspace-scoped source of truth for company context, applications, procedures, tasks, evidence, and agent activity. Read context before acting. Never access Roost PostgreSQL or provider secrets directly. Treat write tools as governed actions, keep risky tools supervised, and report useful progress or evidence back to Roost when the assigned workflow permits it.";
+
+function requestExactFindingApproval(requestDigest, exactRequest) {
+  if (Buffer.byteLength(exactRequest, "utf8") > 12000) throw new Error("Finding guard payload exceeds approval display limit.");
+  if (!approvalServer) throw new Error("Finding guard approval page is unavailable.");
+  return approvalServer.requestApproval(exactRequest, requestDigest);
+}
 
 function stderr(message) {
   process.stderr.write(`[companycore-mcp] ${message}\n`);
@@ -50,6 +63,7 @@ async function fetchJson(path, init = {}) {
   try {
     const response = await fetch(`${baseUrl}${path}`, {
       ...init,
+      redirect: findingGuard ? "manual" : "follow",
       signal: controller.signal,
       headers: {
         "Accept": "application/json",
@@ -160,6 +174,9 @@ async function callTool(name, args) {
     throw error;
   }
 
+  const toolArgs = args && typeof args === "object" && !Array.isArray(args) ? args : {};
+  findingGuard?.checkCall(tool, toolArgs);
+
   if (tool.requiresApproval === true && commandMode !== "supervised_operator") {
     const structuredContent = {
       ok: false,
@@ -185,7 +202,6 @@ async function callTool(name, args) {
     };
   }
 
-  const toolArgs = args && typeof args === "object" && !Array.isArray(args) ? args : {};
   const pathWithParams = replacePathParameters(tool.path, toolArgs);
   const path = addQuery(pathWithParams, toolArgs.query);
   const method = tool.method.toUpperCase();
@@ -193,11 +209,36 @@ async function callTool(name, args) {
     method
   };
 
-  if (method !== "GET") {
+  let reservedFinding = false;
+  if (findingGuard && method === "POST") {
+    const exact = findingGuard.approval(tool, toolArgs, `${baseUrl}${path}`);
+    if (!(await requestExactFindingApproval(exact.requestDigest, exact.exactRequest))) {
+      throw new Error("Finding guard denied or timed out; no POST was sent.");
+    }
+    try {
+      findingGuard.reserve(exact.site, exact.requestDigest, exact.requestId);
+    } catch (error) {
+      if (error?.code === "EEXIST") throw new Error("Finding guard slot already spent; no POST was sent.");
+      throw new Error("Finding guard could not durably reserve the slot; no POST was sent.");
+    }
+    init.body = exact.bodyBytes;
+    reservedFinding = true;
+  } else if (method !== "GET") {
     init.body = JSON.stringify(toolArgs.body ?? {});
   }
 
-  const result = await fetchJson(path, init);
+  let result;
+  try {
+    result = await fetchJson(path, init);
+  } catch (error) {
+    if (!reservedFinding) throw error;
+    return { content: [{ type: "text", text: "Finding POST outcome is uncertain. The slot remains spent; inspect Roost before any further action." }],
+      structuredContent: { ok: false, error: "finding_post_outcome_uncertain", slotSpent: true }, isError: true };
+  }
+  if (reservedFinding && result.status >= 300 && result.status < 400) {
+    return { content: [{ type: "text", text: "Finding POST redirect was refused. The slot remains spent; inspect Roost before any further action." }],
+      structuredContent: { ok: false, error: "finding_post_redirect_refused", status: result.status, slotSpent: true }, isError: true };
+  }
   const structuredContent = {
     status: result.status,
     ok: result.ok,
@@ -256,7 +297,7 @@ async function handleRequest(message) {
       case "tools/list": {
         const manifest = await loadManifest();
         response(message.id, {
-          tools: manifest.tools.map(publicTool)
+          tools: manifest.tools.filter(tool => !findingGuard || findingGuard.permitsTool(tool)).map(publicTool)
         });
         break;
       }
@@ -289,12 +330,16 @@ if (process.argv.includes("--print-config")) {
     manifestPath,
     apiKeyConfigured: Boolean(apiKey),
     requestTimeoutMs,
-    commandMode
+    commandMode,
+    findingGuardEnabled: Boolean(findingGuard),
+    findingGuardRequired: requireFindingGuard
   }, null, 2));
   process.stdout.write("\n");
   process.exit(0);
 }
 
+const approvalServer = findingGuard ? await startReferenceSiteApprovalServer() : null;
+if (approvalServer) stderr(`Finding approval page: ${approvalServer.origin}/`);
 stderr(`Starting stdio bridge for ${baseUrl}${manifestPath}`);
 
 const rl = readline.createInterface({
@@ -327,5 +372,6 @@ rl.on("line", (line) => {
 });
 
 rl.on("close", () => {
+  void approvalServer?.close();
   stderr("stdin closed");
 });
