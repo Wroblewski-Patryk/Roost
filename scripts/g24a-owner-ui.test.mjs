@@ -11,12 +11,12 @@ const sitePackage = { schemaVersion: "roost-reference-site-package-v1", source: 
   provider: "openai_sites", projectId: "appgprj_1234567890abcdef",
   versionId: "appgprj_1234567890abcdef~appgver_1234567890abcdef",
   versionNumber: 1, commitSha: "a".repeat(40), archiveSha256: "b".repeat(64),
-  deploymentId: "appgdep_1234567890abcdef", publishedUrl: "https://reference.example.test/" },
+  deploymentId: "appgdep_1234567890abcdef", publishedUrl: "https://reference.example.test" },
   preparedAt: revision, observations: [{ id: "hero", category: "content", language: "en", route: "/",
     text: "Visible headline", evidence: [{ kind: "source", scope: "source_only", sha256: "c".repeat(64),
       observedAt: revision, ref: "src/App.tsx" }] }],
   unknowns: ["Contact submission was not tested."] };
-const source = { url: "https://reference.example.test/", providerVersion: "v1", versionStatus: "provider_saved_version",
+const source = { url: "https://reference.example.test", providerVersion: "v1", versionStatus: "provider_saved_version",
   recordRevision: revision, sourceReviewId: "33333333-3333-4333-8333-333333333333", preparedAt: revision,
   contentDigest: "d".repeat(64), version: sitePackage.source };
 const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{ReferenceSiteStudy}from'./web/src/features/departments/reference-site-study';createRoot(document.getElementById('root')).render(<LanguageProvider><ReferenceSiteStudy taskId="${taskId}" taskTitle="Synthetic task" onClose={()=>{}}/></LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" },
@@ -68,10 +68,19 @@ try {
     await page.goto(`http://127.0.0.1:${server.address().port}`);
     await page.getByText(locale === "pl" ? "Nie skonfigurowano żadnej z dwóch dopuszczonych stron." : "Neither of the two permitted sites is configured.").waitFor();
     await page.getByLabel(locale === "pl" ? "Nazwa źródła" : "Site name").fill("Synthetic site");
-    await page.getByLabel(locale === "pl" ? "Dokładny adres HTTPS" : "Exact HTTPS URL").fill(source.url);
+    const urlField = page.getByLabel(locale === "pl" ? "Dokładny adres HTTPS" : "Exact HTTPS URL");
     await page.getByLabel(locale === "pl" ? "Oczyszczony pakiet JSON" : "Curated JSON package").setInputFiles({
       name: "fixture-package.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(sitePackage)) });
-    await page.getByRole("button", { name: locale === "pl" ? "Zapisz pakiet" : "Save package" }).click();
+    const savePackage = page.getByRole("button", { name: locale === "pl" ? "Zapisz pakiet" : "Save package" });
+    for (const invalid of ["http://reference.example.test", "https://user:pass@reference.example.test",
+      "https://reference.example.test#fragment", "https://reference.example.test/", "https://other.example.test"]) {
+      await urlField.fill(invalid);
+      assert.equal(await savePackage.isDisabled(), true, `reject ${invalid}`);
+    }
+    assert.equal(posts.length, 0, "invalid URLs must not submit the package");
+    await urlField.fill(source.url);
+    assert.equal(await savePackage.isEnabled(), true, "exact bare HTTPS origin from the saved package must be accepted");
+    await savePackage.click();
     const approveButton = page.getByRole("button", { name: locale === "pl" ? "Zatwierdź źródło" : "Approve source" });
     assert.equal(await approveButton.isDisabled(), true);
     await page.getByRole("button", { name: locale === "pl" ? "Odczytaj pakiet" : "Read package" }).click();

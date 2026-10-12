@@ -82,8 +82,9 @@ function evidenceScope(scope: string, pl: boolean) {
   return label ? label[pl ? 0 : 1] : scope;
 }
 function formatTime(value: string, locale: string) { return Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(locale) : value; }
-function configuredUrl(value: string) {
-  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password && !url.hash && url.href === value; }
+function configuredUrl(value: string, sitePackage: { source?: { publishedUrl?: string } } | null) {
+  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password && !url.search && !url.hash
+    && value === sitePackage?.source?.publishedUrl; }
   catch { return false; }
 }
 
@@ -157,7 +158,7 @@ export function ReferenceSiteStudy({ taskId, taskTitle, onClose }: { taskId: str
     } catch { setError("reference_site_package_invalid"); }
   }
   async function createSite() {
-    if (busy || !siteDraft.title.trim() || !packageDraft || !configuredUrl(siteDraft.referenceUrl)) return;
+    if (busy || !siteDraft.title.trim() || !packageDraft || !configuredUrl(siteDraft.referenceUrl, packageDraft)) return;
     setBusy("create"); setError(null); setSuccess(null);
     try {
       const response = await api<{ data: { id: string } }>("/v1/company-records", { method: "POST", body: JSON.stringify({
@@ -280,7 +281,7 @@ export function ReferenceSiteStudy({ taskId, taskTitle, onClose }: { taskId: str
           <CcField label={pl ? "Oczyszczony pakiet JSON" : "Curated JSON package"} required>{({ id }) => <input id={id} className="file-input file-input-bordered w-full" type="file" accept="application/json,.json" onChange={event => void selectPackage(event.target.files?.[0])} />}</CcField>
         </div>
         {packageDraft ? <p className="text-sm text-company-muted">Sites v{packageDraft.source.versionNumber} · {packageDraft.source.projectId} · {packageDraft.observations?.length ?? 0} {pl ? "obserwacji" : "observations"}</p> : null}
-        <div><CcButton variant="outline" loading={busy === "create"} disabled={Boolean(busy) || !siteDraft.title.trim() || !packageDraft || !configuredUrl(siteDraft.referenceUrl)} onClick={() => void createSite()}>{pl ? "Zapisz pakiet" : "Save package"}</CcButton></div>
+        <div><CcButton variant="outline" loading={busy === "create"} disabled={Boolean(busy) || !siteDraft.title.trim() || !packageDraft || !configuredUrl(siteDraft.referenceUrl, packageDraft)} onClick={() => void createSite()}>{pl ? "Zapisz pakiet" : "Save package"}</CcButton></div>
       </section> : null}
       {selected && !selected.approved ? <section className="grid gap-3 border-b border-base-300 pb-5"><h3 className="font-bold">{pl ? "Zatwierdź tę rewizję dla zadania" : "Approve this revision for the task"}</h3>
         <p className="text-sm text-company-muted">{pl ? "Najpierw odczytaj pakiet poniżej. Zatwierdzenie dotyczy dokładnego rekordu i tego zadania; zmiana rekordu je unieważni." : "Read the package below first. Approval is bound to this exact record and task; changing the record invalidates it."}</p>
