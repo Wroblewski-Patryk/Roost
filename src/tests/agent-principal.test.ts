@@ -49,3 +49,17 @@ test("credential commands reject authority supplied by callers and require expli
   for (const field of ["ownerId", "actorId", "workspaceId", "scopes", "profileId"]) assert.equal(createAgentCredentialSchema.safeParse({ ...input, [field]: "forged" }).success, false);
   assert.equal(changeAgentCredentialSchema.safeParse({ requestId: input.requestId }).success, false);
 });
+test("G24a package and Finding routes require a bound agent before task and review checks", () => {
+  const task = "00000000-0000-4000-8000-000000000001";
+  const site = "00000000-0000-4000-8000-000000000002";
+  const base = `/v1/product-engineering/tasks/${task}/reference-sites`;
+  for (const route of [base, `${base}/${site}/package`, `${base}/${site}/findings`]) {
+    assert.equal(agentPrincipalRoute("GET", route), true);
+    assert.equal(ordinaryApiKeyReadAllowed("GET", route, true), true);
+    assert.equal(ordinaryApiKeyReadAllowed("GET", route, false), false);
+  }
+  assert.equal(agentPrincipalRoute("POST", `${base}/${site}/findings`), true);
+  assert.equal(ordinaryApiKeyReadAllowed("POST", `${base}/${site}/findings`, true), true);
+  assert.equal(ordinaryApiKeyReadAllowed("POST", `${base}/${site}/findings`, false), false);
+  assert.equal(agentPrincipalRoute("POST", `${base}/${site}/package`), false);
+});

@@ -37,6 +37,7 @@ import { calculateApplicationReadiness } from "./readiness";
 import { loadApplicationOperation } from './application-operation.service';
 import { reviewTransaction } from "../agent-runtime/task-capability-admission";
 import { findingCatalog, findingList, findingView, recordFinding, reviseFinding, recordOccurrence, commandFinding, issueFindingGrant } from "./finding-service";
+import { referenceSiteList, referenceSitePackageRead, referenceSiteCreateFinding, referenceSiteFindings } from "./reference-site-finding-service";
 
 const optionalText = z.string().trim().min(1).optional().nullable();
 const keySchema = z.string().trim().min(1).max(100).regex(/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/);
@@ -332,6 +333,21 @@ async function capabilityForWorkspace(workspaceId: string, id: string) {
 }
 
 export const productEngineeringRouter = Router();
+
+function referenceSiteResponse(res: import("express").Response, result: any) {
+  if (result.error) return res.status(result.error.endsWith("not_found") ? 404 :
+    result.error.endsWith("forbidden") || result.error.endsWith("required") ? 403 :
+    409).json(result);
+  return res.status(result.record && !result.replayed ? 201 : 200).json({ data: result });
+}
+productEngineeringRouter.get("/tasks/:taskId/reference-sites", asyncHandler(async (req, res) =>
+  referenceSiteResponse(res, await referenceSiteList(req.auth!.workspaceId, idSchema.parse(req.params.taskId), req.auth))));
+productEngineeringRouter.get("/tasks/:taskId/reference-sites/:siteId/package", asyncHandler(async (req, res) =>
+  referenceSiteResponse(res, await referenceSitePackageRead(req.auth!.workspaceId, idSchema.parse(req.params.taskId), idSchema.parse(req.params.siteId), req.auth))));
+productEngineeringRouter.get("/tasks/:taskId/reference-sites/:siteId/findings", asyncHandler(async (req, res) =>
+  referenceSiteResponse(res, await referenceSiteFindings(req.auth!.workspaceId, idSchema.parse(req.params.taskId), idSchema.parse(req.params.siteId), req.auth))));
+productEngineeringRouter.post("/tasks/:taskId/reference-sites/:siteId/findings", asyncHandler(async (req, res) =>
+  referenceSiteResponse(res, await referenceSiteCreateFinding(req.auth!.workspaceId, idSchema.parse(req.params.taskId), idSchema.parse(req.params.siteId), req.auth, req.body))));
 
 function findingResponse(res: import("express").Response,result:any) {
   if(result.error)return res.status(result.error.endsWith("not_found")?404:result.error.endsWith("forbidden")?403:409).json(result);

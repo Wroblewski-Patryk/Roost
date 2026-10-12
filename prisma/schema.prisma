@@ -907,6 +907,7 @@ model CompanyRecord {
   parent                 CompanyRecord?     @relation("CompanyRecordHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children               CompanyRecord[]    @relation("CompanyRecordHierarchy")
   sourceReviews           CompanySourceReview[]
+  referenceSiteFindings   CapabilityObservation[] @relation("ReferenceSiteFindings")
   projectId              String?            @map("project_id") @db.Uuid
   applicationId          String?            @map("application_id") @db.Uuid
   clientId               String?            @map("client_id") @db.Uuid
@@ -2644,8 +2645,10 @@ model ApplicationCapabilityDimension {
 
 model CapabilityObservation {
   id                               String                          @id @default(uuid()) @db.Uuid
-  applicationId                    String                          @map("application_id") @db.Uuid
-  application                      Application                     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId                    String?                         @map("application_id") @db.Uuid
+  application                      Application?                    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  referenceSiteId                  String?                         @map("reference_site_id") @db.Uuid
+  referenceSite                    CompanyRecord?                  @relation("ReferenceSiteFindings", fields: [referenceSiteId], references: [id], onDelete: Restrict)
   applicationCapabilityId          String?                         @map("application_capability_id") @db.Uuid
   applicationCapability            ApplicationCapability?          @relation(fields: [applicationCapabilityId], references: [id], onDelete: Cascade)
   applicationFeatureId             String?                         @map("application_feature_id") @db.Uuid
@@ -2663,6 +2666,7 @@ model CapabilityObservation {
   createdAt                        DateTime                        @default(now()) @map("created_at")
 
   @@index([applicationId, observedAt])
+  @@index([referenceSiteId, observedAt])
   @@index([applicationCapabilityId, observedAt])
   @@map("capability_observations")
 }

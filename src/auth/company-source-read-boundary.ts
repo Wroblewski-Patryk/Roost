@@ -28,6 +28,10 @@ export function unboundCompanySourceRead(method: string, path: string) {
 // and the advertised MCP manifest. Worker tickets have a separate transport.
 export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAgent: boolean) {
   const route = path.replace(/\/+$/, "").toLowerCase().replace(/^\/v1(?=\/)/, "");
+  if (boundAgent && method === "POST" &&
+    /^\/product-engineering\/tasks\/[a-f0-9-]{36}\/reference-sites\/[a-f0-9-]{36}\/findings$/.test(route)) return true;
+  if (boundAgent && method === "GET" &&
+    /^\/product-engineering\/tasks\/[a-f0-9-]{36}\/reference-sites(?:\/[a-f0-9-]{36}\/(?:package|findings))?$/.test(route)) return true;
   // A workspace key can write an existing row with an empty PATCH and receive
   // its entire previous body. No unbound key has a task principal. Keep only
   // commands whose handlers authenticate the bound agent against that task or

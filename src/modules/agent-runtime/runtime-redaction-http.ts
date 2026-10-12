@@ -6,7 +6,7 @@ import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { inspectRuntime, redactionPolicy, redactionState, runtimeSecrets, safeRuntimeId, type RedactionState } from "./runtime-redaction-policy";
 import { workerTicketProofSchema } from "../../auth/worker-ticket-principal";
 
-export const nativePath = (path: string) => path.startsWith("/v1/agent-runtime/") || path.endsWith("/agent-context") || /^\/v1\/decisions\/(?:governance(?:\/|$)|[^/]+\/governance(?:\/|$)|mandates$|deferrals$|reopening-events$)/.test(path) || /^\/v1\/product-engineering\/(?:applications\/[^/]+\/findings(?:\/catalog)?|findings\/[^/]+(?:\/(?:versions|occurrences|actions|grants))?)$/.test(path);
+export const nativePath = (path: string) => path.startsWith("/v1/agent-runtime/") || path.endsWith("/agent-context") || /^\/v1\/decisions\/(?:governance(?:\/|$)|[^/]+\/governance(?:\/|$)|mandates$|deferrals$|reopening-events$)/.test(path) || /^\/v1\/product-engineering\/(?:applications\/[^/]+\/findings(?:\/catalog)?|findings\/[^/]+(?:\/(?:versions|occurrences|actions|grants))?|tasks\/[^/]+\/reference-sites(?:\/[^/]+\/(?:package|findings))?)$/.test(path);
 export async function flushRuntimeIncidents(state: RedactionState) {
   const pending = state.notices.splice(0); if (!pending.length) return;
   // Status remains read-only even for malformed/blocked content. Classification

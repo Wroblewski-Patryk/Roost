@@ -308,6 +308,10 @@ export const adapterManifest = {
     productEngineering: [
       { method: "GET", path: "/v1/product-engineering/graph", capability: "product-engineering:read" },
       { method: "GET", path: "/v1/product-engineering/applications/:id/findings", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/product-engineering/tasks/:taskId/reference-sites", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/product-engineering/tasks/:taskId/reference-sites/:siteId/package", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/product-engineering/tasks/:taskId/reference-sites/:siteId/findings", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/product-engineering/tasks/:taskId/reference-sites/:siteId/findings", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/product-engineering/applications/:id/findings/catalog", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/product-engineering/applications/:id/findings", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/product-engineering/findings/:id", capability: "agent-runtime:read" },

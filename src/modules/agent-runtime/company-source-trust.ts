@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { CompanyRecord, CompanySourceReview, Prisma } from "@prisma/client";
+import { referenceSiteMetadataDigest } from "../product-engineering/reference-site-contract";
 
 export function companySourceApprovedContent(record: CompanyRecord) {
   const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
@@ -12,6 +13,10 @@ export function companySourceApprovedContent(record: CompanyRecord) {
     verificationState: record.verificationState, source: record.source,
     sourceKind: sourceField("sourceKind"), sourceSystem: sourceField("sourceSystem"),
     sourceId: sourceField("sourceId"), filePath: sourceField("filePath"),
+    ...(record.recordType === "reference_site" ? {
+      referenceUrl: sourceField("referenceUrl"), providerVersion: sourceField("providerVersion"),
+      referenceSitePackageDigest: referenceSiteMetadataDigest(record.metadata)
+    } : {}),
     revision: record.updatedAt.toISOString()
   };
 }
@@ -24,6 +29,7 @@ const forbiddenOrigin = /(?:^|[\s_-])(bootstrap|certification|synthetic|fixture|
 export function companySourceEligible(record: CompanyRecord, review: CompanySourceReview | undefined, taskId: string, applicationId: string | null, now = new Date()) {
   const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
   if (["sourceKind", "sourceSystem", "sourceId", "filePath"].some(key => metadata[key] != null && typeof metadata[key] !== "string")) return false;
+  if (record.recordType === "reference_site" && !referenceSiteMetadataDigest(record.metadata)) return false;
   if (!review || review.action !== "approve" || review.taskId !== taskId || review.recordId !== record.id || review.workspaceId !== record.workspaceId
     || review.environment !== (process.env.NODE_ENV === "test" ? "isolated_test" : "production")
     || !["active", "approved", "accepted"].includes(record.status) || ["failed", "waived"].includes(record.verificationState)

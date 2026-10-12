@@ -71,6 +71,9 @@ export async function findingState(db: FindingDb,w:string,f:string,actor:ReviewA
   await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
   const version=(await db.$queryRaw<any[]>`SELECT * FROM finding_versions WHERE workspace_id=${w}::uuid AND observation_id=${f}::uuid ORDER BY version DESC LIMIT 1`)[0];
   if(!version)return {error:"finding_not_found"} as const;
+  // The application Finding commands parse an application-only body and must
+  // never interpret a reference-site Finding as an application subject.
+  if(version.reference_site_id)return {error:"finding_not_found"} as const;
   const principal=await resolveReviewPrincipal(db,w,actor);
   const head=(await db.$queryRaw<any[]>`SELECT * FROM finding_journal WHERE observation_id=${f}::uuid ORDER BY sequence DESC LIMIT 1`)[0];
   const context=(await db.$queryRaw<any[]>`SELECT finding_context(${f}::uuid) AS value`)[0].value;

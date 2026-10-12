@@ -16,6 +16,7 @@ import { recordIdFromQuery, validateTaskNavigation } from "../../owner-record-na
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import { TaskReadinessModal } from "./task-readiness";
+import { ReferenceSiteStudy } from "./reference-site-study";
 
 type Department = { id: string; key: CoreAreaKey; name: string };
 type Task = { id: string; title: string; description?: string | null; status: string; priority?: string | null; dueDate?: string | null; taskList?: { id: string; name: string } | null; project?: { id: string; name: string } | null; organizationalContext?: { ownerDepartment?: Department | null; relatedDepartments?: Department[]; scopes?: Array<{ type: string }> } };
@@ -39,6 +40,7 @@ function TaskEditor({ task, departmentKey, departments, onClose, onSaved }: { ta
 
 export function TasksWorkbench({ departmentKey, canonical = false }: { departmentKey: CoreAreaKey; canonical?: boolean }) {
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
+  const [studyTask, setStudyTask] = useState<Task | null>(null);
   const { locale, t } = useLanguage(); const polish = locale === "pl"; const [refreshKey, setRefreshKey] = useState(0); const [editing, setEditing] = useState<Task | null | undefined>(undefined); const [archiving, setArchiving] = useState<Task | null>(null); const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<{ tone: "success" | "error"; title: string } | null>(null);
   const packet = useOwnerPacket<Task[]>(`/v1/tasks${canonical ? "?" : `?departmentKey=${departmentKey}&includeCompanyWide=true&` }refresh=${refreshKey}`, true, t); const departments = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t); const rows = packet.data || []; const labels = useTranslatedTableLabels();
   const requestedTaskId = recordIdFromQuery(window.location.search, "taskId");
@@ -58,7 +60,7 @@ export function TasksWorkbench({ departmentKey, canonical = false }: { departmen
     { key: "owner", header: polish ? "Dział" : "Department", filterable: true, filterValue: (row) => row.organizationalContext?.ownerDepartment?.key || "unassigned", cell: (row) => <span className="text-sm text-company-muted">{row.organizationalContext?.ownerDepartment ? departmentLabel(row.organizationalContext.ownerDepartment.key, t) : "—"}</span> },
     { key: "status", header: "Status", filterable: true, filterValue: (row) => row.status, cell: (row) => <span className="badge badge-outline">{humanizeBusinessValue(row.status, undefined, locale)}</span> },
     { key: "priority", header: polish ? "Priorytet" : "Priority", filterable: true, filterValue: (row) => row.priority || "normal", cell: (row) => <span className="text-sm text-company-muted">{humanizeBusinessValue(row.priority || "normal", undefined, locale)}</span> },
-    { key: "actions", header: t("table.actions"), cell: (row) => <div className="flex justify-end gap-1"><CcButton ariaLabel={t("ready.open")} onClick={() => setReadinessTask(row.id)} size="sm" variant="outline">{t("ready.open")}</CcButton><CcButton ariaLabel="Edit" iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">Edit</span></CcButton><CcButton ariaLabel="Archive" iconLeft="ph-archive" onClick={() => setArchiving(row)} size="xs" variant="ghost"><span className="sr-only">Archive</span></CcButton></div> }
+    { key: "actions", header: t("table.actions"), cell: (row) => <div className="flex justify-end gap-1"><CcButton ariaLabel={t("ready.open")} onClick={() => setReadinessTask(row.id)} size="sm" variant="outline">{t("ready.open")}</CcButton><CcButton ariaLabel={polish ? "Badanie stron" : "Site study"} onClick={() => setStudyTask(row)} size="sm" variant="outline">{polish ? "Strony" : "Sites"}</CcButton><CcButton ariaLabel="Edit" iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">Edit</span></CcButton><CcButton ariaLabel="Archive" iconLeft="ph-archive" onClick={() => setArchiving(row)} size="xs" variant="ghost"><span className="sr-only">Archive</span></CcButton></div> }
   ], [locale, polish, t]);
   function refresh() { setEditing(undefined); setRefreshKey((value) => value + 1); }
   async function archive() { if (!archiving) return; setBusy(true); try { await api(`/v1/tasks/${archiving.id}`, { method: "DELETE" }); setArchiving(null); refresh(); } finally { setBusy(false); } }
@@ -66,6 +68,7 @@ export function TasksWorkbench({ departmentKey, canonical = false }: { departmen
     {notice ? <CcNotice live tone={notice.tone} title={notice.title} /> : null}
     <CcDataTable columns={columns} rows={rows} emptyDetail={polish ? "Utwórz zadanie lub przypisz istniejącemu kontekst tego działu." : "Create a task or assign this department context to an existing one."} emptyTitle={polish ? "Brak zadań" : "No tasks"} error={packet.status === "error" ? packet.error : null} getRowLabel={(row) => row.title} labels={labels} loading={packet.status === "loading"} mobileMode="cards" />
     {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => setReadinessTask(null)} onSaved={() => setRefreshKey(value => value + 1)} /> : null}
+    {studyTask ? <ReferenceSiteStudy key={studyTask.id} taskId={studyTask.id} taskTitle={studyTask.title} onClose={() => setStudyTask(null)} /> : null}
     {editing !== undefined ? <TaskEditor departmentKey={departmentKey} departments={departments.data?.departments || []} onClose={() => setEditing(undefined)} onSaved={refresh} task={editing} /> : null}
     {archiving ? <CcConfirmDialog busy={busy} confirmIcon="ph-archive" confirmLabel={polish ? "Archiwizuj" : "Archive"} confirmTone="warning" description={polish ? "Zadanie pozostanie w historii i audycie." : "The task remains in history and audit."} detail={<strong>{archiving.title}</strong>} eyebrow={polish ? "Zadania" : "Tasks"} onCancel={() => setArchiving(null)} onConfirm={archive} title={polish ? "Zarchiwizować zadanie?" : "Archive task?"} /> : null}</>;
 }

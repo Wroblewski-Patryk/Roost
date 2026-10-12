@@ -252,6 +252,19 @@ and `ROOST_API_TOKEN`. It does not run on startup or deployment.
 Company-specific one-off direct-database importers are not shipped publicly.
 Their removal from Git does not remove any previously imported database records.
 
+## Versioned reference-site packages
+
+G24a reads `ROOST_REFERENCE_SITE_URLS` from private server configuration. It
+must be a JSON array of exactly two distinct, exact HTTPS URLs. For example,
+`["https://site-one.example.test/","https://site-two.example.test/"]` is a
+fictional local fixture. An absent or malformed value denies site creation and
+task-bound reads. Store real URLs only in the installation configuration, not
+in distributed code or examples. The owner imports each curated Sites package
+through the console, reads it before approving its current record revision for
+one task, and may then see unverified agent Findings. The server does not run a
+browser or fetch these URLs as part of G24a. Private package files and their
+evidence files are retained outside the repository and deployment image.
+
 ## Trusted provider pilot
 
 The [trusted-provider pilot contract](../architecture/trusted-provider-pilot-v1.md)

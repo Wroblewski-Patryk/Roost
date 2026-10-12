@@ -8,6 +8,7 @@ import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { createEvent } from "../events/event.service";
 import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
 import { companySourceDigest, companySourceEligible } from "../agent-runtime/company-source-trust";
+import { configuredReferenceSiteUrl, referenceSiteMetadata } from "../product-engineering/reference-site-contract";
 
 const contextSchema = z.object({
   ownerDepartmentKey: z.string().nullable().optional(), relatedDepartmentKeys: z.array(z.string()).default([]),
@@ -168,6 +169,21 @@ companyRecordsRouter.post("/:id/context-reviews", asyncHandler(async (req, res) 
 }));
 companyRecordsRouter.post("/", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const input = createSchema.parse(req.body); const relationError = await relationValid(workspaceId, input);
+  if (input.recordType === "reference_site") {
+    const metadata = referenceSiteMetadata.safeParse(input.metadata);
+    if (req.auth?.authType !== "user" || req.auth.workspaceRole !== "owner") return res.status(403).json({ error: "reference_site_owner_required" });
+    if (!metadata.success || !configuredReferenceSiteUrl(metadata.data.referenceUrl) || input.applicationId || input.projectId || input.clientId)
+      return res.status(400).json({ error: "reference_site_configuration_invalid" });
+    const activeSites = await prisma.companyRecord.findMany({ where: {
+      workspaceId, recordType: "reference_site", status: { not: "archived" } }, select: { metadata: true } });
+    if (activeSites.some(site => {
+      const prior = referenceSiteMetadata.safeParse(site.metadata);
+      return prior.success && (prior.data.referenceUrl === metadata.data.referenceUrl ||
+        prior.data.sourceId === metadata.data.sourceId);
+    })) return res.status(409).json({ error: "reference_site_duplicate" });
+    if (activeSites.length >= 2)
+      return res.status(409).json({ error: "reference_site_limit" });
+  }
   if (relationError) return res.status(404).json({ error: relationError }); if (input.organizationalContext && !departmentKeysAreValid(input.organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
   await ensureDefaultDepartments(workspaceId); const { organizationalContext, key: requestedKey, ...data } = input;
   const record = await prisma.$transaction(async (transaction) => { const created = await transaction.companyRecord.create({ data: { ...data, acceptanceCriteria: data.acceptanceCriteria as Prisma.InputJsonValue, metadata: data.metadata as Prisma.InputJsonValue, key: await uniqueKey(workspaceId, input.recordType, input.title, requestedKey), workspaceId } as Prisma.CompanyRecordUncheckedCreateInput }); if (organizationalContext) await replaceOrganizationalContext(transaction, workspaceId, "company_record", created.id, organizationalContext); return created; });
@@ -175,6 +191,22 @@ companyRecordsRouter.post("/", asyncHandler(async (req, res) => {
 }));
 companyRecordsRouter.patch("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const input = updateSchema.parse(req.body); const existing = await prisma.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId } });
+  if (existing?.recordType === "reference_site") {
+    const metadata = referenceSiteMetadata.safeParse(input.metadata ?? existing.metadata);
+    if (req.auth?.authType !== "user" || req.auth.workspaceRole !== "owner") return res.status(403).json({ error: "reference_site_owner_required" });
+    if (!metadata.success || !configuredReferenceSiteUrl(metadata.data.referenceUrl) || input.applicationId || input.projectId || input.clientId)
+      return res.status(400).json({ error: "reference_site_configuration_invalid" });
+    const activeSites = await prisma.companyRecord.findMany({ where: {
+      workspaceId, recordType: "reference_site", status: { not: "archived" }, id: { not: existing.id } },
+      select: { metadata: true } });
+    if (activeSites.some(site => {
+      const prior = referenceSiteMetadata.safeParse(site.metadata);
+      return prior.success && (prior.data.referenceUrl === metadata.data.referenceUrl ||
+        prior.data.sourceId === metadata.data.sourceId);
+    })) return res.status(409).json({ error: "reference_site_duplicate" });
+    if (input.status && input.status !== "archived" && existing.status === "archived" && activeSites.length >= 2)
+      return res.status(409).json({ error: "reference_site_limit" });
+  }
   if (!existing) return res.status(404).json({ error: "not_found" }); const relationError = await relationValid(workspaceId, input, existing.id); if (relationError) return res.status(404).json({ error: relationError });
   if (input.organizationalContext && !departmentKeysAreValid(input.organizationalContext)) return res.status(400).json({ error: "invalid_department_key" }); const { organizationalContext, key, ...data } = input;
   const record = await prisma.$transaction(async (transaction) => { const updated = await transaction.companyRecord.update({ where: { id: existing.id }, data: { ...data, ...(data.acceptanceCriteria ? { acceptanceCriteria: data.acceptanceCriteria as Prisma.InputJsonValue } : {}), ...(data.metadata ? { metadata: data.metadata as Prisma.InputJsonValue } : {}), ...(key ? { key: slug(key) } : {}) } as Prisma.CompanyRecordUncheckedUpdateInput }); if (organizationalContext) await replaceOrganizationalContext(transaction, workspaceId, "company_record", existing.id, organizationalContext); return updated; });
@@ -182,5 +214,7 @@ companyRecordsRouter.patch("/:id", asyncHandler(async (req, res) => {
 }));
 companyRecordsRouter.delete("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const existing = await prisma.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId } }); if (!existing) return res.status(404).json({ error: "not_found" });
+  if (existing.recordType === "reference_site" && (req.auth?.authType !== "user" || req.auth.workspaceRole !== "owner"))
+    return res.status(403).json({ error: "reference_site_owner_required" });
   const record = await prisma.companyRecord.update({ where: { id: existing.id }, data: { status: "archived" } }); await createEvent({ type: "company_record_archived", workspaceId, projectId: record.projectId, source: record.source, payload: { recordId: record.id } }); res.json({ data: (await serialize(workspaceId, [record]))[0] });
 }));

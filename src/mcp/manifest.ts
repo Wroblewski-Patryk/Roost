@@ -87,6 +87,19 @@ function inputSchemaForRoute(route: ManifestRoute): McpTool["inputSchema"] {
   if (route.path.endsWith("/text-content") && route.method === "PATCH") properties.body = {
     type: "object", required: ["expectedRevision", "content"], additionalProperties: false, properties: { expectedRevision, content: { type: "string", description: "Complete original file text, never a truncated preview." } }
   };
+  if (/^\/v1\/product-engineering\/tasks\/:taskId\/reference-sites\/:siteId\/findings$/.test(route.path) && route.method === "POST")
+    properties.body = { type: "object", additionalProperties: false,
+      required: ["requestId", "packageDigest", "observationId", "siteRevision", "sourceReviewId", "title",
+        "category", "language", "observed", "sourceExcerpt", "interpretation", "uncertainty", "applicability"],
+      properties: {
+        requestId: { type: "string", format: "uuid" }, packageDigest: { type: "string", pattern: "^[a-f0-9]{64}$" },
+        observationId: { type: "string" }, siteRevision: { type: "string", format: "date-time" },
+        sourceReviewId: { type: "string", format: "uuid" }, title: { type: "string" },
+        category: { type: "string", enum: ["content", "function", "journey", "failure"] },
+        language: { type: "string", enum: ["pl", "en"] }, observed: { type: "string" },
+        sourceExcerpt: { type: "string" }, interpretation: { type: "string" },
+        uncertainty: { type: "string" }, applicability: { type: "string" }
+      } };
 
   return {
     type: "object",
@@ -97,6 +110,12 @@ function inputSchemaForRoute(route: ManifestRoute): McpTool["inputSchema"] {
 }
 
 function routeDescription(route: ManifestRoute) {
+  if (route.path.includes("/reference-sites")) {
+    if (route.method === "POST") return "Record one dated, unverified Finding from an exact approved task-bound Sites package observation. Cite its package digest, observation ID and source excerpt. Source inspection alone is not published behavior proof.";
+    if (route.path.endsWith("/package")) return "Read a curated, versioned Sites package only for the authenticated assigned task and currently owner-reviewed reference site. Evidence scopes distinguish source, saved-version screenshot and supervised click results.";
+    if (route.path.endsWith("/findings")) return "Read dated unverified reference-site Findings for the exact task and source; no checklist promotion occurs here.";
+    return "List the approved versioned Sites packages visible to this exact assigned task.";
+  }
   if (route.path === "/v1/strategy/tasks/:id/direction")
     return "Read only the currently owner-adopted company direction for the exact task assigned to this authenticated agent. A draft or superseded version is never included.";
   if (route.path === "/v1/goal-mandates/tasks/:taskId")
