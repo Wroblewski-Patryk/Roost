@@ -132,3 +132,26 @@ file still exists outside Git at the recorded 95,148,731 bytes and 2026-10-12
 01:04 UTC timestamp. Its isolated restore proof is from G20; no fresh backup
 or restoration was run for G22, so later production writes are not represented
 by that copy.
+
+## Release read-back and boundary
+
+The reviewed implementation commit `4c9055b074c863e7e8125503ed6b076e0bc0e389`
+was fast-forward pushed to `main`. Coolify replaced the backend and PostgreSQL
+containers on the existing named PostgreSQL volume. During the handoff public
+health briefly returned `no available server`; it recovered without a manual
+rollback. Both public `/health` and `/v1/health` then returned `ok` with the
+exact implementation commit. PostgreSQL was healthy; the G22 migration was
+finished and not rolled back, and the native-review function retained the
+`low` effort check. The previous backend image remained present. A read-only
+query found zero production executions selecting `ollama_loopback`.
+
+An unauthenticated information-result GET returned HTTP 401. The signed-in
+owner console loaded in the existing browser session. No production company
+record, Task, model attempt or review was created for smoke. VPS root free
+space was about 6 GB after the build; no cache, image, container or volume
+cleanup was run. The G20 encrypted backup remained present but is older than
+this release; no new backup or isolated restore was claimed. The old isolated
+Writer lock from the failed local trial remains retained, separate from the
+successful fresh Writer. The test did not score answer quality, and no default
+model-routing policy has been enabled. This meets the bounded G22 native and
+deployed read-only gate. Stop before G23.

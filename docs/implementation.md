@@ -3,9 +3,9 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** G22 Local model with approved observer; verification pending. G23 excluded.
+**Active gate:** none
 
-**G22 checkpoint:** Native local run and review passed; release pending. [Evidence](architecture/local-model-g22.md).
+**G22 release:** Native run/review and deployed read-only checks passed. [Evidence](architecture/local-model-g22.md).
 
 **G21 bounded delivery (2026-10-12):** Deployed `c16efcf6` showed the accepted baseline Decision → exact audit Task → same application owner path, a blocker and unverified product/sale readiness. Disposable PostgreSQL, native Worker cross-application denial, PL/EN browser, Security/UX review, `validate` and `codex:check` passed. Production health matched the commit and PostgreSQL was healthy. [Proof and limits](architecture/application-control-g21.md#verification-and-release). No paid model or business-record edit; two technical incidents arose automatically from earlier rejected read-only requests.
 
