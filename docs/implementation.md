@@ -3,7 +3,9 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** G24a (versioned Sites packages). [Scope](architecture/reference-site-study-g24a.md)
+**Active gate:** none.
+
+**G24a release:** [proof](architecture/reference-site-study-g24a.md).
 
 **G22 release:** Native run/review and deployed read-only checks passed. [Evidence](architecture/local-model-g22.md).
 

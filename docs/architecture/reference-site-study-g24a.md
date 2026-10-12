@@ -23,9 +23,10 @@ the admission boundary, and Findings remain dated and unverified. No real
 production Finding is written without separate approval of its exact content.
 
 The earlier browser reader, renderer, egress proxy and four-service topology
-are local historical work and must not be released as G24a. A normal Roost
-release remains conditional on both exact packages, isolated native/API/MCP/UI
-tests, Security/UX review and preflight. The production smoke is read-only.
+are local historical work and were not released as G24a. The normal Roost
+release followed verification of both exact packages, isolated
+native/API/MCP/UI tests, Security/UX review and preflight. The production
+smoke was read-only.
 Site addresses and IDs remain private installation configuration.
 
 ## Superseded browser design and evidence
@@ -52,7 +53,7 @@ Site addresses and IDs remain private installation configuration.
   observation with provenance in Polish and English. It cannot approve or
   promote a Finding in G24a.
 
-## Current checkpoint (2026-10-12)
+## Historical renderer checkpoint (2026-10-12)
 
 The additive migration and its follow-up alias correction applied in fresh,
 disposable PostgreSQL databases. A focused HTTP/SQL test passed one agent
@@ -155,7 +156,7 @@ observation evidence scopes, unknowns and agent Findings. The private package
 files and screenshot/click evidence remain outside the repository. No production
 source record, review or Finding has been written for this gate.
 
-## Release and rollback evidence required
+## Historical release criteria and rollback
 
 Before push: inspect the migration for data loss and application Finding
 regression; run isolated PostgreSQL with exact task/site/key and stale-review
@@ -165,3 +166,39 @@ superseded renderer, egress proxy or four-service topology. Deploy by the
 normal path only if all gates pass. Production smoke reads health and the
 scoped owner projection; it creates no Finding. Rollback restores the previous
 backend image while preserving the additive schema and all records.
+
+## G24a release and limits
+
+The two exact, private curated Sites packages were checked against their saved
+source commits, published screenshots and supervised click evidence. Each has
+seven selected observations and explicit unknowns. The package bytes and
+evidence remain outside Git. The released code validates package identity and
+provenance, requires a current task-bound CompanySourceReview for agent read,
+and records only dated, unverified, site-specific Findings. The earlier
+renderer, egress proxy and four-service Compose design were excluded from both
+scoped commits.
+
+The additive migrations and their data-loss review passed isolated PostgreSQL
+tests. Focused HTTP/SQL, API/MCP and package tests covered exact task/source/key
+access, stale revisions, replay and refusal paths. The PL/EN owner fixture
+covered package creation, source review, package/Finding read and the entry
+from the canonical Operations task view. It also verified that an unsent
+ClickUp status selection cannot be discarded through that entry. The existing
+ClickUp UI regression passed 4/4. `npm run validate`, `npm run codex:check`,
+`npm run typecheck`, `git diff --check` and the independent Security/UX review
+passed for the final UI repair.
+
+Commit `19c3a4b8` delivered the source/API/schema capability; commit
+`ca88d04c` connected the owner panel to the canonical Operations route.
+Coolify reported a successful deployment of `ca88d04c`; both public health
+endpoints returned `ok` with its exact full commit. In the signed-in owner
+console, a current task opened the G24a panel and showed the truthful empty
+source state. The smoke made no production source, review or Finding write.
+The two configured URLs were present in the running backend. VPS free space
+was 3.0 GB after the UI build. Two separately authorized prunes removed
+2.494 GB and 1.247 GB of unused builder cache before the UI and final evidence
+builds; free space was 4.1 GB before the latter.
+
+This proves the bounded mechanism and read-only production view. It does not
+prove a real production agent study, owner-approved source review or Finding:
+those require separate approval of the exact content. G24b is not authorized.
