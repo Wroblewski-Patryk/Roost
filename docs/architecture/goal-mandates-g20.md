@@ -38,7 +38,7 @@ inspected diff. No G20 deploy has run.
 
 The isolated PostgreSQL database applied all 146 migrations. The focused G20 HTTP/database/MCP fixture passed 2/2: proofed adoption, exact task-bound read and proposal, owner review, verified and stale source projection, membership loss, concurrent reassignment refusal, SQL bypass guards including a legacy Target with no workspace ID, accepted-measurement source retention, Ready source watches, queue-time attribution and an unknown-cost/elapsed projection. The attributed row was a terminal preparation fixture, not an actual Worker attempt. The native packet validator passed 78/78; the PL/EN owner browser fixture passed at 390 and 1440 CSS pixels. `npm run validate` and `npm run codex:check` passed. Adjacent G19 tests passed 3/3 with an isolated random database password; using the local operator password initially made fixture text match a known secret and correctly blocked Ready. Independent Security re-review found no remaining P0/P1 in the inspected diff after corrections to assignment locking, accountable membership, bounded-history summaries and cost unknowns.
 
-No production migration, owner Goal, measurement, Worker execution, provider usage or deployment is claimed here. Full workspace deletion was not proved: isolated attempts were stopped by older credential-history and decision-attestation retention guards before the G20 cascade. G20 separately proved that deleting an accepted measurement's source or task is rejected. Retained disposable diagnostic databases were removed; fresh test databases were dropped after each run.
+At the local-test checkpoint, no production migration, owner Goal, measurement, Worker execution, provider usage or deployment was claimed. Full workspace deletion was not proved: isolated attempts were stopped by older credential-history and decision-attestation retention guards before the G20 cascade. G20 separately proved that deleting an accepted measurement's source or task is rejected. Retained disposable diagnostic databases were removed; fresh test databases were dropped after each run.
 
 The earlier release preflight stopped before push. Read-only health and Git checks found `main` and production on `0dcffad4`, with a healthy PostgreSQL container and one previously adopted G19 direction head. The owner authorized clearing only unused Docker builder cache; one `docker builder prune -f` reclaimed 1.245 GB with image, container and volume counts unchanged. An encrypted backup attempt verified a restored copy but could not certify cleanup of its isolated restore database within the initial session-drain window. Exact reconciliation later proved that database absent and retired its lock without promoting the copy. Its one encrypted pending file remains outside Git: an exact-file removal was rejected by automatic policy review, so no alternate deletion was attempted. A second attempt used a longer drain window but refused moving source fingerprints; it created no restore database or promoted copy. Both locks and isolated restore databases were absent. At that checkpoint the last verified backup was from 2026-10-10, before the real G19 direction adoption, and the VPS had 4.31 GB free with no reclaimable builder cache. The pending archive was not recovery evidence. A current backup, build capacity, scoped push, migration, deployed read-back and read-only owner smoke remained required.
 
@@ -57,6 +57,14 @@ rollback. Read-only SQL found eight pre-existing Goal rows, zero mandate
 versions, heads and measurements, and the one previously adopted G19
 direction head. Unauthenticated mandate GET returned 401. No real Goal,
 Target, measurement, task, Worker or model write was made for this smoke.
-The signed-in owner UI remains unverified because deployment expired the
-browser session; owner login is pending. The reason for the earlier reduction
-in Docker image count remains unknown. No image or volume cleanup ran.
+After signing in with the saved owner form, the production
+`/areas?area=01-strategia&view=goals` route showed "Wszystkie cele firmy",
+the department filter, "Utwórz cel" and the truthful "Brak celów w tym
+zakresie" state for this workspace. The form was not opened and no record
+was written. The eight legacy Goal rows in the database are across all
+workspaces and did not produce a current-workspace mandate. A positive Goal
+adoption and progress projection remain proven only by isolated fixture,
+pending a separately approved real numeric target and evidence source. This
+closes the bounded G20 mechanism/release proof without claiming live business
+adoption. The reason for the earlier reduction in Docker image count remains
+unknown. No image or volume cleanup ran.
