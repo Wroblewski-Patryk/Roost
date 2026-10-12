@@ -197,7 +197,12 @@ source state. The smoke made no production source, review or Finding write.
 The two configured URLs were present in the running backend. VPS free space
 was 3.0 GB after the UI build. Two separately authorized prunes removed
 2.494 GB and 1.247 GB of unused builder cache before the UI and final evidence
-builds; free space was 4.1 GB before the latter.
+builds; free space was 4.1 GB before the latter. The final evidence commit
+`844f29e8` is on `origin/main`; Coolify reported success, and both public
+health endpoints returned `ok` with its exact commit. The signed-in owner
+panel still opened to the truthful empty state after that deployment. VPS free
+space was 1.8 GB after the final build, so another release requires a fresh
+capacity preflight and separate authority for any cleanup.
 
 This proves the bounded mechanism and read-only production view. It does not
 prove a real production agent study, owner-approved source review or Finding:
