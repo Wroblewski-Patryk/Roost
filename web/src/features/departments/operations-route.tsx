@@ -18,6 +18,7 @@ import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
 import { TaskReadinessModal } from "./task-readiness";
+import { ReferenceSiteStudy } from "./reference-site-study";
 import { navigateApp } from "../../app-navigation";
 import { TaskReviewModal } from "./task-review";
 import { reviewMessages } from "./task-review-messages";
@@ -517,7 +518,8 @@ export function TaskPreviewModal({
   assignmentOptions,
   onClose,
   onSaved,
-  onReady
+  onReady,
+  onStudy
 }: {
   item: OperationsWorkItem;
   taskLists: OperationsTaskList[];
@@ -526,6 +528,7 @@ export function TaskPreviewModal({
   onClose: () => void;
   onSaved: () => void;
   onReady: (taskId: string) => void;
+  onStudy?: (taskId: string, taskTitle: string) => void;
 }) {
   const { t, locale } = useLanguage();
   const informationBadge = informationResultBadge(item, locale);
@@ -631,7 +634,7 @@ export function TaskPreviewModal({
   if (reviewOpen) return <TaskReviewModal taskId={item.id} onClose={()=>setReviewOpen(false)} onSaved={onSaved}/>;
   return (
     <CcRecordEditorModal
-      actions={<>{!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject") ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}<CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton disabled={statusRequestBusy} loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      actions={<>{onStudy && item.task.status !== "archived" ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)} onClick={() => { onClose(); onStudy(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">{locale === "pl" ? "Badanie stron" : "Site study"}</CcButton> : null}{!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject") ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}<CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton disabled={statusRequestBusy} loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
       eyebrow={locale === "pl" ? "04 Operacje · Zadanie" : "04 Operations · Task"}
       maxWidthClassName="max-w-5xl"
@@ -1494,6 +1497,7 @@ export function OperationsRoute() {
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
+  const [studyTask, setStudyTask] = useState<{ id: string; title: string } | null>(null);
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
   const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => new URLSearchParams(window.location.search).has('taskId'));
   const [navigationError, setNavigationError] = useState(false);
@@ -1634,7 +1638,8 @@ export function OperationsRoute() {
       ) : null}
 
       {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} returnToApplication={Boolean(applicationReturn)} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (applicationReturn) navigateApp(applicationReturn); else if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); }} onSaved={refresh} /> : null}
-      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
+      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} onStudy={(id, title) => setStudyTask({ id, title })} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
+      {studyTask ? <ReferenceSiteStudy key={studyTask.id} taskId={studyTask.id} taskTitle={studyTask.title} onClose={() => setStudyTask(null)} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}
       {selectedList ? <TaskListModal list={selectedList} departments={departments} onClose={() => setSelectedList(null)} onSaved={refresh} /> : null}

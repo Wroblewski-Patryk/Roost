@@ -21,10 +21,13 @@ const source = { url: "https://reference.example.test/", providerVersion: "v1", 
   contentDigest: "d".repeat(64), version: sitePackage.source };
 const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{ReferenceSiteStudy}from'./web/src/features/departments/reference-site-study';createRoot(document.getElementById('root')).render(<LanguageProvider><ReferenceSiteStudy taskId="${taskId}" taskTitle="Synthetic task" onClose={()=>{}}/></LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" },
   bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' } });
+const operationsBundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{OperationsRoute}from'./web/src/features/departments/operations-route';createRoot(document.getElementById('root')).render(<LanguageProvider><OperationsRoute/></LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" },
+  bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' } });
 const server = createServer((req, res) => {
   if (req.url === "/app.js") { res.setHeader("Content-Type", "text/javascript"); return res.end(bundle.outputFiles[0].contents); }
+  if (req.url === "/operations.js") { res.setHeader("Content-Type", "text/javascript"); return res.end(operationsBundle.outputFiles[0].contents); }
   res.setHeader("Content-Type", "text/html");
-  res.end('<!doctype html><html data-theme="roost"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body><div id="root"></div><script src="/app.js"></script></body></html>');
+  res.end(`<!doctype html><html data-theme="roost"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body><div id="root"></div><script src="${req.url?.includes("entry=operations") ? "/operations.js" : "/app.js"}"></script></body></html>`);
 });
 server.listen(0, "127.0.0.1");
 await once(server, "listening");
@@ -92,8 +95,35 @@ try {
     assert.equal(posts[1].body.environment, "isolated_test");
     assert.ok(await page.getByText(locale === "pl" ? "Niezweryfikowany" : "Unverified").count());
     await page.close();
+
+    const operationsPage = await browser.newPage();
+    await operationsPage.addInitScript(language => { localStorage.setItem("companycoreLocale", language); sessionStorage.setItem("companycoreOwnerToken", "synthetic-owner-token"); }, locale);
+    await operationsPage.route("**/v1/**", async route => {
+      const pathname = new URL(route.request().url()).pathname;
+      if (pathname === "/v1/operations/work-items") return route.fulfill({ json: { data: {
+        taskLists: [{ id: "fixture-list", name: "Fixture list" }], departments: [], statuses: [{ key: "todo", label: "To do" }, { key: "done", label: "Done" }],
+        workItems: [{ id: taskId, task: { id: taskId, title: "Synthetic task", status: "todo", priority: "normal" },
+          hierarchy: { taskList: { id: "fixture-list", name: "Fixture list" } },
+          clickUpStatusControl: { governedList: true, directActionsDisabled: true, providerStatus: "todo", providerStatusName: "To do",
+            providerUpdatedAt: null, providerMismatch: false, providerErrorCode: null, intent: null, actor: null } }]
+      } } });
+      if (pathname === `/v1/product-engineering/tasks/${taskId}/reference-sites`) return route.fulfill({ json: { data: {
+        reviewEnvironment: "isolated_test", items: []
+      } } });
+      return route.fulfill({ status: 403, json: { error: "fixture_route_denied" } });
+    });
+    await operationsPage.goto(`http://127.0.0.1:${server.address().port}/?entry=operations&view=tasks`);
+    await operationsPage.getByRole("button", { name: /Synthetic task/ }).click();
+    const studyButton = operationsPage.getByRole("button", { name: locale === "pl" ? "Badanie stron" : "Site study" });
+    await operationsPage.locator('select[name="clickUpStatusRequest"]').selectOption("done");
+    assert.equal(await studyButton.isDisabled(), true);
+    await operationsPage.locator('select[name="clickUpStatusRequest"]').selectOption("todo");
+    assert.equal(await studyButton.isDisabled(), false);
+    await studyButton.click();
+    await operationsPage.getByText(locale === "pl" ? "Nie skonfigurowano żadnej z dwóch dopuszczonych stron." : "Neither of the two permitted sites is configured.").waitFor();
+    await operationsPage.close();
   }
-  console.log(JSON.stringify({ locales: ["pl", "en"], checks: "create-review-package-findings" }));
+  console.log(JSON.stringify({ locales: ["pl", "en"], checks: "operations-entry-create-review-package-findings" }));
 } finally {
   await browser.close();
   server.close();
