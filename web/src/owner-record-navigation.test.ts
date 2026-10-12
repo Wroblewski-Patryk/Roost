@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applicationReturnPath, innovationRecordPath, recordIdFromQuery, validateApplicationReturn, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation, validateGovernedDecisionPacketNavigation } from "./owner-record-navigation";
+import { applicationReturnPath, decisionLinksExactApplicationTask, innovationRecordPath, recordIdFromQuery, validateApplicationReturn, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation, validateGovernedDecisionPacketNavigation } from "./owner-record-navigation";
 import { canonicalPostAuthPath } from "./app-route-registry";
 
 const id = "00000000-0000-4000-8000-000000000001";
@@ -74,6 +74,11 @@ test("accepted baseline Decision and its audit Task return to the same applicati
   assert.equal(await validateApplicationReturn(id, other, "decision", read), applicationReturnPath(id));
   assert.equal(await validateApplicationReturn(id, id, "task", read), applicationReturnPath(id));
   await assert.rejects(validateApplicationReturn(id, other, "task", read), /application_return_unavailable/);
+  assert.equal(decisionLinksExactApplicationTask({ scope: [{ type: "application", id }], applicationBaseline: { applicationId: id, auditTaskId: other } }, id, other), true);
+  assert.equal(decisionLinksExactApplicationTask({ scope: [{ type: "application", id }], applicationBaseline: { applicationId: other, auditTaskId: other } }, id, other), false);
+  assert.equal(decisionLinksExactApplicationTask({ scope: [{ type: "application", id }], applicationBaseline: { applicationId: id, auditTaskId: id } }, id, other), false);
+  assert.equal(decisionLinksExactApplicationTask({ scope: [{ type: "task", id: other }] }, id, other), true);
+  assert.equal(decisionLinksExactApplicationTask({ scope: [{ type: "task", id }] }, id, other), false);
 });
 
 test("ambiguous or malformed record targets cannot be preserved", () => {

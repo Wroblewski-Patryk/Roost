@@ -58,7 +58,7 @@ export function DecisionsWorkbench({ departmentKey, canonical = false }: { depar
   const fromAttention = new URLSearchParams(window.location.search).get("from") === "attention";
   const fromApplicationId = recordIdFromQuery(window.location.search, "fromApplicationId");
   const [applicationReturn, setApplicationReturn] = useState<string | null>(null);
-  const [relatedApplicationTask, setRelatedApplicationTask] = useState<{ id: string; title: string; href: string } | null>(null);
+  const [relatedApplicationTask, setRelatedApplicationTask] = useState<{ id: string; title: string; href: string; applicationId: string } | null>(null);
   // The exact-record modal loads its own current governance context. Loading
   // the register queue simultaneously creates competing source-fence reads.
   const governanceQueue=useOwnerPacket<any>(`/v1/decisions/governance?refresh=${refreshKey}`,!requestedDecisionId&&!governance,t);
@@ -83,7 +83,7 @@ export function DecisionsWorkbench({ departmentKey, canonical = false }: { depar
               const task = application.data.operation?.decisions?.find(decision => decision.id === id)?.relatedTask
                 ?? (application.data.operation?.stage?.decisionId === id ? application.data.operation.stage.relatedTask : null);
               const href = task ? portfolioTaskHref(task.id, fromApplicationId) : null;
-              setRelatedApplicationTask(task && href ? { id: task.id, title: task.title, href } : null);
+              setRelatedApplicationTask(task && href ? { id: task.id, title: task.title, href, applicationId: fromApplicationId } : null);
             }
           } catch { if (current) { setApplicationReturn(null); setRelatedApplicationTask(null); } }
           if (current) setGovernance({ decisionId: id });

@@ -19,6 +19,13 @@ export function applicationReturnPath(applicationId: string) {
     : null;
 }
 
+export function decisionLinksExactApplicationTask(body: unknown, applicationId: string, taskId: string) {
+  if (!recordIdPattern.test(applicationId) || !recordIdPattern.test(taskId) || !body || typeof body !== "object") return false;
+  const value = body as { scope?: Array<{ type?: string; id?: string }>; applicationBaseline?: { applicationId?: string; auditTaskId?: string } };
+  return Array.isArray(value.scope) && value.scope.some(node => node.type === "task" && node.id === taskId)
+    || value.applicationBaseline?.applicationId === applicationId && value.applicationBaseline.auditTaskId === taskId;
+}
+
 type ApplicationNavigation = { id?: string; operation?: {
   nearestOutcome?: { taskId: string } | null;
   blockers?: Array<{ target?: { kind: string; href: string } | null }>;
