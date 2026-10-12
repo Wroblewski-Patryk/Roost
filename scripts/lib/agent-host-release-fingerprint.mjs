@@ -99,19 +99,21 @@ COMMIT;
 // exit; there is no detached timeout watchdog that can outlive its target PID.
 // Server deadlines also bound a statement after transport loss. Business rows
 // stay in PostgreSQL; their hashes and bounded metadata stay in the container.
-export function buildReleaseFingerprintCommand(endpoint, timeoutMs) {
+export function buildReleaseFingerprintCommand(endpoint, timeoutMs, { captureSnapshot = false } = {}) {
   const { remoteMs, cleanupMs, statementMs, lockMs } = releaseFingerprintDeadlines(timeoutMs);
   const pgArgs = `-U ${quote(endpoint.user)} -d ${quote(endpoint.database)}`;
   const options = `-c statement_timeout=${statementMs} -c lock_timeout=${lockMs} -c work_mem=4MB -c temp_file_limit=512MB -c max_parallel_workers_per_gather=0 -c jit=off`;
-  const schema = `pg_dump --schema-only --no-owner --no-acl --quote-all-identifiers --lock-wait-timeout=${lockMs}ms ${pgArgs} | sed -e '/^\\\\restrict /d' -e '/^\\\\unrestrict /d' | sha256sum`;
-  const rows = `printf %s ${quote(streamingSql)} | psql -X -qAt -v ON_ERROR_STOP=1 ${pgArgs} | LC_ALL=C sort | sha256sum`;
+  const schema = `pg_dump --schema-only --no-owner --no-acl --quote-all-identifiers --lock-wait-timeout=${lockMs}ms ${captureSnapshot ? '--snapshot="$ROOST_CAPTURE_SNAPSHOT" ' : ''}${pgArgs} | sed -e '/^\\\\restrict /d' -e '/^\\\\unrestrict /d' | sha256sum`;
+  const snapshotSql = captureSnapshot ? streamingSql.replace(/BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;\r?\n/,
+    'BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;\n\\getenv fingerprint_snapshot ROOST_CAPTURE_SNAPSHOT\nSET TRANSACTION SNAPSHOT :\'fingerprint_snapshot\';\n') : streamingSql;
+  const rows = `printf %s ${quote(snapshotSql)} | psql -X -qAt -v ON_ERROR_STOP=1 ${pgArgs} | LC_ALL=C sort | sha256sum`;
   // PostgreSQL may be container PID 1: never orphan signaled grandchildren into
   // its wait loop. Program/timer shells catch termination and reap children.
   // Capture a finite list once. Bare wait-all in a signal trap can revisit a
   // cached non-child Bash job indefinitely; explicit PID waits each run once.
   const reapOnSignal = `trap '' TERM HUP INT; fingerprint_jobs=$(jobs -p); for fingerprint_job in $fingerprint_jobs; do wait "$fingerprint_job" 2>/dev/null || true; done; exit 124`;
   const cleanup = `if test -n "$ROOST_FINGERPRINT_DIR"; then case "$ROOST_FINGERPRINT_DIR" in /tmp/roost-fingerprint.????????????) rm -rf -- "$ROOST_FINGERPRINT_DIR";; *) exit 1;; esac; fi`;
-  const script = `trap ${quote(reapOnSignal)} TERM HUP INT; ROOST_FINGERPRINT_DIR=; trap ${quote(cleanup)} EXIT; export PGOPTIONS=${quote(options)}; umask 077; ulimit -f 65536; ROOST_FINGERPRINT_DIR=$(mktemp -d /tmp/roost-fingerprint.XXXXXXXXXXXX); export ROOST_FINGERPRINT_DIR; printf %s ${quote(prepareProgram)} > "$ROOST_FINGERPRINT_DIR/prepare.sh"; printf %s ${quote(hashProgram)} > "$ROOST_FINGERPRINT_DIR/hash.sh"; printf %s ${quote(readDigestProgram)} > "$ROOST_FINGERPRINT_DIR/read-digest.sh"; ${schema}; ${rows}`;
+  const script = `trap ${quote(reapOnSignal)} TERM HUP INT; ROOST_FINGERPRINT_DIR=; trap ${quote(cleanup)} EXIT; ${captureSnapshot ? '[[ "$ROOST_CAPTURE_SNAPSHOT" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{8}-[0-9A-Fa-f]{1,16}$ ]] || exit 1; ' : ''}export PGOPTIONS=${quote(options)}; umask 077; ulimit -f 65536; ROOST_FINGERPRINT_DIR=$(mktemp -d /tmp/roost-fingerprint.XXXXXXXXXXXX); export ROOST_FINGERPRINT_DIR; printf %s ${quote(prepareProgram)} > "$ROOST_FINGERPRINT_DIR/prepare.sh"; printf %s ${quote(hashProgram)} > "$ROOST_FINGERPRINT_DIR/hash.sh"; printf %s ${quote(readDigestProgram)} > "$ROOST_FINGERPRINT_DIR/read-digest.sh"; ${schema}; ${rows}`;
   // Escalation targets only binary leaves in the owned program group. Their
   // Bash/psql parents stay alive to reap them. Never KILL the whole group.
   // Minimal official PostgreSQL images need not contain procps. Read the same
@@ -130,5 +132,5 @@ export function buildReleaseFingerprintCommand(endpoint, timeoutMs) {
   // before waiting so Bash cannot print the completed fixed program to stderr;
   // the existing group identities, signal traps and explicit reaping remain.
   const supervisor = `set -m; fingerprint_owner=$BASHPID; fingerprint_child=; fingerprint_timer=; trap ${quote(stopGroup)} ALRM TERM HUP INT; bash -e -o pipefail -c ${quote(script)} & fingerprint_child=$!; bash -e -o pipefail -c ${quote(timer)} fingerprint-timer "$fingerprint_owner" & fingerprint_timer=$!; set +m; fingerprint_status=0; wait "$fingerprint_child" || fingerprint_status=$?; kill -TERM -- -"$fingerprint_timer" 2>/dev/null || true; wait "$fingerprint_timer" 2>/dev/null || true; exit "$fingerprint_status"`;
-  return `docker exec -i ${quote(endpoint.container)} bash -e -o pipefail -c ${quote(supervisor)}`;
+  return `docker exec -i ${captureSnapshot ? '-e ROOST_CAPTURE_SNAPSHOT="$snapshot_id" ' : ''}${quote(endpoint.container)} bash -e -o pipefail -c ${quote(supervisor)}`;
 }

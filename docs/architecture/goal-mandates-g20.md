@@ -20,6 +20,23 @@ The accepted goal does not make a claim about the company's actual baseline or e
 
 ## Verification and release
 
+The owner approved a bounded synchronized-snapshot correction after the failed
+backup preflight. The revised local gateway exports one repeatable-read source
+snapshot and imports it into both schema/row fingerprints and the custom dump
+inside one supervised SSH capture. Both source fingerprints and the isolated
+restore must match. PostgreSQL sequences are outside MVCC, so sequence drift
+still refuses the copy. The exporter exits and its database session is checked
+absent before restore; the last verified copy is retained on failure. A real
+local PostgreSQL fixture wrote a row with the exporter open before the dump
+and restored the prior snapshot, then advanced a sequence and verified refusal
+without promotion. A same-schema unrelated restore, malformed capture and the
+existing ownership/session fences were refused in focused tests. The complete
+backup suite passed 20/20. The full release suite passed 333/334 Node cases
+(one skipped) and 96/98 TypeScript cases (two skipped). `validate` passed,
+and independent Security review
+found no P0/P1 in the inspected diff. No new production backup or G20 deploy
+has run. Disk capacity still requires a separate decision before release.
+
 The isolated PostgreSQL database applied all 146 migrations. The focused G20 HTTP/database/MCP fixture passed 2/2: proofed adoption, exact task-bound read and proposal, owner review, verified and stale source projection, membership loss, concurrent reassignment refusal, SQL bypass guards including a legacy Target with no workspace ID, accepted-measurement source retention, Ready source watches, queue-time attribution and an unknown-cost/elapsed projection. The attributed row was a terminal preparation fixture, not an actual Worker attempt. The native packet validator passed 78/78; the PL/EN owner browser fixture passed at 390 and 1440 CSS pixels. `npm run validate` and `npm run codex:check` passed. Adjacent G19 tests passed 3/3 with an isolated random database password; using the local operator password initially made fixture text match a known secret and correctly blocked Ready. Independent Security re-review found no remaining P0/P1 in the inspected diff after corrections to assignment locking, accountable membership, bounded-history summaries and cost unknowns.
 
 No production migration, owner Goal, measurement, Worker execution, provider usage or deployment is claimed here. Full workspace deletion was not proved: isolated attempts were stopped by older credential-history and decision-attestation retention guards before the G20 cascade. G20 separately proved that deleting an accepted measurement's source or task is rejected. Retained disposable diagnostic databases were removed; fresh test databases were dropped after each run.

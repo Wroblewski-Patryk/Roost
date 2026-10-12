@@ -9,12 +9,15 @@ import { createReleaseBackupGateway, encryptReleaseBackup, decryptReleaseBackup,
   acknowledgeRecoveryCode } from "./lib/agent-host-release-backup.mjs";
 import { buildReleaseFingerprintCommand, releaseFingerprintSql, releaseFingerprintDeadlines }
   from './lib/agent-host-release-fingerprint.mjs';
+import { buildReleaseSnapshotCaptureCommand, buildReleaseSnapshotCaptureScript, parseReleaseSnapshotCapture } from './lib/agent-host-release-snapshot.mjs';
 
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const containerId = "a".repeat(64);
 const d = "b".repeat(64), data = "c".repeat(64);
 const archiveBytes = Buffer.from("PGDMP synthetic fixture only; no credentials");
 const fingerprints = Buffer.from(`${d}  -\n${data}  -\n`);
+const captureBytes = (before = fingerprints, archive = archiveBytes, after = fingerprints) =>
+  Buffer.concat([Buffer.from('ROOSTCAP1\n'), before, archive, after]);
 function fixture() {
   const root = mkdtempSync(path.join(os.tmpdir(), "roost-backup-fixture-"));
   const repo = path.join(root, "repository"), backup = path.join(root, "backups"), privateDir = path.join(root, "private");
@@ -32,14 +35,15 @@ function fixture() {
 }
 function syntheticTransport({ failRestore = false, wrongFingerprint = false, changedSource = false, ambiguousCreate = false,
   changedOwnership = false, activeRestoreSession = false } = {}) {
-  let database = null, marker = null, oid = null, fingerprintsRead = 0; const calls = [];
+  let database = null, marker = null, oid = null; const calls = [];
   const transport = async request => {
     calls.push(request.operation); const text = request.stdin?.toString() ?? "";
     switch (request.operation) {
       case "public_owner_class": return Buffer.from("t\n");
-      case "fingerprint": fingerprintsRead++; return Buffer.from(wrongFingerprint && database !== null && request.endpoint.database === database
-        || changedSource && fingerprintsRead === 2 ? `${d}  -\n${"e".repeat(64)}  -\n` : fingerprints);
-      case "dump": return Buffer.from(archiveBytes);
+      case "fingerprint": return Buffer.from(wrongFingerprint && database !== null && request.endpoint.database === database
+        ? `${d}  -\n${"e".repeat(64)}  -\n` : fingerprints);
+      case "capture": return captureBytes(fingerprints, archiveBytes, changedSource
+        ? Buffer.from(`${d}  -\n${"e".repeat(64)}  -\n`) : fingerprints);
       case "restore_inspect": return Buffer.from(database === null ? "" : `${oid}${text.includes("shobj_description") ? `:${marker}` : ""}\n`);
       case "restore_create": {
         database = /CREATE DATABASE "([^"]+)"/.exec(text)[1]; marker = /IS '([^']+)'/.exec(text)[1]; oid = "987";
@@ -83,16 +87,16 @@ test('shared fingerprint retains historical SQL bytes and remote deadlines end b
     assert.throws(() => releaseFingerprintDeadlines(invalid));
 });
 
-test('backup uses its existing timeout for shared fingerprints; timeout retains previous verified copy', async () => {
+test('backup bounds its synchronized capture; timeout retains previous verified copy', async () => {
   const f = fixture(), previous = Buffer.from('previous verified copy');
   try {
     const latest = path.join(f.cfg.laptopFolder, 'roost-latest-verified.enc'); writeFileSync(latest, previous);
     const requests = [];
     const transport = async request => { requests.push(request); if (request.operation === 'public_owner_class') return Buffer.from('t\n'); throw Error('synthetic timeout'); };
-    await assert.rejects(createReleaseBackupGateway(f.cfg, { transport }).backupAndVerify(), /operation_fingerprint_unproven/);
-    assert.equal(requests.length, 2); assert.equal(requests[1].operation, 'fingerprint');
-    assert.equal(requests[1].timeoutMs, f.cfg.timeoutMs);
-    assert.equal(requests[1].command, buildReleaseFingerprintCommand(f.cfg.source, f.cfg.timeoutMs));
+    await assert.rejects(createReleaseBackupGateway(f.cfg, { transport }).backupAndVerify(), /operation_capture_unproven/);
+    assert.equal(requests.length, 2); assert.equal(requests[1].operation, 'capture');
+    assert.equal(requests[1].timeoutMs, f.cfg.timeoutMs * 4);
+    assert.match(requests[1].command, /^bash -e -o pipefail -c /);
     assert.deepEqual(readFileSync(latest), previous);
     assert.deepEqual(readdirSync(f.cfg.laptopFolder), ['roost-latest-verified.enc']);
   } finally { f.cleanup(); }
@@ -160,6 +164,40 @@ test("restore failure/mismatch and moving source retain previous latest and clea
       if (options.changedSource) assert(!sim.calls.includes("restore_create")); else assert(sim.calls.includes("restore_drop"));
     } finally { f.cleanup(); }
   }
+});
+
+test('same-schema unrelated archive remains unverified under synchronized capture', async () => {
+  const f = fixture(), sim = syntheticTransport({ wrongFingerprint: true });
+  try {
+    const latest = path.join(f.cfg.laptopFolder, 'roost-latest-verified.enc');
+    const previous = Buffer.from('previous verified copy'); writeFileSync(latest, previous);
+    await assert.rejects(createReleaseBackupGateway(f.cfg, { transport: sim.transport }).backupAndVerify(),
+      /release_backup_restore_content_mismatch/);
+    assert(sim.calls.includes('capture') && sim.calls.includes('restore'));
+    assert.equal(sim.database(), null);
+    assert.deepEqual(readFileSync(latest), previous);
+    assert.deepEqual(readdirSync(f.cfg.laptopFolder), ['roost-latest-verified.enc']);
+  } finally { f.cleanup(); }
+});
+
+test('capture framing rejects truncated or substituted archive before restore', () => {
+  for (const bytes of [Buffer.alloc(0), captureBytes().subarray(0, 140),
+    captureBytes(fingerprints, Buffer.from('wrong archive'), fingerprints),
+    captureBytes(fingerprints, archiveBytes, Buffer.from(`${d}  -\ninvalid\n`))])
+    assert.throws(() => parseReleaseSnapshotCapture(bytes), /release_backup_capture_invalid/);
+});
+
+test('capture command imports one exported snapshot and stays within Windows argv limit', () => {
+  const endpoint = { container: containerId, user: 'fixture', database: 'source_fixture' };
+  const command = buildReleaseSnapshotCaptureCommand(endpoint, 30000, 'b'.repeat(32));
+  const fingerprintCommand = buildReleaseFingerprintCommand(endpoint, 30000, { captureSnapshot: true });
+  assert(command.length < 30000);
+  assert.match(command, /pg_export_snapshot/);
+  assert.match(command, /capture_fingerprint/);
+  assert.match(command, /--snapshot=/);
+  assert.match(fingerprintCommand, /ROOST_CAPTURE_SNAPSHOT/);
+  assert.match(fingerprintCommand, /SET TRANSACTION SNAPSHOT/);
+  assert.throws(() => buildReleaseSnapshotCaptureCommand(endpoint, 30000, "bad; command"), /capture_config_invalid/);
 });
 
 test("ambiguous create preserves uncertain owned resources and lock instead of guessing or retrying", async () => {
@@ -408,7 +446,8 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
   const sql = (db, text) => docker(["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "companycore", "-d", db], Buffer.from(text));
   const cfg = { ...f.cfg, source: { sshHost: "fixture", container: nativeContainer, user: "companycore", database: source },
     restore: { sshHost: "fixture", container: nativeContainer, user: "companycore", database: "postgres" }, timeoutMs: 30000 };
-  let expectedBeforeNormalization = null, schemaMismatchReproduced = false;
+  let expectedBeforeNormalization = null, schemaMismatchReproduced = false, captureInjection = null;
+  const localQuote = value => `'${value.replaceAll("'", "'\\''")}'`;
   const transport = async req => {
     calls.push(req.operation); assert.equal(req.endpoint.container, nativeContainer);
     if (req.operation === "fingerprint") {
@@ -422,7 +461,35 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
       try { return docker(["bash", "-e", "-o", "pipefail", "-c", req.command.slice(prefix.length)]); }
       catch (error) { process.stderr.write(`owned fixture fingerprint failed: status=${error.status ?? 'unknown'}\n`); throw error; }
     }
-    if (req.operation === "dump") return docker(["pg_dump", "--format=custom", "--no-owner", "--no-acl", "--serializable-deferrable", "-U", "companycore", "-d", source]);
+    if (req.operation === "capture") {
+      assert.equal(req.endpoint.database, source);
+      // WSL provides a local Linux shell with the same Docker engine. Execute
+      // the complete remote command, including exporter lifecycle and framing.
+      const captureId = /roost_backup_capture_([a-f0-9]{32})/.exec(req.command)?.[1]; assert(captureId);
+      assert.equal(req.command, buildReleaseSnapshotCaptureCommand(req.endpoint, cfg.timeoutMs, captureId));
+      let localScript = (captureInjection
+        ? buildReleaseSnapshotCaptureScript(req.endpoint, cfg.timeoutMs, captureId)
+        : req.command).replaceAll('docker exec', 'docker.exe exec'); // WSL uses the Windows Docker Desktop pipe.
+      if (captureInjection) {
+        const statement = captureInjection === 'row'
+          ? "INSERT INTO duplicate_rows(body) VALUES ('snapshot concurrent row');"
+          : "SELECT nextval('not_called_yet');";
+        const injection = `docker.exe exec ${localQuote(nativeContainer)} psql -X -qAt -v ON_ERROR_STOP=1 -U companycore -d ${localQuote(source)} -c ${localQuote(statement)} >/dev/null`;
+        const changed = localScript.replace('\ncapture_fingerprint\n', `\ncapture_fingerprint\n${injection}\n`);
+        assert.notEqual(changed, localScript); localScript = changed;
+      }
+      const scriptPath = execFileSync('bash', ['-lc', 'mktemp /tmp/roost-capture-fixture.XXXXXXXX'],
+        { windowsHide: true, encoding: 'utf8', timeout: 5000 }).trim();
+      assert(/^\/tmp\/roost-capture-fixture\.[A-Za-z0-9]{8}$/.test(scriptPath));
+      try {
+        execFileSync('bash', ['-lc', `cat > ${scriptPath}`], { windowsHide: true, input: Buffer.from(localScript), timeout: 5000 });
+        return execFileSync('bash', ['-lc', `bash -e -o pipefail ${scriptPath}`], { windowsHide: true,
+          maxBuffer: cfg.maxDumpBytes + 8192, timeout: req.timeoutMs, stdio: ['ignore', 'pipe', 'pipe'] });
+      } catch (error) {
+        process.stderr.write(`local capture code=${error.code ?? 'none'} status=${error.status ?? 'unknown'} stderr=${error.stderr?.toString().slice(0, 1200) ?? ''}\n`);
+        throw error;
+      } finally { execFileSync('bash', ['-lc', `rm -f -- ${scriptPath}`], { windowsHide: true, timeout: 5000 }); }
+    }
     if (req.operation === "restore") return docker(["pg_restore", "--exit-on-error", "--no-owner", "--no-acl", "-U", "companycore", "-d", req.endpoint.database], req.stdin);
     if (req.operation === "public_owner_class") return sql(source, req.stdin.toString('utf8'));
     if (req.operation === "restore_public_owner") {
@@ -516,6 +583,19 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
     sql(source,'ALTER SCHEMA public OWNER TO pg_database_owner;');expectedBeforeNormalization=await fingerprint();
     const builtinResult=await createReleaseBackupGateway(cfg,{transport}).backupAndVerify();assert(builtinResult.restoreVerified);
     assert.deepEqual(await fingerprint(),expectedBeforeNormalization);
+    captureInjection='row';
+    const concurrentResult=await createReleaseBackupGateway(cfg,{transport}).backupAndVerify();
+    captureInjection=null;
+    assert.equal(concurrentResult.dataDigest,builtinResult.dataDigest,'restore matches the exported row snapshot');
+    assert.notDeepEqual(await fingerprint(),expectedBeforeNormalization,'live source changed while exporter remained open');
+    assert.equal(sql(source,"SELECT count(*) FROM duplicate_rows;").toString().trim(),'4');
+    const stableLatest=readFileSync(path.join(cfg.laptopFolder,'roost-latest-verified.enc'));
+    captureInjection='sequence';
+    await assert.rejects(createReleaseBackupGateway(cfg,{transport}).backupAndVerify(),/source_changed_during_backup/);
+    captureInjection=null;
+    assert.deepEqual(readFileSync(path.join(cfg.laptopFolder,'roost-latest-verified.enc')),stableLatest,
+      'non-MVCC sequence drift cannot promote another copy');
+    assert.equal(sql('postgres',`SELECT count(*) FROM pg_database WHERE datname LIKE 'roost_restore_%' AND shobj_description(oid,'pg_database') LIKE 'roost-isolated-restore:${cfg.installationId}:%';`).toString().trim(),'0');
     const previousLatest=readFileSync(path.join(cfg.laptopFolder,'roost-latest-verified.enc'));
     const interrupted=createReleaseBackupGateway(cfg,{transport:async req=>{
       const bytes=await transport(req);if(req.operation==='restore_create')throw Error('synthetic lost reply after owned CREATE');return bytes;

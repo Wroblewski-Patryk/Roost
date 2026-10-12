@@ -216,11 +216,18 @@ are fresh random databases with an exact marker and OID, in the existing engine;
 production is never restored or reset. Match complete schema, row hashes and
 sequence state, encrypt with AES-256-GCM, read back/decrypt, prove the owned restore
 database absent, then atomically promote one latest encrypted laptop copy.
-Keep the key outside both Git and the backup folder. Data-changing source snapshots
-are rejected. Retain the last good copy on failure. Unknown creation/ownership or
-active sessions preserves the database/fence; `inspectInterruptedBackup()` reads
-the actual state without retrying or deleting it. The recovery setup implements
-generation and acknowledgement, not an account recovery login endpoint.
+Keep the key outside both Git and the backup folder. The source capture now
+exports one read-only PostgreSQL snapshot: both independent schema/row
+fingerprints and the custom `pg_dump` archive import it. Ordinary committed row
+changes outside that snapshot do not change its contents. PostgreSQL sequences
+are non-MVCC; their before/after fingerprints must remain identical and match
+the isolated restore, or capture fails closed. The exporter closes and its
+database session is checked absent before restore. An uncertain capture never
+promotes a copy. Retain the last good copy on failure. Unknown restore
+creation/ownership or active sessions preserves the database/fence;
+`inspectInterruptedBackup()` reads the actual state without retrying or
+deleting it. The recovery setup implements generation and acknowledgement,
+not an account recovery login endpoint.
 
 ## Uncertainty, recovery and cleanup
 

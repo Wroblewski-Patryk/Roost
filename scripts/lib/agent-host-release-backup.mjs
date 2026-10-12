@@ -4,6 +4,7 @@ import { createHash, randomBytes, randomUUID, createCipheriv, createDecipheriv, 
 import { existsSync, lstatSync, realpathSync, readFileSync, openSync, writeSync, fsyncSync, closeSync, renameSync, unlinkSync } from "node:fs";
 import { z } from "zod";
 import { buildReleaseFingerprintCommand } from './agent-host-release-fingerprint.mjs';
+import { buildReleaseSnapshotCaptureCommand, parseReleaseSnapshotCapture } from './agent-host-release-snapshot.mjs';
 
 const fail = reason => { throw Error(`release_backup_${reason}`); };
 const check = (value, reason) => { if (!value) fail(reason); };
@@ -256,11 +257,14 @@ SELECT 'release_backup_restore_identity_changed'::integer;
       const ownerClass = (await run("public_owner_class", cfg.source, dockerCommand(cfg.source, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.source, cfg.source.database)], true),
         Buffer.from("SELECT nspowner = (SELECT oid FROM pg_roles WHERE rolname='pg_database_owner') FROM pg_namespace WHERE nspname='public';"), 32)).toString().trim();
       check(ownerClass === "t" || ownerClass === "f", "public_owner_class_unproven");
-      const before = await fingerprint(cfg.source, cfg.source.database);
       const capturedAt = new Date().toISOString();
-      archive = await run("dump", cfg.source, dockerCommand(cfg.source, "pg_dump", ["--format=custom", "--no-owner", "--no-acl", "--serializable-deferrable", ...pgArgs(cfg.source, cfg.source.database)]), undefined, cfg.maxDumpBytes);
-      check(archive.subarray(0, 5).toString("ascii") === "PGDMP", "archive_invalid");
-      const after = await fingerprint(cfg.source, cfg.source.database);
+      const capture = parseReleaseSnapshotCapture(await run("capture", cfg.source,
+        buildReleaseSnapshotCaptureCommand(cfg.source, cfg.timeoutMs, randomBytes(16).toString("hex")),
+        undefined, cfg.maxDumpBytes + 282, cfg.timeoutMs * 4));
+      const { before, after } = capture; archive = capture.archive;
+      // The source row/catalog fingerprints and pg_dump import one snapshot.
+      // PostgreSQL sequences do not obey MVCC: their state must also remain
+      // unchanged across capture and match the isolated restore below.
       check(JSON.stringify(before) === JSON.stringify(after), "source_changed_during_backup");
       const identityQuery = `SELECT oid::text || ':' || coalesce(shobj_description(oid,'pg_database'),'') FROM pg_database WHERE datname='${restoreDatabase}';`;
       check((await sql("restore_inspect", cfg.restore.database, identityQuery)).toString().trim() === "", "restore_database_collision");
