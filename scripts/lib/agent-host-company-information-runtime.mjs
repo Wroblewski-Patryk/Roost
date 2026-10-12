@@ -3,7 +3,7 @@ import { lstatSync, readdirSync } from 'node:fs';
 import { createHash, createPublicKey, verify } from 'node:crypto';
 import { z } from 'zod';
 import providerContract from './agent-host-provider-contract.cjs';
-import { companyInformationRuntimeClass, companyInformationRuntimeContractSchema, validateExecutionPacket } from './agent-host-execution-packet.mjs';
+import { companyInformationRuntimeClass, companyInformationRuntimeContractSchema, companyInformationRuntimeModelAllowed, validateExecutionPacket } from './agent-host-execution-packet.mjs';
 import ready from './agent-host-ready-context.cjs';
 import { managedBackendSelectionSchema } from './agent-host-model-policy.mjs';
 import { inspectHermesProfile, sealHermesProfile, assertHermesProfile, hermesNativeProfileVersion } from './agent-host-hermes-profile.mjs';
@@ -16,19 +16,32 @@ import { guardHostContent } from './agent-host-redaction.mjs';
 import { trustedPilotBytes } from './agent-host-trusted-pilot.mjs';
 import { windowsJobSourceDigest, isWindowsJobReceipt } from './agent-host-windows-job.mjs';
 import { runHermesOwnedProcess } from './agent-host-hermes-quiet.mjs';
+import { safeObserverFailureCode } from './agent-host-information-diagnostics.mjs';
+import { inspectLocalHermesProfile } from './agent-host-hermes-local-profile.mjs';
+import { startOllamaObserver } from './agent-host-ollama-observer.mjs';
+import { readPinnedOllamaIdentity, observeOllamaListener, assertOllamaIdentity,
+  assertLocalOllamaModelStore, assertOllamaSocketOwner } from './agent-host-ollama-identity.mjs';
 
-export { companyInformationRuntimeClass, companyInformationRuntimeContractSchema };
+export { companyInformationRuntimeClass, companyInformationRuntimeContractSchema, companyInformationRuntimeModelAllowed };
 const hash = z.string().regex(/^[a-f0-9]{64}$/), uuid = z.string().uuid(), instant = z.string().datetime();
+const localDigest = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+export const informationLocalPreflightSchema = z.object({ model: z.literal('gpt-oss:20b'), digest: localDigest,
+  sizeBytes: z.number().int().positive(), loadedAtStart: z.boolean(), loadedDigestAtStart: localDigest.nullable() }).strict();
 export const informationAdmissionSchema = z.object({
   schemaVersion: z.literal('roost-company-information-admission-v1'), domain: z.literal('roost-company-information-admission-v1'),
   executionId: uuid, taskId: uuid, workspaceId: uuid, installationId: uuid, hostId: uuid,
   applicationId: z.literal(null), attempt: z.literal(1), readyRevision: hash, packetRevision: hash,
   inputSeal: hash, selectionDigest: hash, profileDigest: hash, runtimeDigest: hash, leaseDigest: hash,
+  backend: z.enum(['codex_responses', 'ollama_loopback']).optional(), model: z.string().optional(),
+  modelDigest: localDigest.nullable().optional(), localPreflight: informationLocalPreflightSchema.nullable().optional(),
   issuedAt: instant, expiresAt: instant, decisionId: uuid, decisionVersion: z.number().int().positive(),
   tools: z.tuple([]), externalWrites: z.literal(false), deadline: instant
 }).strict().superRefine((value, ctx) => {
   const start = Date.parse(value.issuedAt), end = Date.parse(value.expiresAt);
   if (end <= start || end - start > 60000 || Date.parse(value.deadline) <= end) ctx.addIssue({ code: 'custom', message: 'admission_time_invalid' });
+  if (value.backend === 'ollama_loopback' && (value.model !== 'gpt-oss:20b' || !value.modelDigest
+    || value.localPreflight?.model !== value.model || value.localPreflight?.digest !== value.modelDigest))
+    ctx.addIssue({ code: 'custom', message: 'local_model_admission_invalid' });
 });
 const signedSchema = z.object({ payload: informationAdmissionSchema, signature: z.string().regex(/^[a-f0-9]{128}$/) }).strict();
 const sha = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) ? value : trustedPilotBytes(value)).digest('hex');
@@ -59,8 +72,7 @@ export function buildCompanyInformationInput({ claimed, taskContext, secrets = [
     || packet?.identity?.executionId !== claimed.id || packet.identity.taskId !== claimed.taskId || packet.identity.workspaceId !== claimed.workspaceId
     || taskContext.task?.id !== claimed.taskId || taskContext.task.workspaceId !== claimed.workspaceId) fail('task_scope_invalid');
   const c = parsed.data, selection = managedBackendSelectionSchema.safeParse(c.modelSelection);
-  if (!selection.success || selection.data.backend !== 'codex_responses' || selection.data.riskClass !== 'low'
-    || selection.data.attemptPolicy.maxTurns !== 1 || selection.data.attemptPolicy.apiMaxRetries !== 0
+  if (!selection.success || !companyInformationRuntimeModelAllowed(selection.data)
     || c.budgets.maxAttempts !== 1 || c.budgets.maxDurationSeconds > 1800) fail('model_attempt_policy_invalid');
   const selected = c.context.company;
   if (!Array.isArray(packet.sources) || packet.sources.length !== selected.length || new Set(selected.map(r => r.id)).size !== selected.length) fail('selection_invalid');
@@ -153,7 +165,7 @@ export function completeInformationQualification(receipt, ownedTreeReceipt) {
 }
 
 export async function runCompanyInformationRuntime({ claimed, taskContext, provider, authorityPublicKey, requestAdmission,
-  workingDirectory, signal, assertAuthority, remainingMs, secrets = [] }) {
+  workingDirectory, signal, assertAuthority, remainingMs, onModelRequest, secrets = [] }) {
   if (process.platform !== 'win32' || typeof assertAuthority !== 'function' || typeof remainingMs !== 'function' || typeof requestAdmission !== 'function') fail('native_configuration_invalid');
   const pinned = providerContract.registry.providers.find(p => p.kind === 'hermes_codex');
   if (provider?.kind !== 'hermes_codex' || provider.enabled !== true || provider.version !== pinned.version || provider.commit !== pinned.commit
@@ -162,28 +174,46 @@ export async function runCompanyInformationRuntime({ claimed, taskContext, provi
     || Object.keys(provider).some(k => !['kind', 'enabled', 'version', 'commit', 'officialSource', 'executablePath', 'profile', 'policy', 'attestation', 'testManifestPath', 'testReplayPath'].includes(k))) fail('provider_unqualified');
   assertAuthority(); assertWorkingRoot(workingDirectory);
   const sealed = buildCompanyInformationInput({ claimed, taskContext, secrets });
-  const observedProfile = inspectHermesProfile(provider.profile, workingDirectory);
-  if (observedProfile.apiMaxRetries !== 0) fail('profile_retry_policy_mismatch');
-  const profileSeal = sealHermesProfile(provider.profile, { repositoryPath: workingDirectory, readyRevision: sealed.readyRevision });
-  const environment = hermesStartupEnvironment(provider.profile, process.env, workingDirectory);
+  const local = sealed.modelSelection.backend === 'ollama_loopback';
+  const localProfile = local ? inspectLocalHermesProfile(provider.profile.profilePath, workingDirectory) : null;
+  const ollamaPin = local ? readPinnedOllamaIdentity(provider.profile.profilePath, workingDirectory) : null;
+  const ollamaProcess = local ? observeOllamaListener() : null;
+  if (local) assertOllamaIdentity(ollamaPin.pin, ollamaProcess);
+  const modelStore = local ? await assertLocalOllamaModelStore(sealed.modelSelection.modelSelection.modelDigest) : null;
+  const observedProfile = local ? localProfile : inspectHermesProfile(provider.profile, workingDirectory);
+  if (!local && observedProfile.apiMaxRetries !== 0) fail('profile_retry_policy_mismatch');
+  const profileSeal = local ? null : sealHermesProfile(provider.profile, { repositoryPath: workingDirectory, readyRevision: sealed.readyRevision });
+  const environment = hermesStartupEnvironment(local ? localProfile : provider.profile, process.env, workingDirectory);
   assertStartupOverlays(provider, environment, workingDirectory);
   const installation = await verifyHermesSmokeInstallation({ manifestPath: provider.attestation.manifestPath,
     attestationPath: path.join(path.dirname(provider.attestation.manifestPath), 'roost-installation-attestation.json') });
   if (installation.manifestDigest !== provider.attestation.sha256) fail('installation_digest_changed');
   const tools = qualifyHermesReadOnlyTools(provider, environment);
   const runtime = { executable: fixtureRuntimeBinding(provider.executablePath), node: fixtureRuntimeBinding(process.execPath), launcher: { sourceDigest: windowsJobSourceDigest() },
-    installation: { manifestDigest: installation.manifestDigest, executableDigest: installation.executableDigest }, toolSourceDigest: tools.sourceDigest };
+    installation: { manifestDigest: installation.manifestDigest, executableDigest: installation.executableDigest }, toolSourceDigest: tools.sourceDigest,
+    ...(local ? { ollama: { pinDigest: ollamaPin.fileDigest, process: ollamaProcess, modelStore } } : {}) };
   const start = Date.parse(claimed.startedAt);
   const absoluteDeadline = Date.parse(claimed.startedAt) + taskContext.executionPacket.contract.budgets.maxDurationSeconds * 1000;
   if (!Number.isFinite(start) || start > Date.now() || remainingMs() < 5000 || absoluteDeadline <= Date.now() + 5000) fail('deadline_expired');
   const allowedMs = () => Math.min(remainingMs(), absoluteDeadline - Date.now() - 5000);
-  const argv = ['chat', '--cli', '--oneshot', '--quiet', '--query-file', '-', '--provider', 'openai-codex', '--model', sealed.modelSelection.modelSelection.model,
+  const argv = ['chat', '--cli', '--oneshot', '--quiet', '--query-file', '-', '--provider', local ? 'ollama' : 'openai-codex', '--model', sealed.modelSelection.modelSelection.model,
     '--reasoning', sealed.modelSelection.modelSelection.reasoningEffort, '--toolsets', 'bot_room', '--max-turns', '1', '--run-budget', String(Math.max(1, Math.floor(allowedMs() / 1000)))];
+  const observer = local ? await startOllamaObserver({ model: sealed.modelSelection.modelSelection.model,
+    digest: sealed.modelSelection.modelSelection.modelDigest, assertAuthority, signal,
+    assertUpstreamIdentity: () => assertOllamaIdentity(ollamaPin.pin, observeOllamaListener(), ollamaProcess),
+    assertConnectedUpstreamIdentity: clientPort => assertOllamaSocketOwner(clientPort, ollamaProcess),
+    onModelRequest,
+    timeoutMs: Math.min(600000, Math.max(1, Math.floor(allowedMs()))) }) : null;
+  try {
   const expected = { schemaVersion: 'roost-company-information-admission-v1', domain: 'roost-company-information-admission-v1',
     executionId: claimed.id, taskId: claimed.taskId, workspaceId: claimed.workspaceId, installationId: claimed.installationId,
     hostId: claimed.agentHostId, applicationId: null, attempt: 1, readyRevision: sealed.readyRevision, packetRevision: sealed.packetRevision,
     inputSeal: sealed.inputSeal, selectionDigest: sealed.selectionDigest, profileDigest: sha(observedProfile), runtimeDigest: sha(runtime), leaseDigest: sha({ executionId: claimed.id,
     hostId: claimed.agentHostId, token: claimed.leaseToken }), tools: [], externalWrites: false, deadline: new Date(absoluteDeadline).toISOString() };
+  expected.backend = sealed.modelSelection.backend;
+  expected.model = sealed.modelSelection.modelSelection.model;
+  expected.modelDigest = local ? sealed.modelSelection.modelSelection.modelDigest : null;
+  expected.localPreflight = local ? observer.preflight : null;
   if (!uuid.safeParse(expected.installationId).success || !uuid.safeParse(expected.hostId).success || typeof claimed.leaseToken !== 'string'
     || Date.parse(claimed.leaseExpiresAt) <= Date.now()) fail('installation_or_lease_missing');
   const snapshot = sha({ claimed, taskContext, provider });
@@ -196,15 +226,37 @@ export async function runCompanyInformationRuntime({ claimed, taskContext, provi
     assertAuthority(); if (signal?.aborted || allowedMs() <= 0 || sha({ claimed, taskContext, provider }) !== snapshot) fail('authority_or_context_changed');
     verifyInformationAdmission(signed, authorityPublicKey, expected); assertWorkingRoot(workingDirectory);
     assertStartupOverlays(provider, environment, workingDirectory);
-    assertHermesProfile(profileSeal, provider.profile, { repositoryPath: workingDirectory, readyRevision: sealed.readyRevision });
+    if (local) {
+      observer.assertActive();
+      if (!same(inspectLocalHermesProfile(provider.profile.profilePath, workingDirectory), localProfile)) fail('local_profile_changed');
+      if (readPinnedOllamaIdentity(provider.profile.profilePath, workingDirectory).fileDigest !== ollamaPin.fileDigest
+        || !assertOllamaIdentity(ollamaPin.pin, observeOllamaListener(), ollamaProcess)) fail('local_ollama_identity_changed');
+    } else assertHermesProfile(profileSeal, provider.profile, { repositoryPath: workingDirectory, readyRevision: sealed.readyRevision });
     assertHermesSmokeInstallationFresh(installation, provider.executablePath);
     if (!same(fixtureRuntimeBinding(provider.executablePath), runtime.executable) || !same(fixtureRuntimeBinding(process.execPath), runtime.node)
       || windowsJobSourceDigest() !== runtime.launcher.sourceDigest) fail('runtime_changed');
   };
   assertLaunch(); usedExecutions.add(claimed.id);
   const receipt = Object.freeze({}); qualifications.set(receipt, { consumed: false, complete: false, assertLaunch, process: processOptions, expected, signed, runtime, tools });
-  const result = await runHermesOwnedProcess({ ...processOptions, informationToolReceipt: receipt, remainingMs: allowedMs, secrets: [claimed.leaseToken, ...secrets],
-    assertAuthority, assertLaunchAuthority: assertLaunch, signal, expectedJobSourceDigest: runtime.launcher.sourceDigest });
+  let result;
+  try {
+    result = await runHermesOwnedProcess({ ...processOptions, informationToolReceipt: receipt, remainingMs: allowedMs,
+      secrets: [claimed.leaseToken, ...secrets], assertAuthority, assertLaunchAuthority: assertLaunch, signal,
+      expectedJobSourceDigest: runtime.launcher.sourceDigest });
+  } catch (error) {
+    const observerReason = safeObserverFailureCode(observer?.failureCode());
+    if (observerReason && error && typeof error === 'object')
+      error.details = { ...error.details, observerReason };
+    throw error;
+  }
+  const observed = observer ? await observer.finish() : null;
+  if (local) await assertLocalOllamaModelStore(sealed.modelSelection.modelSelection.modelDigest);
   guardHostContent(result.finalResponse, 'required', [claimed.leaseToken, ...secrets]);
-  return Object.freeze({ ...result, verification: result.informationRuntime ?? completeInformationQualification(receipt, result.ownedTreeReceipt) });
+  const verified = result.informationRuntime ?? completeInformationQualification(receipt, result.ownedTreeReceipt);
+  const verification = { ...verified, backend: observed ? 'ollama_loopback' : null,
+    observedModel: observed?.responseModel ?? null, observedDigest: observed?.digest ?? null,
+    observer: observed, physicalModelCalls: observed?.requestCount ?? null,
+    tokenUsage: observed?.usage ?? null };
+  return Object.freeze({ ...result, verification: Object.freeze(verification) });
+  } finally { await observer?.close(); }
 }

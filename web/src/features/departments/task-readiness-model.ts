@@ -25,14 +25,17 @@ export const companyInformationClass = "roost-company-information-v1" as const;
 export const companyInformationRuntimeClass = "roost-company-information-runtime-v1" as const;
 export const isCompanyInformation = (editor: ReadyEditor) => [companyInformationClass, "roost-company-information-runtime-v1"].includes(editor.executionClass ?? "");
 export function runtimeInformationInput<T extends { contract: Record<string, any> }>(base: T): T {
+  const current = base.contract.modelSelection;
+  const modelSelection = current?.schemaVersion === "roost-managed-hermes-backend-v1" ? current
+    : current?.provider === "hermes_local" ? current
+    : { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
+      attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
+      backend: "codex_responses", provider: "openai-codex", modelSelection: current,
+      auth: "same_owner_subscription" };
   return { ...base, contract: { ...base.contract,
     executionClass: companyInformationRuntimeClass,
     budgets: { ...base.contract.budgets, maxAttempts: 1 },
-    modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
-      attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
-      backend: "codex_responses", provider: "openai-codex",
-      modelSelection: base.contract.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1" ? base.contract.modelSelection.modelSelection : base.contract.modelSelection,
-      auth: "same_owner_subscription" } } };
+    modelSelection } };
 }
 export const canPrepareForWorker = (packet: ReadyPacket) => isCompanyInformation(packet.editor) ? packet.preparationEnabled === true : packet.executionEnabled;
 export const visibleContextGroups = (editor: ReadyEditor) => groups.filter(group => !isCompanyInformation(editor) || (group !== "product" && group !== "technical"));
@@ -44,7 +47,7 @@ export const fields = {
 } as const;
 export type FieldName = typeof fields[keyof typeof fields][number];
 export type ScopeDraft = { component: Reference | null; manager: Reference | null; metric: string; comparison: string; target: string; unit: string; method: string; problems: { statement: string; causalLink: string }[]; mechanism: string; inseparability: string; evidence: Reference | null };
-export type Draft = { taskRoles: { requester: Reference | null; executor: Reference | null; verifier: Reference | null; releaser: Reference | null }; singleTask: ScopeDraft; values: Record<FieldName, string>; model: string; effort: string; competencies: string[]; tools: string[]; permissions: string[]; refs: Record<RefGroup, Reference[]>; none: Record<RefGroup, string>; rollbackMode: string };
+export type Draft = { taskRoles: { requester: Reference | null; executor: Reference | null; verifier: Reference | null; releaser: Reference | null }; singleTask: ScopeDraft; values: Record<FieldName, string>; backend: "codex_responses" | "ollama_loopback"; model: string; modelDigest: string; effort: string; competencies: string[]; tools: string[]; permissions: string[]; refs: Record<RefGroup, Reference[]>; none: Record<RefGroup, string>; rollbackMode: string };
 const lines = (value: string) => value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 const join = (value: unknown) => Array.isArray(value) ? value.join("\n") : typeof value === "string" || typeof value === "number" ? String(value) : "";
 export function draftFrom(editor: ReadyEditor): Draft {
@@ -59,7 +62,9 @@ export function draftFrom(editor: ReadyEditor): Draft {
     taskRoles: { requester: c.taskRoles?.requester ?? (editor.requester ? { id: editor.requester.id, revision: editor.requester.revision } : null), executor: c.taskRoles?.executor ?? null, verifier: c.taskRoles?.verifier ?? null, releaser: c.taskRoles?.releaser ?? null },
     singleTask: { component: s.component ?? null, manager: s.accountableManager ?? null, metric: m.metric ?? "", comparison: m.comparison ?? "eq", target: m.target === undefined ? "" : String(m.target), unit: m.unit ?? "", method: m.method ?? "",
       problems: (s.problems ?? [{ statement: "" }]).map((p: any) => ({ statement: p.statement, causalLink: p.causalLink ?? "" })), mechanism: s.commonCause?.mechanism ?? "", inseparability: s.commonCause?.inseparability ?? "", evidence: s.commonCause?.evidence ?? null },
-    model: (c.modelSelection?.modelSelection ?? c.modelSelection)?.model ?? "", effort: (c.modelSelection?.modelSelection ?? c.modelSelection)?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
+    backend: c.modelSelection?.backend === "ollama_loopback" ? "ollama_loopback" : "codex_responses",
+    model: (c.modelSelection?.modelSelection ?? c.modelSelection)?.model ?? "", modelDigest: c.modelSelection?.modelSelection?.modelDigest ?? "",
+    effort: (c.modelSelection?.modelSelection ?? c.modelSelection)?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
     refs: Object.fromEntries(groups.map(key => [key, key === "skills" ? (c.skills?.items ?? []).map((item: { name: string; version: string }) => ({ id: item.name, revision: item.version })) : c.context?.[key] ?? c[key]?.items ?? []])) as Draft["refs"],
     none: Object.fromEntries(groups.map(key => [key, c[key]?.noneReason ?? ""])) as Draft["none"], rollbackMode: isCompanyInformation(editor) ? "not_applicable" : c.recovery?.rollback?.mode ?? "" };
 }
@@ -87,7 +92,14 @@ export function contractInput(editor: ReadyEditor, draft: Draft) {
       measurement: { metric: s.metric, comparison: s.comparison, target: s.target.trim() ? Number(s.target) : null, unit: s.unit, method: s.method },
       problems: s.problems.map(p => ({ statement: p.statement, componentId: informational ? null : s.component?.id, outcome: v.outcome, causalLink: !informational && s.problems.length > 1 ? p.causalLink : null })),
       commonCause: !informational && s.problems.length > 1 ? { mechanism: s.mechanism, inseparability: s.inseparability, evidence: s.evidence } : null },
-    assignment: { agentId: editor.agent?.id, role: editor.agent?.role, competencies: draft.competencies }, modelSelection: { model: draft.model, reasoningEffort: draft.effort },
+    assignment: { agentId: editor.agent?.id, role: editor.agent?.role, competencies: draft.competencies },
+    modelSelection: editor.executionClass === companyInformationRuntimeClass && draft.backend === "ollama_loopback"
+      ? { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
+        attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
+        backend: "ollama_loopback", provider: "ollama", endpoint: "http://127.0.0.1:11434",
+        modelSelection: { provider: "hermes_local", model: draft.model, modelFamily: "gpt-oss", modelDigest: draft.modelDigest, reasoningEffort: draft.effort },
+        config: { reasoning: "explicit_model_effort", remote: false } }
+      : { model: draft.model, reasoningEffort: draft.effort },
     context: Object.fromEntries(["company", "product", "technical"].map(key => [key, informational && key !== "company" ? [] : draft.refs[key as RefGroup].map(({ id, revision }) => ({ id, revision }))])),
     procedures: set("procedures"), skills: set("skills"), dependencies: set("dependencies"), decisions: set("decisions"),
     access: { tools: informational ? [] : draft.tools, permissions: informational ? [] : draft.permissions, sandbox: informational ? "read-only" : "workspace-write", externalWrites: false, restrictions: lines(v.restrictions) },

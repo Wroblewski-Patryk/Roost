@@ -33,7 +33,7 @@ import { companyInformationClass, isCompanyInformation } from "./company-informa
 import { taskCompanySources } from "./company-source-read";
 import { taskSourceCandidate, taskSourceDigest, taskSourceEligible, taskSourceProvenance, taskSourceScope,
   taskSourceTypes, taskSourcesForAgent, type TaskSourceType } from "./task-source-trust";
-import { companyRuntimeClass, isInformationRuntime, informationApprovalCandidate, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
+import { companyRuntimeClass, isInformationRuntime, informationNativeProven, informationApprovalCandidate, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
@@ -1492,6 +1492,10 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
         || information?.reviewRequired !== true || information?.externalWrites !== false
         || !Array.isArray(information?.nativeTools) || information.nativeTools.length !== 0)
         return { error: "company_information_result_scope_invalid" };
+      const candidate = { ...current, metadata, status: "completed", completedAt: new Date(),
+        changedFiles: input.changedFiles, verification: input.verification };
+      if (!await informationNativeProven(tx, candidate))
+        return { error: "company_information_native_proof_invalid" };
     }
     if(nativeBoundaryResultBlocked(input.verification, metadata.executionContract)) return {error:"native_boundary_reconciliation_required"};
     if((metadata.executionContract as any)?.nativeBoundary?.profile === "inspect-readonly"
@@ -1507,8 +1511,10 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
     if (!completed.count) return { error: "agent_execution_lease_invalid" };
     const execution = await tx.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
     await tx.agentExecutionEvent.create({ data: { workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "completed", message: input.summary, payload: json({ changedFiles: input.changedFiles, verification: input.verification, resultRevision }) } });
-    await tx.evidenceRecord.create({ data: { workspaceId: req.auth!.workspaceId, entityType: "task", entityId: execution.taskId, type: "manual_verification", source: "agent", reference: `Codex execution ${execution.id}`, description: input.summary, metadata: json({ executionId: execution.id, applicationId: execution.applicationId, changedFiles: input.changedFiles, verification: input.verification, resultRevision }) } });
-    await tx.event.create({ data: { type: "agent_execution_completed", workspaceId: req.auth!.workspaceId, taskId: execution.taskId, projectId: existing.task.projectId, resourceType: "agent_execution", resourceId: execution.id, source: "codex", payload: { executionId: execution.id, applicationId: execution.applicationId, changedFiles: input.changedFiles, resultRevision } } });
+    const localInformation = isInformationRuntime(metadata.executionContract)
+      && metadata.executionContract.modelSelection?.backend === "ollama_loopback";
+    await tx.evidenceRecord.create({ data: { workspaceId: req.auth!.workspaceId, entityType: "task", entityId: execution.taskId, type: "manual_verification", source: "agent", reference: `${localInformation ? "Ollama" : "Codex"} execution ${execution.id}`, description: input.summary, metadata: json({ executionId: execution.id, applicationId: execution.applicationId, changedFiles: input.changedFiles, verification: input.verification, resultRevision }) } });
+    await tx.event.create({ data: { type: "agent_execution_completed", workspaceId: req.auth!.workspaceId, taskId: execution.taskId, projectId: existing.task.projectId, resourceType: "agent_execution", resourceId: execution.id, source: localInformation ? "ollama" : "codex", payload: { executionId: execution.id, applicationId: execution.applicationId, changedFiles: input.changedFiles, resultRevision } } });
     return { execution };
   });
   if ("error" in result) return sendApiError(res, 409, result.error!);

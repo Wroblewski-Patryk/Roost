@@ -11,9 +11,10 @@ assert.equal(process.env.COMPANYCORE_SKIP_DOTENV, '1');
 const require = createRequire(import.meta.url);
 const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
+const g22Native = process.env.ROOST_G22_NATIVE_RUNTIME === '1';
 
 test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences',
-  { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000
+  { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR || g22Native ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000
     : process.env.ROOST_G12_CONTINUATION === '1' ? 300000 : 150000 }, async t => {
   const server = createApp().listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
@@ -182,7 +183,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
     });
     await t.test('company risk and admission qualify normal Decision and information Ready', async () => {
       const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
-        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' || process.env.ROOST_G11_REVIEW_ACTION === 'local-approve'
+        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' || g22Native || process.env.ROOST_G11_REVIEW_ACTION === 'local-approve'
           ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
       const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-real-status', title: 'Current Roost delivery evidence', description: 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.' } });
       const unrelatedSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-unselected-status', title: 'Unselected company source', description: 'This source is outside the exact task context.' } });
@@ -212,8 +213,10 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const c = structuredClone(contract); c.singleTask.contractId = `roost-task:${runtimeTask.id}`; c.context.company = [ref(currentSource)]; c.decisions = { items: [], noneReason: 'No decision yet selected' };
       c.objective.outcome = 'Summarize the verified preparation capability, remaining proof and one safe next action';
       c.singleTask.problems = [{ statement: 'Owner needs a concise sourced status of the current company capability', componentId: null, outcome: c.objective.outcome, causalLink: null }];
-      c.acceptance = { criteria: ['Uses only selected current records and distinguishes preparation from execution'], tests: ['Owner checks factual consistency with the selected record'], evidence: ['A sourced summary and one next action'] }; c.budgets.maxDurationSeconds = 300;
-      const selection = { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: 'stop_attempt', restart: 'never' }, backend: 'codex_responses', provider: 'openai-codex', modelSelection: { model: 'gpt-5.6-sol', reasoningEffort: 'low' }, auth: 'same_owner_subscription' };
+      c.acceptance = { criteria: ['Uses only selected current records and distinguishes preparation from execution'], tests: ['Owner checks factual consistency with the selected record'], evidence: ['A sourced summary and one next action'] }; c.budgets.maxDurationSeconds = g22Native ? 600 : 300;
+      const selection = g22Native
+        ? { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: 'stop_attempt', restart: 'never' }, backend: 'ollama_loopback', provider: 'ollama', endpoint: 'http://127.0.0.1:11434', modelSelection: { provider: 'hermes_local', model: 'gpt-oss:20b', modelFamily: 'gpt-oss', modelDigest: process.env.ROOST_G22_MODEL_DIGEST, reasoningEffort: 'low' }, config: { reasoning: 'explicit_model_effort', remote: false } }
+        : { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: 'stop_attempt', restart: 'never' }, backend: 'codex_responses', provider: 'openai-codex', modelSelection: { model: 'gpt-5.6-sol', reasoningEffort: 'low' }, auth: 'same_owner_subscription' };
       const { trustedPilotBytes } = await import('./lib/agent-host-trusted-pilot.mjs');
       const signer = generateKeyPairSync('ed25519'); const installationId = randomUUID();
       await prisma.trustedProviderTicketKey.create({ data: { workspaceId, installationId, keyId: 'ephemeral-native-test', epoch: 1, publicKeyDigest: createHash('sha256').update(signer.publicKey.export({ format: 'der', type: 'spki' })).digest('hex') } });
@@ -387,11 +390,13 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const protocol = require('../src/modules/agent-runtime/host-protocol.json');
       const hostSlug = 'synthetic-company-information-host';
       const host = await prisma.agentHost.create({ data: { workspaceId, name: 'Synthetic company information host', slug: hostSlug,
-        platform: 'win32', applicationSlugs: [], capabilities: [...protocol.requiredHostCapabilities, 'company_information_runtime_v1'],
+        platform: 'win32', status: 'online', lastSeenAt: new Date(), applicationSlugs: [], capabilities: [...protocol.requiredHostCapabilities, 'company_information_runtime_v1'],
         metadata: { runnerVersion: 'roost-codex-agent-host-v1', protocolVersion: protocol.version, executionMode: 'supervised', executionProvider: {
           kind: 'hermes_codex', admissionProfile: 'managed_hermes_codex_low_v1', executionSupported: true, blockers: [],
           installation: { status: 'verified', version: '0.21.2', fingerprint: 'a'.repeat(12), checkedAt: new Date().toISOString(), signature: 'unsigned' }
-        } } } });
+        }, schedulerResources: { schemaVersion: 'roost-host-resources-v1', observedAt: new Date().toISOString(),
+          freeMemoryBytes: 16 * 1024 ** 3, totalMemoryBytes: 32 * 1024 ** 3,
+          freeDiskBytes: 32 * 1024 ** 3, totalDiskBytes: 64 * 1024 ** 3, cpuLogicalCount: 8 } } } });
       const apiKey = await request('/v1/api-keys', token, { name: 'Synthetic company worker', profileId: 'mcp_codex_worker' });
       assert.equal(apiKey.status, 201, JSON.stringify(apiKey.body));
       const workerKey = await prisma.apiKey.findFirstOrThrow({ where: { workspaceId }, orderBy: { createdAt: 'desc' } });
@@ -402,7 +407,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const wrongCancel = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/cancel`, memberToken, {});
       assert.equal(wrongCancel.status, 403);
       assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } })).status, 'queued');
-      if (process.env.ROOST_G6_NATIVE_RUNTIME === '1') {
+      if (process.env.ROOST_G6_NATIVE_RUNTIME === '1' || g22Native) {
         const fs = await import('node:fs/promises');
         const os = await import('node:os');
         const path = await import('node:path');
@@ -434,7 +439,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
           child.stdout.on('data', chunk => { output = (output + chunk.toString()).slice(-4000); });
           child.stderr.on('data', chunk => { errorOutput = (errorOutput + chunk.toString()).slice(-4000); });
           child.once('exit', code => { exitCode = code; });
-          const until = Date.now() + 390_000;
+          const until = Date.now() + (g22Native ? 700_000 : 390_000);
           while (Date.now() < until) {
             await new Promise(resolve => setTimeout(resolve, 1500));
             result = await request(`${root}/information-result`, token);
@@ -442,18 +447,40 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
             if (['completed', 'failed', 'cancelled'].includes(result.body.data.status) || exitCode !== null) break;
           }
           assert.equal(result?.body?.data?.status, 'completed', JSON.stringify({ exitCode, output, errorOutput, result: result?.body?.data?.reason }));
-          assert.equal(result.body.data.canReview, true, JSON.stringify({ exitCode, output, errorOutput, reason: result.body.data.reason }));
+          // G11 retired the legacy owner shortcut on information-result. G22
+          // reviews the completed result through the independent task-role route.
+          if (g22Native) assert.equal(result.body.data.canReview, false);
+          else assert.equal(result.body.data.canReview, true, JSON.stringify({ exitCode, output, errorOutput, reason: result.body.data.reason }));
           assert.ok(result.body.data.finalResponse?.trim().length >= 10);
-          const reviewed = await request(`${root}/actions/review-information`, token, { requestId: randomUUID(),
-            executionId: runtimeExecutionId, materialVersion: result.body.data.materialVersion, decision: 'accept',
-            summary: 'Accepted the sourced company information result after owner review' });
-          assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+          if (g22Native) {
+            assert.equal(result.body.data.execution.requestedBackend, 'ollama_loopback');
+            assert.equal(result.body.data.execution.observedBackend, 'ollama_loopback');
+            assert.equal(result.body.data.execution.observedModel, 'gpt-oss:20b');
+            assert.equal(result.body.data.execution.observedDigest, process.env.ROOST_G22_MODEL_DIGEST);
+            const view = await request(`${root}/review`, verifierToken);
+            assert.equal(view.status, 200, JSON.stringify(view.body));
+            assert.equal(view.body.data.canReview, true);
+            const reviewed = await request(`${root}/actions/review`, verifierToken, {
+              requestId: randomUUID(), expectedVersion: view.body.data.expectedVersion,
+              executionId: runtimeExecutionId, materialVersion: view.body.data.materialVersion,
+              decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal,
+              summary: 'Independent fixture review of the exact selected source and local result',
+              evidence: [{ kind: 'test', reference: 'Isolated source comparison',
+                result: 'The result was checked against the selected synthetic company record', verdict: 'pass' }] });
+            assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+          } else {
+            const reviewed = await request(`${root}/actions/review-information`, token, { requestId: randomUUID(),
+              executionId: runtimeExecutionId, materialVersion: result.body.data.materialVersion, decision: 'accept',
+              summary: 'Accepted the sourced company information result after owner review' });
+            assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+          }
           assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'done');
           const completed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
           assert.equal(completed.applicationId, null); assert.equal(completed.status, 'completed');
           assert.equal(completed.attempt, 1); assert.equal(completed.verification?.informationRuntime?.ownedJob, true);
-          process.stdout.write(`G6 native Worker/Hermes ${JSON.stringify({ taskId: runtimeTask.id, executionId: runtimeExecutionId,
-            acceptanceCommitted: true, ownerReview: 'accept', status: completed.status, ownedJob: true })}\n`);
+          process.stdout.write(`${g22Native ? 'G22' : 'G6'} native Worker/Hermes ${JSON.stringify({ taskId: runtimeTask.id, executionId: runtimeExecutionId,
+            acceptanceCommitted: true, independentReview: g22Native, status: completed.status, ownedJob: true,
+            observedBackend: completed.verification?.informationRuntime?.backend ?? null })}\n`);
         } finally {
           await fs.writeFile(stopPath, 'stop');
           if (child && exitCode === null) {
@@ -541,6 +568,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         const invalidReceipt = process.env.ROOST_G11_REVIEW_ACTION === 'tamper';
         const verification = { informationRuntime: { schemaVersion: 'roost-company-information-runtime-verification-v1', executionId: runtimeExecutionId,
           admissionDigest: admittedEvent.payload.admissionDigest, inputSeal: admittedEvent.payload.inputSeal,
+          selectionDigest: admittedEvent.payload.selectionDigest,
           ownedJob: true, reviewRequired: true, externalWrites: invalidReceipt, nativeTools: invalidReceipt ? ['terminal'] : [] },
           ownedTreeReceipt: { version: 'roost-windows-job-v2', attempt: runtimeExecutionId, cleanup: true, jobClosed: true, activeProcesses: 0, rootExit: 0 } };
         const completed = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/complete`, worker, { leaseToken: claimed.body.data.leaseToken,

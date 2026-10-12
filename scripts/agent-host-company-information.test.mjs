@@ -3,10 +3,24 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { companyInformationFixture } from './fixtures/company-information.mjs';
 import { sealPacket, validPacketFixture } from './fixtures/execution-packet.mjs';
-import { validateExecutionPacket, companyInformationContractSchema } from './lib/agent-host-execution-packet.mjs';
+import { validateExecutionPacket, companyInformationContractSchema, companyInformationRuntimeModelAllowed } from './lib/agent-host-execution-packet.mjs';
 import { riskSchemaDescriptor } from './lib/agent-host-risk-readonly-schema.mjs';
 import { fetchExecutionContext } from './lib/agent-host-execution-context.mjs';
 const validate = f => validateExecutionPacket(f.packet, f.claimed, f.taskContext, f.applicationContext);
+
+test('G22 local information admits only the approved low reasoning effort', () => {
+  const selection = { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes',
+    riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0,
+      unavailable: 'stop_attempt', restart: 'never' }, backend: 'ollama_loopback', provider: 'ollama',
+    endpoint: 'http://127.0.0.1:11434', modelSelection: { provider: 'hermes_local', model: 'gpt-oss:20b',
+      modelFamily: 'gpt-oss', modelDigest: `sha256:${'a'.repeat(64)}`, reasoningEffort: 'low' },
+    config: { reasoning: 'explicit_model_effort', remote: false } };
+  assert.equal(companyInformationRuntimeModelAllowed(selection), true);
+  for (const effort of ['medium', 'high']) {
+    assert.equal(companyInformationRuntimeModelAllowed({ ...selection,
+      modelSelection: { ...selection.modelSelection, reasoningEffort: effort } }), false);
+  }
+});
 
 test('company preparation accepts a real queued attempt=0 with exact selected sources and no app/repo', async () => {
   const f = companyInformationFixture(); assert.equal(validate(f), f.packet);

@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
 import { nativeRelative } from "./agent-host-native-footprint.mjs";
-import { taskModelSelectionSchema } from "./agent-host-model-policy.mjs";
+import { taskModelSelectionSchema, managedBackendSelectionSchema } from "./agent-host-model-policy.mjs";
 import releaseInspectionContract from './agent-host-release-inspection-contract.cjs';
 export { codexEditorModels } from "./agent-host-model-policy.mjs";
 import { singleTaskSchema, singleTaskIssues } from "./agent-host-single-task.mjs";
@@ -98,8 +98,17 @@ export const companyInformationRuntimeContractSchema = companyInformationContrac
   executionClass: z.literal(companyInformationRuntimeClass),
   budgets: companyInformationContractSchema.shape.budgets.extend({ maxAttempts: z.literal(1), maxDurationSeconds: z.number().int().min(60).max(1800) })
 }).strict();
-export const companyInformationRuntimeModelAllowed = model => model?.schemaVersion === "roost-managed-hermes-backend-v1"
-  && model.backend === "codex_responses" && model.riskClass === "low" && model.attemptPolicy?.maxTurns === 1 && model.attemptPolicy?.apiMaxRetries === 0;
+export const companyInformationRuntimeModelAllowed = model => {
+  const parsed = managedBackendSelectionSchema.safeParse(model);
+  if (!parsed.success) return false;
+  const selected = parsed.data;
+  return selected.riskClass === "low" && selected.attemptPolicy.maxTurns === 1
+    && selected.attemptPolicy.apiMaxRetries === 0
+    && (selected.backend === "codex_responses" || selected.backend === "ollama_loopback"
+      && selected.modelSelection.model === "gpt-oss:20b"
+      && selected.modelSelection.modelFamily === "gpt-oss"
+      && selected.modelSelection.reasoningEffort === "low");
+};
 
 const provenanceSchema = z.object({
   reviewId: id, classification: z.enum(['fact', 'observation', 'proposal', 'inference']),

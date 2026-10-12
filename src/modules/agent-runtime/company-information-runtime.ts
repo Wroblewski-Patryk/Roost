@@ -16,26 +16,56 @@ type Db = Prisma.TransactionClient;
 const wire = (v: any) => JSON.parse(JSON.stringify(v));
 const digest = async (v: any) => createHash("sha256").update((await pilot).trustedPilotBytes(v)).digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
+const localDigest = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+const localPreflight = z.object({ model: z.literal("gpt-oss:20b"), digest: localDigest,
+  sizeBytes: z.number().int().positive(), loadedAtStart: z.boolean(), loadedDigestAtStart: localDigest.nullable() }).strict();
+const localObservation = z.object({ schemaVersion: z.literal("roost-ollama-observation-v1"),
+  backend: z.literal("ollama_loopback"), model: z.literal("gpt-oss:20b"), digest: localDigest,
+  endpoint: z.literal("http://127.0.0.1:11434"), requestedAt: z.string().datetime(), completedAt: z.string().datetime(),
+  requestCount: z.literal(1), responseModel: z.literal("gpt-oss:20b"), responseChunks: z.number().int().positive(),
+  usage: z.object({ prompt_tokens: z.number().int().nonnegative().optional(), completion_tokens: z.number().int().nonnegative().optional(),
+    total_tokens: z.number().int().nonnegative().optional(), reasoning_tokens: z.number().int().nonnegative().optional() }).strict().nullable(),
+  tagDigestVerified: z.literal(true), runningDigestVerified: z.literal(true), preflight: localPreflight }).strict();
 export const isInformationRuntime = (c: any) => c?.executionClass === companyRuntimeClass;
 // Historical G6 event interpretation remains readable after the route closes.
 export function informationReviewTaskStatus(source: string | null, decision: "accept" | "return") {
   return source === "clickup" ? null : decision === "accept" ? "done" : "todo";
 }
 export async function informationNativeProven(db: Db, execution: any) {
-  if (!execution || execution.applicationId !== null || !isInformationRuntime((execution.metadata as any)?.executionContract)
+  const contract = (execution?.metadata as any)?.executionContract;
+  if (!execution || execution.applicationId !== null || !isInformationRuntime(contract)
     || execution.status !== "completed" || !execution.completedAt || execution.contextInvalidatedAt
     || !Array.isArray(execution.changedFiles) || execution.changedFiles.length !== 0) return false;
   const admitted = await db.agentExecutionEvent.findFirst({ where: { workspaceId: execution.workspaceId, executionId: execution.id, type: "information_admitted" } });
   const native: any = (execution.verification as any)?.informationRuntime, owned: any = (execution.verification as any)?.ownedTreeReceipt;
-  return !!admitted && native?.schemaVersion === "roost-company-information-runtime-verification-v1"
+  const selection = contract.modelSelection, local = selection?.backend === "ollama_loopback";
+  const observation = localObservation.safeParse(native?.observer);
+  const admittedPayload: any = admitted?.payload;
+  const localProof = !local || selection.modelSelection?.reasoningEffort === "low"
+    && observation.success && native?.backend === "ollama_loopback"
+    && native?.observedModel === selection.modelSelection?.model
+    && native?.observedDigest === selection.modelSelection?.modelDigest
+    && native?.physicalModelCalls === 1
+    && observation.data.model === selection.modelSelection?.model
+    && observation.data.digest === selection.modelSelection?.modelDigest
+    && observation.data.preflight.digest === selection.modelSelection?.modelDigest
+    && admittedPayload?.localPreflight && await digest(observation.data.preflight) === await digest(admittedPayload.localPreflight)
+    && Date.parse(observation.data.requestedAt) <= Date.parse(observation.data.completedAt);
+  return localProof && !!admitted && native?.schemaVersion === "roost-company-information-runtime-verification-v1"
     && hash.safeParse(native?.admissionDigest).success && hash.safeParse(native?.inputSeal).success
     && native?.admissionDigest === (admitted.payload as any).admissionDigest && native?.inputSeal === (admitted.payload as any).inputSeal
+    && ((admitted.payload as any).selectionDigest === undefined ? !local
+      : native?.selectionDigest === (admitted.payload as any).selectionDigest
+        && native?.selectionDigest === await digest(selection))
+    && (!local || admittedPayload.backend === "ollama_loopback"
+      && admittedPayload.modelDigest === selection.modelSelection?.modelDigest)
     && native?.executionId === execution.id && native?.ownedJob === true && native?.reviewRequired === true
     && native?.externalWrites === false && Array.isArray(native?.nativeTools) && native.nativeTools.length === 0
     && owned?.version === "roost-windows-job-v2" && owned?.attempt === execution.id
     && owned?.cleanup === true && owned?.jobClosed === true && owned?.activeProcesses === 0 && owned?.rootExit === 0;
 }
 function managedInformationSelection(contract: any) {
+  if (contract.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1") return contract.modelSelection;
   const selected = contract.modelSelection?.schemaVersion ? contract.modelSelection.modelSelection : contract.modelSelection;
   return { schemaVersion: "roost-managed-hermes-backend-v1" as const, agent: "managed_hermes" as const,
     riskClass: "low" as const, fallback: "none" as const,
@@ -77,16 +107,20 @@ export async function informationApprovalCandidate(db: Db, auth: AuthContext, ta
     LIMIT 2`;
   if (previous.length > 1) return { error: "runtime_authority_ambiguous" };
   const selection = managedInformationSelection(contract);
+  if (!(await runtime).companyInformationRuntimeModelAllowed(selection)) return { error: "company_runtime_model_unqualified" };
   return { approval: { schemaVersion: "roost-managed-runtime-approval-v1" as const, taskId, applicationId: null,
     executionClass: companyRuntimeClass, installationId: key.installationId, selectionDigest: await digest(selection),
-    backend: "codex_responses" as const, riskClass: "low" as const, mode: "trusted_provider_pilot" as const,
+    backend: selection.backend, riskClass: "low" as const, mode: "trusted_provider_pilot" as const,
     residualRiskAccepted: true as const, acknowledgement: "windows_account_authority_not_os_isolation" as const },
-    model: selection.modelSelection.model, reasoningEffort: selection.modelSelection.reasoningEffort,
+    backend: selection.backend, model: selection.modelSelection.model,
+    modelDigest: selection.backend === "ollama_loopback" ? selection.modelSelection.modelDigest : null,
+    reasoningEffort: selection.modelSelection.reasoningEffort,
     maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens,
     previousDecision: previous[0] ?? null };
 }
 
 export async function informationApproval(db: Db, workspaceId: string, taskId: string, selection: any) {
+  if (!(await runtime).companyInformationRuntimeModelAllowed(selection)) return null;
   const selectionDigest = await digest(selection);
   const rows = await db.$queryRaw<any[]>`SELECT d.id,r.version,d.updated_at AS revision,r.body,
     a.actor_user_id AS owner FROM decisions d JOIN decision_revisions r ON r.decision_id=d.id
@@ -100,7 +134,7 @@ export async function informationApproval(db: Db, workspaceId: string, taskId: s
     AND r.body->'managedRuntimeApproval'->>'executionClass'=${companyRuntimeClass}
     AND r.body->'managedRuntimeApproval'->>'installationId'=k.installation_id::text
     AND r.body->'managedRuntimeApproval'->>'selectionDigest'=${selectionDigest}
-    AND r.body->'managedRuntimeApproval'->>'backend'='codex_responses'
+    AND r.body->'managedRuntimeApproval'->>'backend'=${selection.backend}
     AND r.body->'managedRuntimeApproval'->>'riskClass'='low'
     AND NOT EXISTS(SELECT 1 FROM decisions s JOIN decision_acceptances sa ON sa.decision_id=s.id WHERE s.supersedes_id=d.id)
     ORDER BY a.created_at DESC LIMIT 2`;
@@ -127,6 +161,7 @@ export async function startInformationTask(db: Db, auth: AuthContext, taskId: st
   if (!["roost-company-information-v1", companyRuntimeClass].includes(c.executionClass)) return { error: "company_information_scope_invalid" };
   c.executionClass = companyRuntimeClass; c.budgets.maxAttempts = 1;
   c.modelSelection = managedInformationSelection(c);
+  if (!(await runtime).companyInformationRuntimeModelAllowed(c.modelSelection)) return { error: "company_runtime_model_unqualified" };
   const approval = await informationApproval(db, auth.workspaceId, taskId, c.modelSelection);
   if (!approval) return { error: "runtime_authority_required" };
   if (await db.agentExecution.count({ where: { workspaceId: auth.workspaceId, taskId, metadata: { path: ["readyContextPin", "runtimeDecisionId"], equals: approval.decisionId } } })) return { error: "information_budget_spent_new_plan_required" };
@@ -175,16 +210,28 @@ export async function informationManagedAdmission(client: PrismaClient, auth: Au
     if (await db.agentExecutionEvent.count({ where: { executionId, type: "information_admitted" } })) throw Error("information_attempt_already_admitted");
     const sealed = (await runtime).buildCompanyInformationInput({ claimed: wire({ ...execution, installationId: identity.installationId }), taskContext: ready.taskContext });
     const observed = input.observation as any;
+    const selection = (ready.pin as any).contract.modelSelection;
+    if (!(await runtime).companyInformationRuntimeModelAllowed(selection)) throw Error("managed_admission_denied");
+    const local = selection.backend === "ollama_loopback";
+    const localPreflight = local ? (await runtime).informationLocalPreflightSchema.safeParse(observed.localPreflight) : null;
+    if (local && (!localPreflight?.success || localPreflight.data.model !== selection.modelSelection.model
+      || localPreflight.data.digest !== selection.modelSelection.modelDigest)) throw Error("managed_admission_denied");
     const now = new Date(), deadline = new Date(execution.startedAt!.getTime() + (ready.pin as any).contract.budgets.maxDurationSeconds * 1000);
     const expiresAt = new Date(Math.min(now.getTime() + 45000, execution.leaseExpiresAt!.getTime(), deadline.getTime() - 5000));
     const payload = (await runtime).informationAdmissionSchema.parse({ schemaVersion: "roost-company-information-admission-v1", domain: "roost-company-information-admission-v1",
       executionId, taskId: execution.taskId, workspaceId: auth.workspaceId, installationId: identity.installationId, hostId: identity.hostId, applicationId: null, attempt: 1,
       readyRevision: sealed.readyRevision, packetRevision: sealed.packetRevision, inputSeal: sealed.inputSeal, selectionDigest: sealed.selectionDigest,
       profileDigest: hash.parse(observed.profileDigest), runtimeDigest: hash.parse(observed.runtimeDigest),
+      backend: selection.backend, model: selection.modelSelection.model,
+      modelDigest: local ? selection.modelSelection.modelDigest : null,
+      localPreflight: local ? localPreflight!.data : null,
       leaseDigest: await digest({ executionId, hostId: identity.hostId, token: input.leaseToken }),
       issuedAt: now.toISOString(), expiresAt: expiresAt.toISOString(), decisionId: approval.decisionId, decisionVersion: approval.decisionVersion, tools: [], externalWrites: false, deadline: deadline.toISOString() });
     const signed = { payload, signature: signer.sign((await pilot).trustedPilotBytes(payload)).toString("hex") };
-    await db.agentExecutionEvent.create({ data: { workspaceId: auth.workspaceId, executionId, type: "information_admitted", message: "Exact owner decision and current information context admitted once.", payload: { admissionDigest: await digest(signed), inputSeal: sealed.inputSeal, selection: (ready.pin as any).contract.modelSelection } } });
+    await db.agentExecutionEvent.create({ data: { workspaceId: auth.workspaceId, executionId, type: "information_admitted", message: "Exact owner decision and current information context admitted once.", payload: { admissionDigest: await digest(signed), inputSeal: sealed.inputSeal,
+      selectionDigest: sealed.selectionDigest, backend: selection.backend, modelDigest: local ? selection.modelSelection.modelDigest : null,
+      localPreflight: local ? localPreflight!.data : null,
+      selection } } });
     return signed;
   }, { isolationLevel: "Serializable", timeout: 15000 });
 }
@@ -210,7 +257,11 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
     budget: { maxAttempts: contract.budgets.maxAttempts, maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens, tokenCostEnforcement: "unavailable" },
     execution: { attempt: execution.attempt, startedAt: execution.startedAt, completedAt: execution.completedAt,
       model: (contract.modelSelection?.modelSelection ?? contract.modelSelection)?.model ?? null,
-      effort: (contract.modelSelection?.modelSelection ?? contract.modelSelection)?.effort ?? null,
+      effort: (contract.modelSelection?.modelSelection ?? contract.modelSelection)?.reasoningEffort ?? null,
+      requestedBackend: contract.modelSelection?.backend ?? null,
+      observedBackend: nativeProven ? (execution.verification as any)?.informationRuntime?.backend ?? null : null,
+      observedModel: nativeProven ? (execution.verification as any)?.informationRuntime?.observedModel ?? null : null,
+      observedDigest: nativeProven ? (execution.verification as any)?.informationRuntime?.observedDigest ?? null : null,
       checkpoint: (execution.checkpoint as any)?.stage ?? null,
       eventsTruncated: timeline.length > 100,
       events: timeline.slice(0, 100).map(event => ({ id: event.id, type: event.type, at: event.createdAt.toISOString() })) } };

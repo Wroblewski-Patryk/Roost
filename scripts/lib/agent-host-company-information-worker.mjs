@@ -1,4 +1,5 @@
 import { mkdtemp, rmdir, readdir, writeFile } from 'node:fs/promises';
+import { closeSync, fsyncSync, openSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -11,10 +12,24 @@ import { fetchExecutionContext } from './agent-host-execution-context.mjs';
 import { runCompanyInformationRuntime } from './agent-host-company-information-runtime.mjs';
 import { isWindowsJobCleanupReceipt } from './agent-host-windows-job.mjs';
 import { confirmPreemptionStopped } from './agent-host-preemption.mjs';
+import { writeInformationFailureDiagnostic } from './agent-host-information-diagnostics.mjs';
 
 const id = z.string().uuid();
 const anchorSchema = z.object({ schemaVersion: z.literal('roost-trusted-provider-pilot-v1'), installationId: id, workspaceId: id,
   authorityPublicKey: z.string().min(32).max(2048), decisionFile: z.literal('trusted-provider-pilot.json'), profileFile: z.literal('trusted-provider-profile.json'), qualification: z.literal('signed_native_v1') }).strict();
+
+export function markModelRequest(writerDirectory, executionId) {
+  // A separate create-only marker survives an interrupted journal rewrite.
+  // Failure to create or flush it stops the request before prompt bytes leave.
+  const marker = path.join(writerDirectory, `information-${executionId}.model-requested`);
+  const descriptor = openSync(marker, 'wx', 0o600);
+  try {
+    writeFileSync(descriptor, JSON.stringify({ executionId, modelRequestForwarded: true }) + '\n');
+    fsyncSync(descriptor);
+  } finally {
+    closeSync(descriptor);
+  }
+}
 
 // The operator-installed public anchor is outside every checkout. A task,
 // response or model cannot choose a trust key or its private configuration.
@@ -30,7 +45,7 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
   const abort = new AbortController();
   const contract = claimed.metadata?.executionContract;
   const duration = createExecutionDuration({ startedAt: claimed.startedAt, maxDurationSeconds: contract.budgets.maxDurationSeconds, onExpired: () => abort.abort() });
-  let context, directory, owned, running;
+  let context, directory, writerDirectory, owned, running;
   const lease = createExecutionLease({ renew: () => api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken }) }), onLost: () => abort.abort() });
   const assertAuthority = () => { assertWriterLock(writerLock); duration.assertWithinBudget(); lease.assertValid(); if (shutdownRequested()) throw Error('information_controller_shutdown'); };
   try {
@@ -42,12 +57,14 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
     const prepared = { schemaVersion: 'roost-information-worker-checkpoint-v1', executionId: claimed.id, taskId: claimed.taskId,
       readyRevision: claimed.metadata.readyContextPin.revision, packetRevision: context.taskContext.executionPacket.revision,
       stage: 'prepared', modelStarted: false, automaticRestart: false };
-    const journal = path.join(writerRecoveryEvidence(writerLock).directory, `information-${claimed.id}.json`);
+    writerDirectory = writerRecoveryEvidence(writerLock).directory;
+    const journal = path.join(writerDirectory, `information-${claimed.id}.json`);
     await writeFile(journal, JSON.stringify(prepared) + '\n', { flag: 'wx', mode: 0o600 });
     await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken, type: 'information_prepared', message: 'Current selected company context prepared; one attempt, no native tools.', payload: prepared }) });
     running = runCompanyInformationRuntime({ claimed: inputContext, taskContext: context.taskContext, provider,
       authorityPublicKey: anchor.authorityPublicKey, workingDirectory: directory, signal: abort.signal, assertAuthority,
       remainingMs: () => duration.remainingMs, secrets,
+      onModelRequest: () => markModelRequest(writerDirectory, claimed.id),
       requestAdmission: async observation => {
         assertAuthority();
         const fresh = await fetchExecutionContext(api, claimed, { signal: abort.signal, secrets });
@@ -64,7 +81,9 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
       resultDigest: createHash('sha256').update(result.finalResponse).digest('hex') }) + '\n', { mode: 0o600 });
     await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken,
       summary: 'Informational result from the selected company records; owner review required.', finalResponse: result.finalResponse, changedFiles: [], verification,
-      usage: { inputTokens: null, outputTokens: null, cost: null, physicalModelCalls: null } }) });
+      usage: { inputTokens: result.verification.tokenUsage?.prompt_tokens ?? null,
+        outputTokens: result.verification.tokenUsage?.completion_tokens ?? null,
+        cost: null, physicalModelCalls: result.verification.physicalModelCalls ?? null } }) });
     return { verification };
   } catch (error) {
     abort.abort(); owned ??= error.details?.ownedTreeReceipt;
@@ -80,15 +99,20 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
         throw Object.assign(stopOrAckError, { leaseLost: true, preemptionRequested: true });
       }
     }
+    if (writerDirectory) {
+      try { writeInformationFailureDiagnostic(writerDirectory, claimed.id, error, isWindowsJobCleanupReceipt(owned)); }
+      catch { /* A diagnostic write failure must not replace the original stop reason. */ }
+    }
     // A late/uncertain completion is never replayed or converted into success.
     // Preserve the real native closure locally; the existing lease/recovery
     // mechanism remains responsible when reporting itself is unavailable.
     const code = error.durationLimit ? 'agent_execution_duration_exceeded' : error.leaseLost ? 'information_lease_lost'
       : error.message === 'hermes_quiet_empty_result' ? 'hermes_quiet_empty_result'
       : error.details?.reason ?? 'information_attempt_stopped';
-    await api(`/v1/agent-runtime/executions/${claimed.id}/actions/fail`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken,
+    const reported = await api(`/v1/agent-runtime/executions/${claimed.id}/actions/fail`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken,
       code, message: 'Information attempt stopped. No automatic retry; owner diagnosis, changed plan and new budget are required.', retryable: false,
-      details: { nativeCleanupProven: isWindowsJobCleanupReceipt(owned), ...(owned ? { ownedTreeReceipt: owned } : {}) } }) }).catch(() => {});
+      details: { nativeCleanupProven: isWindowsJobCleanupReceipt(owned), ...(owned ? { ownedTreeReceipt: owned } : {}) } }) }).then(() => true, () => false);
+    if (reported) error.informationFailureReported = true;
     throw error;
   } finally {
     abort.abort(); lease.stop(); duration.stop();

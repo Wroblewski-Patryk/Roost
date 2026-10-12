@@ -234,7 +234,7 @@ try {
     await scopePage.goto(`http://127.0.0.1:${server.address().port}`);
     await scopePage.locator("button:visible").filter({ hasText: locale === "pl" ? "Przygotuj wykonanie" : "Prepare execution" }).first().click();
     await scopePage.getByLabel(locale === "pl" ? /^Docelowy komponent/ : /^Target component/).selectOption(scopeFixture.packet.contract.singleTask.component.id);
-    await scopePage.getByLabel(/^Accountable manager/).selectOption(scopeFixture.packet.contract.singleTask.accountableManager.id);
+    await scopePage.getByLabel(locale === "pl" ? /^Manager odpowiedzialny/ : /^Accountable manager/).selectOption(scopeFixture.packet.contract.singleTask.accountableManager.id);
     const outcome = scopePage.getByLabel(locale === "pl" ? /^Oczekiwany rezultat/ : /^Expected outcome/);
     const originalOutcome = await outcome.inputValue();
     await outcome.fill(locale === "pl" ? "Napraw logowanie oraz dodaj płatności" : "Fix login and add billing");
@@ -395,6 +395,13 @@ try {
   await runtimePage.goto(`http://127.0.0.1:${server.address().port}?executionClass=roost-company-information-v1`);
   await runtimePage.getByRole('button',{name:'Prepare execution',exact:true}).first().click();
   await runtimePage.getByLabel('Task execution type',{exact:true}).selectOption('roost-company-information-runtime-v1');
+  await runtimePage.getByLabel(/^Backend/).selectOption('ollama_loopback');
+  assert.deepEqual(await runtimePage.getByLabel(/^Reasoning effort/).evaluate(element =>
+    Array.from(element.options).map(option => option.value)), ['', 'low']);
+  await runtimePage.getByLabel(/^Reasoning effort/).selectOption('low');
+  const digest=`sha256:${'a'.repeat(64)}`;
+  await runtimePage.getByLabel(/^Exact model SHA-256 digest/).fill(digest);
+  await runtimePage.getByText(/no automatic fallback/).waitFor();
   await runtimePage.getByRole('button',{name:'Submit for execution',exact:true}).click();
   await runtimePage.getByText('The current contract was validated and accepted.',{exact:true}).waitFor();
   assert.ok(runtimeQueries.includes('roost-company-information-runtime-v1'));
@@ -402,6 +409,10 @@ try {
   assert.equal(runtimeSubmissions[0].contract.executionClass,'roost-company-information-runtime-v1');
   assert.equal(runtimeSubmissions[0].contract.budgets.maxAttempts,1);
   assert.equal(runtimeSubmissions[0].contract.modelSelection.schemaVersion,'roost-managed-hermes-backend-v1');
+  assert.equal(runtimeSubmissions[0].contract.modelSelection.backend,'ollama_loopback');
+  assert.equal(runtimeSubmissions[0].contract.modelSelection.modelSelection.model,'gpt-oss:20b');
+  assert.equal(runtimeSubmissions[0].contract.modelSelection.modelSelection.modelDigest,digest);
+  assert.equal(runtimeSubmissions[0].contract.modelSelection.fallback,'none');
   assert.deepEqual(runtimeSubmissions[0].contract.access.tools,[]);
   await runtimePage.close();checked++;
 

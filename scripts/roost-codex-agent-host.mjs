@@ -868,7 +868,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
 }
 
 async function reportFailure(execution, error, writerLock) {
-  if (!execution?.leaseToken || error.leaseLost || error.terminalCompletionUncertain) return;
+  if (!execution?.leaseToken || error.leaseLost || error.terminalCompletionUncertain || error.informationFailureReported) return;
   const code = String(error.message || "agent_host_failed").split(":")[0];
   const details = { ...(error.details || {}),
     ...(code === "hermes_quiet_empty_result" ? { nativeCleanupProven: isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt) } : {}) };

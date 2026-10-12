@@ -72,11 +72,41 @@ test("runtime risk input and Ready submission use the same bounded company contr
   assert.equal(submitted.contract.executionClass, companyInformationRuntimeClass);
   assert.deepEqual(submitted.contract.access.tools, []);
   assert.deepEqual(submitted.contract.access.permissions, []);
+  assert.equal(submitted.contract.modelSelection.backend, "codex_responses");
   assert.equal(submitted.contract.modelSelection.modelSelection.model, "gpt-5.6-sol");
   assert.equal(submitted.contract.budgets.maxAttempts, 1);
   const reopened = draftFrom({ ...runtime, accepted: { contract: submitted.contract, prompt: submitted.prompt, baseBranch: null, applicationId: null } });
   assert.equal(reopened.model, "gpt-5.6-sol");
   assert.equal(reopened.effort, "low");
+});
+
+test("local information selection keeps exact backend, tag, digest and effort through Ready and reopen", () => {
+  const runtime = { ...editorFixture(), executionClass: companyInformationRuntimeClass, applicationId: null };
+  const draft = draftFrom(runtime);
+  draft.backend = "ollama_loopback";
+  draft.model = "gpt-oss:20b";
+  draft.modelDigest = `sha256:${"a".repeat(64)}`;
+  draft.effort = "low";
+  draft.values.maxAttempts = "1";
+  draft.values.maxDurationSeconds = "600";
+  draft.values.maxOutputTokens = "1200";
+  draft.refs.company = [{ id: "company", revision: "company-r1" }];
+  const submitted = contractInput(runtime, draft);
+  const selection = submitted.contract.modelSelection;
+  assert.equal(selection.backend, "ollama_loopback");
+  assert.equal(selection.provider, "ollama");
+  assert.equal(selection.endpoint, "http://127.0.0.1:11434");
+  assert.equal(selection.fallback, "none");
+  assert.deepEqual(selection.attemptPolicy, { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" });
+  assert.deepEqual(selection.modelSelection, { provider: "hermes_local", model: "gpt-oss:20b", modelFamily: "gpt-oss", modelDigest: draft.modelDigest, reasoningEffort: "low" });
+  assert.deepEqual(selection.config, { reasoning: "explicit_model_effort", remote: false });
+  assert.deepEqual(runtimeInformationInput(submitted), submitted);
+  const reopened = draftFrom({ ...runtime, accepted: { contract: submitted.contract, prompt: submitted.prompt, baseBranch: null, applicationId: null } });
+  assert.equal(reopened.backend, "ollama_loopback");
+  assert.equal(reopened.model, "gpt-oss:20b");
+  assert.equal(reopened.modelDigest, draft.modelDigest);
+  assert.equal(reopened.effort, "low");
+  assert.deepEqual(contractInput(runtime, reopened).contract.modelSelection, selection);
 });
 
 test("existing application input keeps its discriminator-free shape and application authority", () => {

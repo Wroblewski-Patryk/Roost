@@ -53,6 +53,35 @@ try {
     assert.deepEqual(errors, []); checks += 6;
     await page.close();
   }
+  {
+    const page = await browser.newPage(), writes = [];
+    const localApproval = { ...approval, backend: 'ollama_loopback' };
+    const modelDigest = `sha256:${'a'.repeat(64)}`;
+    await page.addInitScript(() => localStorage.setItem('companycoreLocale', 'en'));
+    await page.route('**/v1/**', route => {
+      if (route.request().method() === 'POST') {
+        writes.push(route.request().postDataJSON());
+        return route.fulfill({ json: { data: { record: { id: oldId } } } });
+      }
+      if (route.request().url().includes('information-approval-candidate')) return route.fulfill({ json: { data: {
+        approval: localApproval, backend: 'ollama_loopback', model: 'gpt-oss:20b', modelDigest,
+        reasoningEffort: 'low', maxDurationSeconds: 600, maxOutputTokensIntent: 1200,
+        previousDecision: null } } });
+      return route.fulfill({ json: { data: { expectedVersion: 'b'.repeat(64), canWrite: true,
+        authorityCatalog: { workforce: [], departments: [] }, catalog: [], revisions: [], deferrals: [], truncated: false } } });
+    });
+    await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await page.getByText('Ollama · 127.0.0.1').waitFor();
+    await page.getByText(modelDigest).waitFor();
+    await page.getByText(/No automatic fallback/).waitFor();
+    await page.getByRole('checkbox').check();
+    const response = page.waitForResponse(r => r.url().endsWith('/v1/decisions/governance/proposals') && r.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Record proposal' }).click(); await response;
+    assert.deepEqual(writes[0].managedRuntimeApproval, localApproval);
+    assert.match(writes[0].decision, /gpt-oss:20b.*sha256:/);
+    checks += 5;
+    await page.close();
+  }
   for (const locale of ['en', 'pl']) {
     const page = await browser.newPage(); const requests = [];
     await page.addInitScript(value => { localStorage.setItem('companycoreLocale', value); window.recoveryFlow = true; }, locale);
@@ -64,13 +93,15 @@ try {
       if (route.request().url().includes('information-approval-candidate')) return route.fulfill({ json: { data: {
         approval, model: 'gpt-5.6-sol', reasoningEffort: 'low', maxDurationSeconds: 600,
         maxOutputTokensIntent: 1200, previousDecision: { id: oldId, decision: 'Authorize the previous single attempt.' } } } });
-      throw new Error('Unexpected recovery UI request');
+      if (route.request().url().includes('execution-continuation')) return route.fulfill({ json: { data: {
+        previousExecution: null, eligible: false, reason: null, readyPinId: null, readyRevision: null, continuation: null } } });
+      throw new Error(`Unexpected recovery UI request: ${route.request().method()} ${route.request().url()}`);
     });
     await page.goto(`http://127.0.0.1:${server.address().port}/`);
     await page.getByText(locale === 'pl' ? 'Zadanie informacyjne nie powiodło się.' : 'Information task failed.').waitFor();
     await page.getByRole('button', { name: locale === 'pl' ? 'Autoryzuj jedną próbę' : 'Authorize one attempt' }).click();
     await page.getByText(locale === 'pl' ? 'Poprzednia decyzja upoważniała do jednej próby. Nowa propozycja zastąpi ją dopiero po odrębnym przeglądzie ryzyka i akceptacji właściciela.' : 'The prior decision authorized one attempt. This proposal replaces it only after separate risk review and owner acceptance.').waitFor();
-    assert.deepEqual(requests.map(request => request.method), ['GET', 'GET']);
+    assert.deepEqual(requests.filter(request => !request.url.includes('execution-continuation')).map(request => request.method), ['GET', 'GET']);
     checks += 4; await page.close();
   }
   console.log(`Company information authorization UI: ${checks} checks passed`);

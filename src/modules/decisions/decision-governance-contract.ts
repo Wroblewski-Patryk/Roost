@@ -21,6 +21,9 @@ const applicationRuntimeApproval=z.object({schemaVersion:z.literal('roost-manage
   acknowledgement:z.literal('windows_account_authority_not_os_isolation')}).strict();
 export const managedRuntimeApproval=z.union([applicationRuntimeApproval,applicationRuntimeApproval.extend({
   executionClass:z.literal('roost-company-information-runtime-v1'),applicationId:z.literal(null)
+}).strict(),applicationRuntimeApproval.extend({
+  executionClass:z.literal('roost-company-information-runtime-v1'),applicationId:z.literal(null),
+  backend:z.literal('ollama_loopback')
 }).strict()]);
 // A coding task needs a separate owner decision after two completed, independent
 // read-only canaries. The decision is scoped to one installation, task and branch;
