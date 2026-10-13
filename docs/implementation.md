@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Four model attempts spent; no Finding; fourth key revoked. Bound tools pass local STDIO and credential-free Hermes checks, but are not released. [Evidence](architecture/reference-site-method-proof-g24c.md#bound-tools-no-model-checkpoint). Gate open.
+**G24c:** Four model attempts spent; no Finding; fourth key revoked. Bound tools pass local checks and are deployed; agent use remains unproved. [Evidence](architecture/reference-site-method-proof-g24c.md#bound-tools-release). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
