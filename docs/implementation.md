@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c live Finding proof (2026-10-13):** The guard is deployed, but the sole approved local model attempt failed in CUDA before any tool call. Both Finding counts remain zero; the attempt budget is exhausted. [Evidence](architecture/reference-site-method-proof-g24c.md#later-bounded-live-finding-session-stopped-before-tools). G24c remains open.
+**G24c live Finding proof (2026-10-13):** Two approved local attempts are spent: the first failed in CUDA; after reboot, Hermes tool trust denied the second before source GET. No Findings or POST slots; the temporary key was revoked. [Evidence](architecture/reference-site-method-proof-g24c.md#after-reboot-retry-stopped-before-source-read). G24c remains open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
