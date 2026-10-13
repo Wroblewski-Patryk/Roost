@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c (2026-10-13):** Three approved model attempts are spent. The third passed private Hermes preflight, but made no MCP call after abbreviated tool names failed. No Finding POST or slot; credential revoked. [Evidence](architecture/reference-site-method-proof-g24c.md#third-bounded-local-attempt-stopped-before-agent-source-get). G24c remains open.
+**G24c:** Three model attempts spent; no G24c Finding. No-model direct-tool checks passed on prior schemas and fixture; key revoked, guard expired. [Evidence](architecture/reference-site-method-proof-g24c.md#private-direct-tool-profile-and-no-model-checkpoint). Gate open; no model retry authorized.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
