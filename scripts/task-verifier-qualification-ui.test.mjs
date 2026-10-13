@@ -20,8 +20,8 @@ server.listen(0, "127.0.0.1");
 await once(server, "listening");
 const browser = await chromium.launch({ headless: true });
 try {
-  for (const locale of ["pl", "en"]) {
-    await test(`G24c qualification owner UI ${locale} shows exact scope and confirms one body`, async () => {
+  for (const locale of ["pl", "en"]) for (const existing of [false, true]) {
+    await test(`G24c qualification owner UI ${locale} ${existing ? "replaces" : "creates"} one exact body`, async () => {
       const page = await browser.newPage();
       let saved = false, posted = null, proofDigest = null;
       await page.addInitScript(language => localStorage.setItem("companycoreLocale", language), locale);
@@ -32,11 +32,11 @@ try {
           executor: { id: "00000000-0000-4000-8000-000000000107", name: "Site agent", revision: "2026-10-13T00:00:00.000Z" },
           checklist: { id: checklistId, version: 1, decisionId, sourceDigest: "a".repeat(64), reviewIds: [reviewId], current: true },
           candidates: [{ id: verifierId, name: "Audit agent", revision: "2026-10-13T00:00:00.000Z", competency: "application audit" }],
-          latest: saved ? { id: "00000000-0000-4000-8000-000000000108", action: "qualify", verifierId,
+          latest: existing || saved ? { id: "00000000-0000-4000-8000-000000000108", action: "qualify", verifierId,
             evidence: "Observed site-audit skill and independent verifier mandate.", rationale: "One task and accepted checklist only.",
             validUntil: "2026-10-13T12:00:00.000Z" } : null,
-          current: saved ? { id: "00000000-0000-4000-8000-000000000108", verifierId, validUntil: "2026-10-13T12:00:00.000Z" } : null,
-          canQualify: !saved, expectedVersion: "b".repeat(64)
+          current: existing || saved ? { id: "00000000-0000-4000-8000-000000000108", verifierId, validUntil: "2026-10-13T12:00:00.000Z" } : null,
+          canQualify: true, expectedVersion: "b".repeat(64)
         } } });
         if (url.pathname === "/v1/auth/reauth") {
           const body = JSON.parse(req.postData());
@@ -65,12 +65,14 @@ try {
         .fill("Observed site-audit skill and independent verifier mandate.");
       await page.getByLabel(locale === "pl" ? "Uzasadnienie decyzji" : "Decision rationale")
         .fill("One task and accepted checklist only.");
-      await page.getByRole("button", { name: locale === "pl" ? "Przygotuj potwierdzenie" : "Prepare confirmation" }).click();
+      await page.getByRole("button", { name: existing ? locale === "pl" ? "Zastąp kwalifikację" : "Replace qualification"
+        : locale === "pl" ? "Przygotuj potwierdzenie" : "Prepare confirmation" }).click();
       await page.getByText(reviewId).last().waitFor();
       await page.getByLabel(locale === "pl" ? "Obecne hasło" : "Current password").fill("test-password");
       await page.getByRole("button", { name: locale === "pl" ? "Potwierdź i zapisz" : "Confirm and save" }).click();
       await page.getByText(locale === "pl" ? "Decyzja zapisana" : "Decision recorded").waitFor();
       assert.equal(posted.verifierId, verifierId);
+      assert.equal(posted.action, "qualify");
       assert.equal(posted.contract.procedures.items[0].id, checklistId);
       assert.equal(posted.evidence, "Observed site-audit skill and independent verifier mandate.");
       await page.close();

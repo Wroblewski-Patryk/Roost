@@ -83,9 +83,9 @@ export function TaskVerifierQualification({ taskId, contract, onClose, onSaved }
     onClose={onClose} onSubmit={submit} closeLabel={pl ? "Zamknij" : "Close"}
     actions={<><CcButton variant="ghost" onClick={onClose} disabled={busy}>{pl ? "Zamknij" : "Close"}</CcButton>
       {prepared ? <CcButton type="submit" variant="primary" loading={busy}>{pl ? "Potwierdź i zapisz" : "Confirm and save"}</CcButton>
-          : view?.current ? <CcButton variant="outline" disabled={busy || rationale.trim().length < 20} onClick={() => prepare("revoke")}>{pl ? "Cofnij kwalifikację" : "Revoke qualification"}</CcButton>
-          : <CcButton variant="primary" disabled={busy || !view?.canQualify || !chosen || !contract || evidence.trim().length < 20 || rationale.trim().length < 20}
-            onClick={() => prepare("qualify")}>{pl ? "Przygotuj potwierdzenie" : "Prepare confirmation"}</CcButton>}</>}>
+          : <>{view?.current ? <CcButton variant="outline" disabled={busy || rationale.trim().length < 20} onClick={() => prepare("revoke")}>{pl ? "Cofnij kwalifikację" : "Revoke qualification"}</CcButton> : null}
+            <CcButton variant="primary" disabled={busy || !view?.canQualify || !chosen || !contract || evidence.trim().length < 20 || rationale.trim().length < 20}
+              onClick={() => prepare("qualify")}>{view?.current ? pl ? "Zastąp kwalifikację" : "Replace qualification" : pl ? "Przygotuj potwierdzenie" : "Prepare confirmation"}</CcButton></>}</>}>
     {busy && !view ? <p role="status">{pl ? "Ładowanie…" : "Loading…"}</p> : null}
     {error ? <CcNotice tone="error" live title={pl ? "Nie udało się wykonać operacji" : "The operation failed"} detail={error} /> : null}
     {saved ? <CcNotice tone="success" live title={pl ? "Decyzja zapisana" : "Decision recorded"} /> : null}
@@ -109,14 +109,14 @@ export function TaskVerifierQualification({ taskId, contract, onClose, onSaved }
         <CcField label={pl ? "Obecne hasło" : "Current password"} required>{({ id }) =>
           <input id={id} name="ownerPassword" type="password" autoComplete="current-password" required className="input input-bordered w-full" disabled={busy} />}</CcField>
       </> : <>
-        {!view.current ? <CcField label={pl ? "Niezależny weryfikator" : "Independent verifier"} required>{({ id }) =>
+        <CcField label={pl ? "Niezależny weryfikator" : "Independent verifier"} required>{({ id }) =>
           <CcSelect id={id} value={verifierId} disabled={busy || !view.canQualify} onChange={event => setVerifierId(event.target.value)}>
             <option value="">{pl ? "Wybierz agenta" : "Choose an agent"}</option>
             {view.candidates.map(item => <option key={item.id} value={item.id}>{item.name} · {item.competency}</option>)}
-          </CcSelect>}</CcField> : null}
-        {!view.current ? <CcField label={pl ? "Dowód kompetencji dla tej checklisty" : "Competence evidence for this checklist"} required>{({ id }) =>
+          </CcSelect>}</CcField>
+        <CcField label={pl ? "Dowód kompetencji dla tej checklisty" : "Competence evidence for this checklist"} required>{({ id }) =>
           <textarea id={id} className="textarea textarea-bordered w-full" value={evidence} minLength={20} maxLength={2000}
-            onChange={event => setEvidence(event.target.value)} disabled={busy} />}</CcField> : null}
+            onChange={event => setEvidence(event.target.value)} disabled={busy} />}</CcField>
         <CcField label={pl ? "Uzasadnienie decyzji" : "Decision rationale"} required>{({ id }) =>
           <textarea id={id} className="textarea textarea-bordered w-full" value={rationale} minLength={20} maxLength={2000}
             onChange={event => setRationale(event.target.value)} disabled={busy} />}</CcField>
