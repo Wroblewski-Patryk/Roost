@@ -182,6 +182,10 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
     if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw new Error("agent_host_writer_locked");
     const bytes = await readFile(lockPath, "utf8"), current = JSON.parse(bytes);
     const checkpoint = current.checkpoint;
+    // Information runtime keeps this generic checkpoint at `claimed` while its
+    // separate journal can already be prepared or admitted. Its terminal state
+    // is not a pre-spawn proof; only explicit native reconciliation may retire it.
+    if (checkpoint?.applicationId === null) throw new Error("agent_host_writer_locked");
     if (!Array.isArray(candidates)
       || !current.ownerProcess || current.ownerProcess.pid !== current.ownerPid
       || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executableDigest ?? "")

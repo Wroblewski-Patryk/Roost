@@ -66,6 +66,24 @@ test("a terminal pre-spawn attempt releases only its exact dead-owner lock", { s
   await next.release();
 });
 
+test("a terminal information attempt cannot use generic claimed-stage recovery", { skip: process.platform !== "win32" }, async t => {
+  const directory = await fixture(t);
+  const candidate = { id: "00000000-0000-4000-8000-000000000021", workspaceId: "00000000-0000-4000-8000-000000000022",
+    taskId: "00000000-0000-4000-8000-000000000023", applicationId: null,
+    agentHostId: "00000000-0000-4000-8000-000000000025", status: "failed", attempt: 1, checkpointVersion: 1,
+    leaseExpiresAt: null, completedAt: new Date().toISOString(), checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed",
+      sessionId: null, packetRevision: null, workspaceDigest: null },
+    errorState: { code: "information_lease_lost", retryable: false, details: { nativeCleanupProven: false } },
+    codexThreadId: null, finalResponse: null, changedFiles: [] };
+  const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}});`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(child, "close"))[0], 0);
+  const file = path.join(directory, writerLockFilename), bytes = await readFile(file);
+  candidate.checkpoint.sessionId = JSON.parse(bytes).checkpoint.sessionId;
+  await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [candidate] }), /agent_host_writer_locked/);
+  assert.deepEqual(await readFile(file), bytes);
+});
+
 test("terminal managed evidence rejection reclaims only the proven pre-model spawn intent", { skip: process.platform !== "win32" }, async t => {
   const directory = await fixture(t);
   const candidate = { id: "00000000-0000-4000-8000-000000000011", workspaceId: "00000000-0000-4000-8000-000000000012",
