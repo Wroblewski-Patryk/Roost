@@ -19,9 +19,10 @@ const {issueCapabilitySchema,revokeCapabilitySchema}=createRequire(import.meta.u
 const copies={en:{title:"Task grants",operation:"Agent and operation",reason:"Authorization reason",issue:"Issue grant",revoke:"Revoke grant",revokeReason:"Revocation reason",confirm:"Confirm revocation",saved:"Grant history updated.",discard:"Discard unsaved changes?",stay:"Keep editing",close:"Back to review"},pl:{title:"Granty zadania",operation:"Agent i operacja",reason:"Uzasadnienie uprawnienia",issue:"Wydaj grant",revoke:"Cofnij grant",revokeReason:"Powód cofnięcia",confirm:"Potwierdź cofnięcie",saved:"Historia grantów została zaktualizowana.",discard:"Odrzucić niezapisane zmiany?",stay:"Kontynuuj edycję",close:"Wróć do oceny"}};
 async function pageFor(locale,mode,width=1440){
  const page=await browser.newPage({viewport:{width,height:960},reducedMotion:"reduce"});const errors=[];page.on("pageerror",e=>errors.push(e.message));await page.addInitScript(v=>localStorage.setItem("companycoreLocale",v),locale);
- const g={id:id(10),operation:"review_decision",status:mode==="long"?"active":mode,reason:"Verify parser evidence",validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),snapshot:{agentLabel:mode==="long"?"LongAgentLabel".repeat(24):"Independent verifier",credentialPrefix:"cc_v1_demo",applicationLabel:"Fixture application",issuerLabel:"Workspace administrator"},usage:mode==="consumed"?{createdAt:new Date().toISOString()}:null,revocation:mode==="revoked"?{reason:"End authorization",createdAt:new Date().toISOString()}:null};
- const options=["review_decision","return_to_executor","create_specialist_task"].map(operation=>({operation,agentLabel:"Independent verifier",credentialId:id(3),credentialPrefix:"cc_v1_demo",credentialExpiresAt:new Date(Date.now()+86400000).toISOString()}));
- const packet={task:{id:id(1),title:"Repair parser"},applicationLabel:"Fixture application",expectedVersion:"a".repeat(64),options:mode==="unavailable"?[]:options,grants:mode==="empty"?[]:[g],nextCursor:mode==="older"?id(10):null};const posts=[];
+ const information=mode==="information";
+ const g={id:id(10),operation:"review_decision",status:["long","information"].includes(mode)?"active":mode,reason:"Verify parser evidence",validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),applicationId:information?null:id(4),executionId:information?id(5):null,snapshot:{agentLabel:mode==="long"?"LongAgentLabel".repeat(24):"Independent verifier",credentialPrefix:"cc_v1_demo",applicationLabel:information?null:"Fixture application",materialVersion:information?"b".repeat(64):null,issuerLabel:"Workspace administrator"},usage:mode==="consumed"?{createdAt:new Date().toISOString()}:null,revocation:mode==="revoked"?{reason:"End authorization",createdAt:new Date().toISOString()}:null};
+ const options=(information?["review_decision"]:["review_decision","return_to_executor","create_specialist_task"]).map(operation=>({operation,agentLabel:"Independent verifier",credentialId:id(3),credentialPrefix:"cc_v1_demo",credentialExpiresAt:new Date(Date.now()+86400000).toISOString()}));
+ const packet={task:{id:id(1),title:information?"Review company information":"Repair parser"},applicationLabel:information?null:"Fixture application",informationTask:information,reviewExecutionId:information?id(5):null,reviewMaterialVersion:information?"b".repeat(64):null,expectedVersion:"a".repeat(64),options:mode==="unavailable"?[]:options,grants:mode==="empty"?[]:[g],nextCursor:mode==="older"?id(10):null};const posts=[];
  await page.route("**/v1/**",async route=>{
   if(mode==="loading")return;if(mode==="error")return route.fulfill({status:503,json:{error:{code:"fixture"}}});
   if(route.request().method()==="POST"){
@@ -37,8 +38,13 @@ async function pageFor(locale,mode,width=1440){
  await page.goto(`http://127.0.0.1:${server.address().port}`);await page.getByRole("heading",{name:copies[locale].title,exact:true}).waitFor();return {page,posts,errors};
 }
 try{
- for(const locale of ["pl","en"])for(const width of [390,834,1440])for(const mode of ["active","pending","consumed","revoked","expired","invalidated","empty","unavailable","error","loading","long"]){
+ for(const locale of ["pl","en"])for(const width of [390,834,1440])for(const mode of ["active","pending","consumed","revoked","expired","invalidated","empty","unavailable","error","loading","long","information"]){
   const {page,errors}=await pageFor(locale,mode,width);await page.waitForTimeout(120);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);
+  if(mode==="information"){
+   await page.getByText(locale==="pl"?"Wynik informacyjny firmy":"Company information result",{exact:true}).first().waitFor();
+   assert.equal(await page.getByRole("combobox",{name:copies[locale].operation}).locator("option").count(),2);
+   assert.ok(await page.getByText(id(5),{exact:false}).count()>=1);
+  }
   if(["revoked","expired","invalidated"].includes(mode))assert.equal(await page.getByRole("button",{name:copies[locale].revoke,exact:true}).count(),0);
   if(mode==="unavailable")assert.equal(await page.getByRole("button",{name:copies[locale].issue,exact:true}).count(),0);
   if(mode==="long")await page.locator("article").scrollIntoViewIfNeeded();

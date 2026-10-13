@@ -46,6 +46,12 @@ async function continuationEligibility(db: Db, previous: AgentExecution | null) 
   if (previous.status !== "completed") return { eligible: true, reason: null };
   const review = await db.taskReviewDecision.findFirst({ where: { workspaceId: previous.workspaceId, executionId: previous.id },
     orderBy: { createdAt: "desc" }, include: { action: true } });
+  if (previous.applicationId === null && review?.actorAgentId && review.decision === "approve") {
+    const ownerDecision = await db.informationOwnerDecision.findUnique({ where: { executionId: previous.id } });
+    return ownerDecision?.decision === "return" ? { eligible: true, reason: null }
+      : { eligible: false, reason: ownerDecision?.decision === "accept"
+        ? "execution_result_accepted" : "execution_owner_decision_required" };
+  }
   if (review?.decision === "reject") return review.action?.action === "return_to_executor"
     ? { eligible: true, reason: null }
     : { eligible: false, reason: review.action ? "execution_review_specialist_task" : "execution_review_manager_action_required" };

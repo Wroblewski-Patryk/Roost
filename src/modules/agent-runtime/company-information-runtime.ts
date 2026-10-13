@@ -5,8 +5,10 @@ import type { AuthContext } from "../../auth/api-key.middleware";
 import type { ManagedAdmissionSigner } from "./managed-admission";
 import { workerClaimAllowed } from "../../auth/worker-ticket-principal";
 import { inspectReady, lockReadyTask, submissionVersion, submitReady } from "./task-execution-readiness";
+import { riskLevelAdmission } from "./task-risk-admission";
 import { assertBoundExecutionContinuation, assertExecutionContinuation } from "./task-execution-continuation";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
+import { reviewDigest } from "./task-review-contract";
 
 export const companyRuntimeClass = "roost-company-information-runtime-v1";
 const load = new Function("p", "return import(p)") as (p: string) => Promise<any>;
@@ -16,6 +18,10 @@ type Db = Prisma.TransactionClient;
 const wire = (v: any) => JSON.parse(JSON.stringify(v));
 const digest = async (v: any) => createHash("sha256").update((await pilot).trustedPilotBytes(v)).digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
+const ownerDecisionSummary = z.string().trim().min(3).max(2000)
+  .refine(value => !/\b(?:Bearer\s+\S+|-----BEGIN .*PRIVATE KEY|(?:password|api[_-]?key|access[_-]?token|secret)\s*[:=]\s*\S+)/i.test(value));
+const informationOwnerDecisionSchema = z.object({ requestId: id, executionId: id, reviewId: id,
+  materialVersion: hash, decision: z.enum(["accept", "return"]), summary: ownerDecisionSummary }).strict();
 const localDigest = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const localPreflight = z.object({ model: z.literal("gpt-oss:20b"), digest: localDigest,
   sizeBytes: z.number().int().positive(), loadedAtStart: z.boolean(), loadedDigestAtStart: localDigest.nullable() }).strict();
@@ -246,13 +252,32 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
   const materialVersion = await digest({ id: execution.id, finalResponse: execution.finalResponse, summary: execution.summary, metadata: execution.metadata, verification: execution.verification });
   const history = await db.agentExecutionEvent.findFirst({ where: { executionId: execution.id, type: "information_review" }, orderBy: { createdAt: "desc" } });
   const roleReview = await db.taskReviewDecision.findFirst({ where: { workspaceId: auth.workspaceId, taskId, executionId: execution.id }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], include: { action: true } });
+  const ownerDecision = roleReview?.actorAgentId ? await db.informationOwnerDecision.findUnique({ where: { executionId: execution.id } }) : null;
+  const workspace = roleReview?.actorAgentId && auth.authType === "user" && auth.userId
+    ? await db.workspace.findUnique({ where: { id: auth.workspaceId }, select: { ownerUserId: true } }) : null;
   const timeline = await db.agentExecutionEvent.findMany({ where: { workspaceId: auth.workspaceId, executionId: execution.id },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 101, select: { id: true, type: true, createdAt: true } });
   const nativeProven = await informationNativeProven(db, execution);
+  const ownerEligible = Boolean(roleReview?.actorAgentId && roleReview.decision === "approve" && !ownerDecision
+    && nativeProven && workspace?.ownerUserId === auth.userId && task.status !== "done"
+    && roleReview.materialVersion && !roleReview.action);
+  const [ownerReady, ownerAdmission] = ownerEligible ? await Promise.all([
+    inspectReady(db, auth.workspaceId, taskId, undefined, true), riskLevelAdmission(db, taskId, "review_decision")
+  ]) : [null, null];
   const result = { status: execution.status, executionId: execution.id, summary: execution.summary, finalResponse: execution.finalResponse,
     reason: (execution.errorState as any)?.code ?? null, canReview: false,
-    materialVersion, review: roleReview ? { decision: roleReview.decision === "approve" ? "accept" : roleReview.action?.action === "return_to_executor" ? "return" : "reject", summary: (roleReview.evidence as any)?.summary,
+    materialVersion, review: roleReview ? { decision: roleReview.decision === "approve"
+      ? roleReview.actorAgentId ? ownerDecision?.decision ?? "verified_pending_owner" : "accept"
+      : roleReview.action?.action === "return_to_executor" ? "return" : "reject", summary: ownerDecision?.summary ?? (roleReview.evidence as any)?.summary,
       verifierId: roleReview.verifierId, managerAction: roleReview.action?.action ?? null } : history ? { decision: (history.payload as any).decision, summary: (history.payload as any).summary } : null,
+    verifierReview: roleReview?.actorAgentId ? { id: roleReview.id, decision: roleReview.decision,
+      summary: (roleReview.evidence as any)?.summary ?? null, materialVersion: roleReview.materialVersion,
+      evidence: roleReview.evidence, actorAgentId: roleReview.actorAgentId,
+      actorCredentialPrefix: roleReview.actorCredentialPrefix } : null,
+    ownerDecision: ownerDecision ? { id: ownerDecision.id, decision: ownerDecision.decision,
+      summary: ownerDecision.summary, ownerUserId: ownerDecision.ownerUserId, createdAt: ownerDecision.createdAt } : null,
+    canOwnerDecide: Boolean(ownerEligible && ownerReady && !("error" in ownerReady)
+      && ownerAdmission?.status === "admitted"),
     sources: sources.map(s => ({ id: s.id, title: s.title, revision: s.updatedAt.toISOString() })),
     budget: { maxAttempts: contract.budgets.maxAttempts, maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens, tokenCostEnforcement: "unavailable" },
     execution: { attempt: execution.attempt, startedAt: execution.startedAt, completedAt: execution.completedAt,
@@ -269,8 +294,42 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
 }
 
 export async function reviewInformationResult(db: Db, auth: AuthContext, taskId: string, raw: unknown) {
-  // Historical reads remain available. New reviews use the task-role ledger.
-  // This route must not permit the former owner-event shortcut.
-  void db; void auth; void taskId; void raw;
-  return { error: "information_task_review_required" };
+  const input = informationOwnerDecisionSchema.parse(raw);
+  if (auth.authType !== "user" || !auth.userId || auth.taskScopeId) return { error: "information_owner_required" } as const;
+  const task = await lockReadyTask(db, auth.workspaceId, taskId);
+  if (!task) return { error: "task_not_found" } as const;
+  const workspace = await db.workspace.findFirst({ where: { id: auth.workspaceId, ownerUserId: auth.userId } });
+  if (!workspace || !await db.workspaceMembership.findFirst({ where: { workspaceId: auth.workspaceId,
+    userId: auth.userId, role: "owner", taskScopeId: null } })) return { error: "information_owner_required" } as const;
+  const requestHash = reviewDigest({ input, ownerUserId: auth.userId, workspaceId: auth.workspaceId, taskId });
+  const prior = await db.informationOwnerDecision.findUnique({ where: { workspaceId_requestId: { workspaceId: auth.workspaceId, requestId: input.requestId } } });
+  if (prior) return prior.requestHash === requestHash
+    ? { ownerDecision: { id: prior.id, decision: prior.decision, summary: prior.summary }, replayed: true }
+    : { error: "information_owner_decision_key_conflict" } as const;
+  const execution = await db.agentExecution.findFirst({ where: { workspaceId: auth.workspaceId, taskId },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+  if (!execution || execution.id !== input.executionId || !await informationNativeProven(db, execution))
+    return { error: "information_owner_decision_stale" } as const;
+  const review = await db.taskReviewDecision.findFirst({ where: { id: input.reviewId, workspaceId: auth.workspaceId,
+    taskId, executionId: execution.id }, include: { action: true } });
+  if (!review || review.decision !== "approve" || !review.actorAgentId || review.actorUserId
+    || !review.capabilityGrantId || review.materialVersion !== input.materialVersion || review.action
+    || !await db.taskCapabilityUse.findFirst({ where: { grantId: review.capabilityGrantId, decisionId: review.id } })
+    || await db.informationOwnerDecision.findUnique({ where: { executionId: execution.id } }))
+    return { error: "information_owner_decision_stale" } as const;
+  try { requireRuntimeContent({ summary: input.summary }, "owner.information_decision", { workspaceId: auth.workspaceId, taskId }); }
+  catch { return { error: "agent_runtime_content_blocked" } as const; }
+  const saved = await db.informationOwnerDecision.create({ data: { workspaceId: auth.workspaceId, taskId,
+    executionId: execution.id, reviewId: review.id, ownerUserId: auth.userId,
+    requestId: input.requestId, requestHash, materialVersion: input.materialVersion,
+    decision: input.decision, summary: input.summary } });
+  if (input.decision === "accept" && task.source !== "clickup") await db.task.update({ where: { id: taskId }, data: { status: "done" } });
+  if (input.decision === "return") await db.task.update({ where: { id: taskId }, data: {
+    ...(task.source !== "clickup" ? { status: "todo" } : {}),
+    executionReadiness: { ...(task.executionReadiness as Record<string, unknown>), status: "needs_revalidation", reason: "owner_returned" } } });
+  await db.event.create({ data: { workspaceId: auth.workspaceId, taskId, actorType: "user", actorId: auth.userId,
+    type: "information_owner_decision", source: "roost", resourceType: "information_owner_decision",
+    resourceId: saved.id, payload: { decision: saved.decision, executionId: saved.executionId,
+      reviewId: saved.reviewId, materialVersion: saved.materialVersion } } });
+  return { ownerDecision: { id: saved.id, decision: saved.decision, summary: saved.summary }, replayed: false };
 }

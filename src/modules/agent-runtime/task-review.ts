@@ -64,7 +64,7 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
     && pin.revision === dispositionPin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
   const expectedVersion = reviewDigest({ task: { id: task.id, updatedAt: task.updatedAt, readiness: pin, provenance: task.executionRoleProvenance, executor: task.assignedWorkforceEntityId }, result, authorities, decision });
   return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, information, informationProven, expectedVersion, current, manageCurrent, basisCurrent: Boolean(current && effective !== execution), roleIssues, principal, roleMatches,
-    canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier) && (!information || principal?.kind === "user"),
+    canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier),
     canManage: manageCurrent && decision?.decision === "reject" && !decision.action && !roleIssues.length && roleMatches(authorities.accountableManager) && (!information || principal?.kind === "user") };
 }
 
@@ -74,9 +74,10 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   const scopedHuman = actor && typeof actor !== "string" && actor.authType === "user" && Boolean(actor.taskScopeId);
   if (scopedHuman && actor.taskScopeId !== taskId) return { error: "task_review_forbidden" } as const;
   if (actor && typeof actor !== "string" && actor.authType === "api_key" && !s.principal) return { error: "task_review_forbidden" } as const;
-  if (s.information && (!s.principal || s.principal.kind !== "user"
-    || !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager)
-      && !(actor && typeof actor !== "string" && actor.workspaceRole === "owner")))
+  if (s.information && (!s.principal || (s.principal.kind === "agent"
+    ? !s.roleMatches(s.authorities.verifier)
+    : !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager)
+      && !(actor && typeof actor !== "string" && actor.workspaceRole === "owner"))))
     return { error: "task_review_forbidden" } as const;
   if (s.principal?.kind === "agent" && s.task.assignedWorkforceEntityId !== s.principal.id
     && !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager))
@@ -105,7 +106,13 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
       handoffDecisionId: handoff?.decision_id ?? null };
   })() : null;
   const grantAccess = await agentGrantAccess(db, workspaceId, taskId, s.principal);
-  const blocked = async(operation:string)=>Boolean(s.execution && (!s.execution.applicationId ? !s.information || s.principal?.kind !== "user" || operation === "create_specialist_task" || Boolean((await riskLevelAdmission(db,taskId,operation)).error) : await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId)));
+  const informationOwnerDecision = s.information && s.decision?.actorAgentId
+    ? await db.informationOwnerDecision.findUnique({ where: { executionId: s.execution!.id },
+      select: { decision: true } }) : null;
+  const blocked = async(operation:string)=>Boolean(s.execution && (!s.execution.applicationId
+    ? !s.information || (s.principal?.kind === "agent" ? operation !== "review_decision" : s.principal?.kind !== "user" || operation === "create_specialist_task")
+      || Boolean((await riskLevelAdmission(db,taskId,operation)).error)
+    : await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId)));
   const reviewBlocked=await blocked("review_decision"), returnBlocked=await blocked("return_to_executor"), specialistBlocked=await blocked("create_specialist_task");
   const canReview = s.canReview && !reviewBlocked && (!grantAccess || grantAccess.review_decision.status === "active");
   const canManage = s.canManage && ((!returnBlocked&&(!grantAccess||grantAccess.return_to_executor.status==="active")) || (!specialistBlocked&&(!grantAccess||grantAccess.create_specialist_task.status==="active")));
@@ -118,7 +125,13 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
       executionId: s.execution.id, materialVersion: s.materialVersion, completedAt: s.execution.completedAt.toISOString() } : null,
     ...(scopedHuman ? {} : await suspensionList(db,workspaceId,taskId)), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
     result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), specialistProgress, approvalCommit: s.approvalCommit, approvalInformationSeal: s.information && s.informationProven ? s.materialVersion : null, informationTask: s.information, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
-    reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current && !s.manageCurrent ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
+    reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result"
+      : informationOwnerDecision?.decision === "accept" ? "owner_accepted"
+      : informationOwnerDecision?.decision === "return" ? "owner_returned"
+      : !s.current && !s.manageCurrent ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve"
+      ? s.information && s.decision.actorAgentId ? informationOwnerDecision?.decision === "accept" ? "owner_accepted"
+        : informationOwnerDecision?.decision === "return" ? "owner_returned" : "owner_decision_required" : "approved"
+      : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
     specialists: specialists.slice(0, 500).map(w => ({ id: w.id, label: w.name, revision: w.updatedAt.toISOString(), competencies: w.skillIndex, role: w.role })), specialistsTruncated: specialists.length > 500 };
 }
@@ -151,12 +164,15 @@ export async function recordTaskReview(db: Db, workspaceId: string, taskId: stri
   const { grantId: _grantId, requestId, expectedVersion: _version, executionId, materialVersion, decision, ...evidence } = input;
   const saved = await db.taskReviewDecision.create({ data: { workspaceId, taskId, executionId, requestId, requestHash, materialVersion, ...actorEvidence, capabilityGrantId: capability.grant?.id,
     verifierId: s.contract.taskRoles.verifier.id, managerId: s.contract.taskRoles.accountableManager.id, decision, evidence: wire(evidence), snapshot: wire({ result: s.result, authorities: s.authorities, labels: s.labels, reviewedVersion: s.expectedVersion }) } });
-  if (s.information && decision === "approve" && s.task.source !== "clickup")
+  // An agent verifier records independent evidence. The owner makes the
+  // separate final decision before a local information task is completed.
+  // Information grant state survives a recorded use when Ready is invalidated;
+  // application grants instead seal the post-return task state.
+  if (s.information) await recordCapabilityUse(db, capability.grant, requestId, "decision", saved.id);
+  if (s.information && decision === "approve" && principal.kind === "user" && s.task.source !== "clickup")
     await db.task.update({ where: { id: taskId }, data: { status: "done" } });
-  // Review never edits assignment, task branch or files. Local information
-  // tasks reflect an approved result in their ordinary status.
   if (decision === "reject") await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...object(s.task.executionReadiness), status: "needs_revalidation", reason: "review_rejected" } } });
-  await recordCapabilityUse(db, capability.grant, requestId, "decision", saved.id);
+  if (!s.information) await recordCapabilityUse(db, capability.grant, requestId, "decision", saved.id);
   await db.event.create({ data: { workspaceId, taskId, actorType: principal.kind, actorId: principal.id, type: "task_review_decided", source: "roost", resourceType: "task_review", resourceId: saved.id, payload: { reviewId: saved.id, executionId, materialVersion, decision, ...(decision === "approve" ? s.information ? { reviewedInformationSeal: s.materialVersion } : { reviewedCommit: "reviewedCommit" in input ? input.reviewedCommit : null } : {}), ...actorEvidence } } });
   return { decision: decisionView(saved), replayed: false };
 }

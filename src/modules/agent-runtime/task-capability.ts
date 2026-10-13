@@ -20,6 +20,7 @@ async function reviewChoices(db: Db, workspaceId: string, s: any) {
   if ((!s.current && !s.manageCurrent) || s.roleIssues.length || !["todo", "in_progress"].includes(s.task.status) || s.execution.cancelRequestedAt) return [];
   const options = [];
   for (const operation of grantOperations) {
+    if (s.information && operation !== "review_decision") continue;
     if (!s.current && operation !== "return_to_executor") continue;
     if ((await riskLevelAdmission(db,s.task.id,operation)).error) continue;
     if (operation === "review_decision" ? Boolean(s.decision) : s.decision?.decision !== "reject" || Boolean(s.decision.action)) continue;
@@ -64,7 +65,9 @@ export async function taskCapabilityView(db: Db, workspaceId: string, taskId: st
   for (const option of options) if (await grantScope(db, taskId, option.credentialId, userId!,option.clarification,option.interview,option.decision)) available.push(option);
   const applicationId=s.execution?.applicationId??available[0]?.applicationId??null;
   const application=applicationId?await db.application.findUnique({where:{id:applicationId},select:{name:true}}):null;
-  return { task: { id: taskId, title: s.task.title }, applicationLabel: application?.name ?? null, applicationId, optionsTruncated:options.length>=500, expectedVersion: s.expectedVersion, canAdminister, options: available,
+  return { task: { id: taskId, title: s.task.title }, applicationLabel: application?.name ?? null, applicationId, informationTask: s.information,
+    reviewExecutionId: s.information ? s.execution?.id : null, reviewMaterialVersion: s.information ? s.materialVersion : null,
+    optionsTruncated:options.length>=500, expectedVersion: s.expectedVersion, canAdminister, options: available,
     ...await suspensionList(db, workspaceId, taskId), grants: await Promise.all(rows.slice(0, 50).map(g => safeGrant(db, g))), nextCursor: rows.length > 50 ? rows[49]!.id : null };
 }
 export async function issueTaskCapability(db: Db, workspaceId: string, taskId: string, userId: string, body: unknown) {
@@ -92,10 +95,12 @@ export async function issueTaskCapability(db: Db, workspaceId: string, taskId: s
   if (!capabilityWindow(validFrom, validUntil, option.credentialExpiresAt!)) return { error: "capability_window_invalid" };
   if (option.mandateExpiresAt && validUntil > new Date(option.mandateExpiresAt)) return { error: "capability_window_invalid" };
   const issuer = await db.user.findUniqueOrThrow({ where: { id: userId }, select: { name: true } });
-  const application = await db.application.findUniqueOrThrow({ where: { id: (option.applicationId??s.execution?.applicationId)! }, select: { name: true } });
-  const grant = await db.taskCapabilityGrant.create({ data: { workspaceId, taskId, applicationId: (option.applicationId??s.execution?.applicationId)!, executionId: option.clarification||option.interview||option.decision?null:s.execution!.id, agentId: option.agentId,
+  const applicationId = option.applicationId ?? s.execution?.applicationId ?? null;
+  if (!applicationId && !(s.information && input.operation === "review_decision")) return { error: "capability_application_invalid" };
+  const application = applicationId ? await db.application.findUniqueOrThrow({ where: { id: applicationId }, select: { name: true } }) : null;
+  const grant = await db.taskCapabilityGrant.create({ data: { workspaceId, taskId, applicationId, executionId: option.clarification||option.interview||option.decision?null:s.execution!.id, agentId: option.agentId,
     credentialId: option.credentialId, credentialVersion: option.credentialVersion, operation: input.operation, validFrom, validUntil, issuerUserId: userId,
-    reason: input.reason, requestId: input.requestId, requestHash, scopeHash, snapshot: wire({ decision:option.decision,interview:option.interview, clarification:option.clarification, clarificationContextVersion:option.contextVersion, handoff:option.handoff, handoffSourceVersion:option.handoffSourceVersion, agentLabel: option.agentLabel, issuerLabel: issuer.name ?? "Workspace administrator", applicationLabel: application.name,
+    reason: input.reason, requestId: input.requestId, requestHash, scopeHash, snapshot: wire({ decision:option.decision,interview:option.interview, clarification:option.clarification, clarificationContextVersion:option.contextVersion, handoff:option.handoff, handoffSourceVersion:option.handoffSourceVersion, agentLabel: option.agentLabel, issuerLabel: issuer.name ?? "Workspace administrator", applicationLabel: application?.name ?? null,
       taskLabel: s.task.title, credentialPrefix: option.credentialPrefix, role: option.role, materialVersion: s.materialVersion, riskAssessmentId:risk.id }) } });
   await db.event.create({ data: { workspaceId, taskId, type: "task_capability.issued", source: "roost", actorType: "user", actorId: userId, resourceType: "task_capability_grant", resourceId: grant.id,
     payload: { grantId: grant.id, agentId: grant.agentId, credentialId: grant.credentialId, operation: grant.operation, applicationId: grant.applicationId } } });

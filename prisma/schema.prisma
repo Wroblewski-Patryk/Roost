@@ -2231,6 +2231,25 @@ model TaskReviewDecision {
   @@map("task_review_decisions")
 }
 
+model InformationOwnerDecision {
+  id              String   @id @default(uuid()) @db.Uuid
+  workspaceId     String   @map("workspace_id") @db.Uuid
+  taskId          String   @map("task_id") @db.Uuid
+  executionId     String   @unique @map("execution_id") @db.Uuid
+  reviewId        String   @unique @map("review_id") @db.Uuid
+  ownerUserId     String   @map("owner_user_id") @db.Uuid
+  requestId       String   @map("request_id") @db.Uuid
+  requestHash     String   @map("request_hash")
+  materialVersion String   @map("material_version")
+  decision        String
+  summary         String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([workspaceId, requestId])
+  @@index([workspaceId, taskId, createdAt])
+  @@map("information_owner_decisions")
+}
+
 model TaskReviewAction {
   capabilityGrantId String? @unique @map("capability_grant_id") @db.Uuid
   capabilityGrant TaskCapabilityGrant? @relation(fields: [capabilityGrantId], references: [id], onDelete: Restrict, onUpdate: NoAction)
@@ -3531,8 +3550,8 @@ model TaskCapabilityGrant {
   credentialClass String @default("agent_review_v1") @map("credential_class")
   taskId String @map("task_id") @db.Uuid
   task Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  applicationId String @map("application_id") @db.Uuid
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  applicationId String? @map("application_id") @db.Uuid
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   executionId String? @map("execution_id") @db.Uuid
   execution AgentExecution? @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   operation String

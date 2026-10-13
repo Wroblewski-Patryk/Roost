@@ -425,7 +425,9 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const projectIds = Array.from(new Set(tasks.map((task) => task.projectId).filter((id): id is string => Boolean(id))));
   const informationReviews = taskIds.length ? await prisma.$queryRaw<Array<{ taskId: string; executionStatus: string; reviewDecision: string | null }>>(Prisma.sql`
     SELECT DISTINCT ON (e.task_id) e.task_id AS "taskId", e.status::text AS "executionStatus",
-      CASE WHEN role_review.decision='approve' THEN 'accept' WHEN role_review.decision='reject' AND role_review.returned THEN 'return'
+      CASE WHEN role_review.decision='approve' AND role_review.actor_agent_id IS NOT NULL
+          THEN COALESCE(owner_review.decision,'verified_pending_owner')
+        WHEN role_review.decision='approve' THEN 'accept' WHEN role_review.decision='reject' AND role_review.returned THEN 'return'
         WHEN role_review.decision='reject' THEN 'reject'
         WHEN review.payload->>'decision' IN ('accept', 'return') THEN review.payload->>'decision' ELSE NULL END AS "reviewDecision"
     FROM agent_executions e
@@ -435,11 +437,14 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       ORDER BY event.created_at DESC, event.id DESC LIMIT 1
     ) review ON true
     LEFT JOIN LATERAL (
-      SELECT d.decision, EXISTS (SELECT 1 FROM task_review_actions a WHERE a.workspace_id=d.workspace_id
+      SELECT d.id, d.decision, d.actor_agent_id, EXISTS (SELECT 1 FROM task_review_actions a WHERE a.workspace_id=d.workspace_id
         AND a.review_id=d.id AND a.action='return_to_executor') AS returned FROM task_review_decisions d
       WHERE d.workspace_id=e.workspace_id AND d.execution_id=e.id
       ORDER BY d.created_at DESC, d.id DESC LIMIT 1
     ) role_review ON true
+    LEFT JOIN LATERAL (
+      SELECT d.decision FROM information_owner_decisions d WHERE d.review_id=role_review.id
+    ) owner_review ON true
     WHERE e.workspace_id=${workspaceId}::uuid AND e.task_id IN (${Prisma.join(taskIds.map(taskId => Prisma.sql`${taskId}::uuid`))})
       AND e.application_id IS NULL
       AND e.metadata->'executionContract'->>'executionClass'=${companyRuntimeClass}

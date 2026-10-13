@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Two agent Findings were published and reviewed; checklist v1 and Goal v1 were adopted. The key is revoked. Worker proof is unrun: no independent human verifier and an offline Host. [Evidence](architecture/reference-site-method-proof-g24c.md#guided-production-evidence-and-supervised-stop). Gate open.
+**G24c:** Two Findings, checklist v1 and Goal v1 are accepted; key revoked. Agent-verifier migration and native tests pass locally. Release and supervised Worker proof remain. [Evidence](architecture/reference-site-method-proof-g24c.md#agent-verifier-local-checkpoint). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 

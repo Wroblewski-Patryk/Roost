@@ -17,6 +17,7 @@ export async function reviewTransaction<T>(work: (db: Db) => Promise<T>) {
   } catch (error) {
     const diagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" && error.meta?.code === "P0001" ? String(error.meta.message) : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message.split("Error occurred during query execution:").at(-1) ?? "" : "";
     if (/\b(?:capability_(?:receipt_required|use_invalid|scope_invalid|grant_denied)|clarification_(?:scope_invalid|content_invalid|authority_invalid|receipt_required)|task_review_child_invalid|task_handoff_(?:stale|scope_invalid|supersedes_invalid))\b/.test(diagnostic)) return { error: "capability_context_changed" };
+    if (/\binformation_owner_decision_(?:not_current|required)\b/.test(diagnostic)) return { error: "information_owner_decision_stale" };
     if (/\bprocedure_improvement_(?:source_invalid|decision_invalid)\b/.test(diagnostic)) return { error: "procedure_improvement_source_changed" };
     if (/\bprocedure_improvement_actor_invalid\b/.test(diagnostic)) return { error: "procedure_improvement_forbidden" };
     if (/\bnative_capability_suspended\b/.test(diagnostic)) return { error: "native_capability_suspended" };
@@ -35,9 +36,12 @@ export async function grantState(db: Db, id: string) {
 }
 export async function admitCapability(db: Db, workspaceId: string, taskId: string, principal: any, operation: string, grantId?: string, prior?: any) {
   const execution = await db.agentExecution.findFirst({where:{workspaceId,taskId},orderBy:[{createdAt:"desc"},{id:"desc"}]});
-  // The company-information result can be reviewed by its declared human
-  // verifier/manager. Agent grants still require an application-bound scope.
-  if (execution && !execution.applicationId && principal?.kind !== "user") return { error: "company_information_execution_unqualified" };
+  // An information result admits only its separately assigned agent verifier,
+  // through an exact result-bound review grant. Other agent operations retain
+  // the application-bound capability path.
+  if (execution && !execution.applicationId && principal?.kind === "agent"
+    && (operation !== "review_decision" || (execution.metadata as any)?.executionContract?.executionClass !== "roost-company-information-runtime-v1"))
+    return { error: "company_information_execution_unqualified" };
   if(execution?.applicationId && await suspensionBlocks(db,workspaceId,taskId,execution.applicationId,operation,principal.kind==="agent"?principal.id:null,principal.credentialId)) return {error:"native_capability_suspended"};
   if (!prior && (await riskLevelAdmission(db,taskId,operation)).error) return {error:"risk_admission_required"};
   if (principal.kind !== "agent") return grantId ? { error: "capability_agent_only" } : { grant: null };
@@ -51,6 +55,7 @@ export async function admitCapability(db: Db, workspaceId: string, taskId: strin
   if (!grant) return { error: "capability_grant_scope_mismatch" };
   const state = await grantState(db, grant.id);
   if (prior) {
+    if (!grant.applicationId) return { error: "capability_grant_replay_stale" };
     if (state.base !== "active") return { error: `capability_grant_${state.base}` };
     const usage = grant.usage;
     if (prior.capabilityGrantId !== grant.id || !usage || usage.requestId !== prior.requestId || !(usage.decisionId === prior.id || usage.actionId === prior.id || usage.handoffId === prior.id || usage.handoffDecisionId === prior.id || usage.clarificationEntryId === prior.id || usage.interviewCaseId === prior.id) ||

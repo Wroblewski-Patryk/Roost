@@ -15,6 +15,7 @@ const g22Native = process.env.ROOST_G22_NATIVE_RUNTIME === '1';
 const g23PolicyOnly = process.env.ROOST_G23_POLICY_ONLY === '1';
 const g24cPacketOnly = process.env.ROOST_G24C_PACKET_ONLY === '1';
 const g24cHostInput = g24cPacketOnly && process.env.ROOST_G24C_HOST_INPUT === '1';
+const agentInformationReview = ['agent-approve','agent-local-approve','agent-reject','agent-stale','agent-type-drift'].includes(process.env.ROOST_G11_REVIEW_ACTION);
 const g23Comparison = process.env.ROOST_G23_COMPARISON === '1';
 const g23Cases = Object.freeze({
   plain_status: {
@@ -204,7 +205,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
     });
     await t.test('company risk and admission qualify normal Decision and information Ready', async () => {
       const runtimeTask = await prisma.task.create({ data: { workspaceId, title: g23Case?.title ?? 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
-        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' || g22Native || process.env.ROOST_G11_REVIEW_ACTION === 'local-approve'
+        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' || g22Native || ['local-approve','agent-local-approve'].includes(process.env.ROOST_G11_REVIEW_ACTION)
           ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
       const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: g23Case?.key ?? 'g6-real-status', title: g23Case?.title ?? 'Current Roost delivery evidence',
         description: g23Case?.source ?? 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.',
@@ -216,16 +217,24 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const memberToken = createAuthToken({ workspaceId, userId: wrongActor.id });
       let verifierToken, managerToken;
       if (process.env.ROOST_G11_REVIEW_ACTION) {
-        const verifierUser = await prisma.user.create({ data: { email: 'verifier@g11.example.test', passwordHash: 'synthetic-not-a-login' } });
-        await prisma.workspaceMembership.create({ data: { workspaceId, userId: verifierUser.id, role: 'member' } });
+        const verifierUser = agentInformationReview ? null : await prisma.user.create({ data: { email: 'verifier@g11.example.test', passwordHash: 'synthetic-not-a-login' } });
+        if (verifierUser) await prisma.workspaceMembership.create({ data: { workspaceId, userId: verifierUser.id, role: 'member' } });
         const humanManager = await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human manager', slug: 'g11-manager', type: 'human', source: 'user', externalId: wrongActor.id,
           role: 'accountable manager', skillIndex: ['javascript'], authorityScope: ['task_accountability'] } });
-        const humanVerifier = await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human verifier', slug: 'g11-verifier', type: 'human', source: 'user', externalId: verifierUser.id,
-          role: 'verifier', skillIndex: ['javascript'], authorityScope: ['task_verification'] } });
-        managerToken = memberToken; verifierToken = createAuthToken({ workspaceId, userId: verifierUser.id });
+        const verifier = agentInformationReview
+          ? await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent information verifier', slug: 'g24c-verifier', type: 'agent', role: 'verifier', skillIndex: ['javascript'], authorityScope: ['task_verification'] } })
+          : await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human verifier', slug: 'g11-verifier', type: 'human', source: 'user', externalId: verifierUser.id,
+            role: 'verifier', skillIndex: ['javascript'], authorityScope: ['task_verification'] } });
+        managerToken = memberToken;
+        if (agentInformationReview) {
+          const credential = await request('/v1/api-keys/agent-credentials', token, { requestId: randomUUID(), agentId: verifier.id,
+            name: 'Isolated information verifier', expiresAt: new Date(Date.now()+3600000).toISOString() });
+          assert.equal(credential.status, 201, JSON.stringify(credential.body));
+          verifierToken = { 'X-API-Key': credential.body.data.key };
+        } else verifierToken = createAuthToken({ workspaceId, userId: verifierUser.id });
         contract.singleTask.accountableManager = ref(humanManager);
         contract.taskRoles.accountableManager = ref(humanManager);
-        contract.taskRoles.verifier = ref(humanVerifier);
+        contract.taskRoles.verifier = ref(verifier);
       }
       const foreignOwner = await request('/auth/register', null, { email: 'foreign@g6-risk.example.test', password: 'synthetic-test-password-only', name: 'Foreign owner', workspaceName: 'Foreign risk workspace' });
       assert.equal(foreignOwner.status, 201);
@@ -804,12 +813,42 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         }
         assert.equal(completed.status, 200, JSON.stringify(completed.body));
         const legacy = await request(`${root}/actions/review-information`, token, { requestId: randomUUID(), executionId: runtimeExecutionId,
-          materialVersion: 'a'.repeat(64), decision: 'accept', summary: 'Legacy shortcut attempt' });
-        assert.equal(legacy.status, 409); assert.equal(legacy.body.error, 'information_task_review_required');
+          reviewId: randomUUID(), materialVersion: 'a'.repeat(64), decision: 'accept', summary: 'Legacy shortcut attempt' });
+        assert.equal(legacy.status, 409); assert.equal(legacy.body.error, 'information_owner_decision_stale');
         const broadWorker = await request(`${root}/actions/review`, worker, { requestId: randomUUID() });
         assert.equal(broadWorker.status, 403);
         const broadView = await request(`${root}/review`, worker);
         assert.equal(broadView.status, 403);
+        let reviewGrantId;
+        if (agentInformationReview) {
+          const ungranted = await request(`${root}/review`, verifierToken);
+          assert.equal(ungranted.status, 200, JSON.stringify(ungranted.body));
+          assert.equal(ungranted.body.data.canReview, false);
+          const catalog = await request(`${root}/capability-grants`, token);
+          assert.equal(catalog.status, 200, JSON.stringify(catalog.body));
+          assert.equal(catalog.body.data.informationTask, true);
+          assert.equal(catalog.body.data.reviewExecutionId, runtimeExecutionId);
+          assert.equal(catalog.body.data.options.length, 1, JSON.stringify(catalog.body.data.options));
+          const option = catalog.body.data.options[0];
+          assert.equal(option.operation, 'review_decision');
+          const grant = await request(`${root}/capability-grants`, token, {
+            requestId: randomUUID(), expectedVersion: catalog.body.data.expectedVersion,
+            credentialId: option.credentialId, operation: option.operation,
+            validFrom: new Date().toISOString(), validUntil: new Date(Date.now() + 1800000).toISOString(),
+            reason: 'Independent review of this exact synthetic information result'
+          });
+          assert.equal(grant.status, 201, JSON.stringify(grant.body));
+          reviewGrantId = grant.body.data.grant.id;
+          assert.equal(grant.body.data.grant.applicationId, null);
+          assert.equal(grant.body.data.grant.executionId, runtimeExecutionId);
+          assert.equal(grant.body.data.grant.status, 'active');
+          const statusBeforeForbiddenCompletion = (await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status;
+          await assert.rejects(prisma.task.update({ where: { id: runtimeTask.id }, data: { status: 'done' } }),
+            /information_owner_decision_required/);
+          assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, statusBeforeForbiddenCompletion);
+          const foreignTaskReview = await request(`/v1/agent-runtime/tasks/${task.id}/review`, verifierToken);
+          assert.equal(foreignTaskReview.status, 403);
+        }
         const view = await request(`${root}/review`, verifierToken);
         assert.equal(view.status, 200, JSON.stringify(view.body));
         assert.equal(view.body.data.canReview, true, JSON.stringify({ reason: view.body.data.reason, informationTask: view.body.data.informationTask,
@@ -818,10 +857,16 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         assert.equal(view.body.data.informationTask, true);
         const baseReview = { requestId: randomUUID(), expectedVersion: view.body.data.expectedVersion, executionId: runtimeExecutionId,
           materialVersion: view.body.data.materialVersion, summary: 'Independent check of the exact selected source',
-          evidence: [{ kind: 'test', reference: 'Native source comparison', result: 'Selected synthetic fact matches the reported result', verdict: 'pass' }] };
-        if (process.env.ROOST_G11_REVIEW_ACTION === 'status' || process.env.ROOST_G11_REVIEW_ACTION === 'stale') {
+          evidence: [{ kind: 'test', reference: 'Native source comparison', result: 'Selected synthetic fact matches the reported result', verdict: 'pass' }],
+          ...(reviewGrantId ? { grantId: reviewGrantId } : {}) };
+        if (['status', 'stale', 'agent-stale'].includes(process.env.ROOST_G11_REVIEW_ACTION)) {
           if (process.env.ROOST_G11_REVIEW_ACTION === 'status') await prisma.task.update({ where: { id: runtimeTask.id }, data: { status: 'done' } });
           else await prisma.companyRecord.update({ where: { id: currentSource.id }, data: { description: 'Changed selected synthetic source after result completion.' } });
+          if (agentInformationReview) {
+            const staleCatalog = await request(`${root}/capability-grants`, token);
+            assert.equal(staleCatalog.status, 200, JSON.stringify(staleCatalog.body));
+            assert.equal(staleCatalog.body.data.grants.find(item => item.id === reviewGrantId).status, 'invalidated');
+          }
           const changed = await request(`${root}/review`, verifierToken);
           assert.equal(changed.status, 200, JSON.stringify(changed.body));
           assert.equal(changed.body.data.canReview, false);
@@ -841,7 +886,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
           reviewedInformationSeal: 'a'.repeat(64) });
         assert.equal(wrongSeal.status, 409); assert.equal(wrongSeal.body.error, 'information_result_seal_required');
         const action = process.env.ROOST_G11_REVIEW_ACTION;
-        const decisionBody = action === 'approve' || action === 'local-approve' ? { ...baseReview, decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal }
+        const decisionBody = ['approve', 'local-approve', 'agent-approve', 'agent-local-approve', 'agent-type-drift'].includes(action) ? { ...baseReview, decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal }
           : { ...baseReview, decision: 'reject', reproduction: ['Compare result against the exact selected source'], expected: 'Source fully cited',
             observed: 'Citation needs correction', correction: { scope: ['Cite the selected source'], excluded: ['Do not add other company records'],
               outcome: 'Return a sourced summary', competencies: ['javascript'] } };
@@ -849,8 +894,28 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
         assert.equal(reviewed.body.data.replayed, false);
         const replay = await request(`${root}/actions/review`, verifierToken, decisionBody);
-        assert.equal(replay.status, 200, JSON.stringify(replay.body)); assert.equal(replay.body.data.replayed, true);
-        if (action === 'reject') {
+        if (agentInformationReview) {
+          assert.equal(replay.status, 409, JSON.stringify(replay.body));
+          assert.equal(await prisma.taskCapabilityUse.count({ where: { grantId: reviewGrantId } }), 1);
+        } else {
+          assert.equal(replay.status, 200, JSON.stringify(replay.body)); assert.equal(replay.body.data.replayed, true);
+        }
+        if (action === 'agent-type-drift') {
+          const verifierId = contract.taskRoles.verifier.id;
+          const changed = await fetch(`${base}/v1/workforce/${verifierId}`, { method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${memberToken}` },
+            body: JSON.stringify({ type: 'human' }), signal: AbortSignal.timeout(30000) });
+          assert.equal(changed.status, 200, await changed.text());
+          assert.equal((await prisma.workforceEntity.findUniqueOrThrow({ where: { id: verifierId } })).type, 'human');
+          await assert.rejects(prisma.task.update({ where: { id: runtimeTask.id }, data: { status: 'done' } }),
+            /information_owner_decision_required/);
+          assert.notEqual((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'done');
+          assert.equal(await prisma.informationOwnerDecision.count({ where: { executionId: runtimeExecutionId } }), 0);
+          process.stdout.write(`G24c isolated verifier type drift refused ${JSON.stringify({ taskId: runtimeTask.id,
+            reviewed: true, ownerAccepted: false, completed: false, providerInvoked: false })}\n`);
+          return;
+        }
+        if (action === 'reject' || action === 'agent-reject') {
           const pendingResult = await request(`${root}/information-result`, token);
           assert.equal(pendingResult.body.data.review?.decision, 'reject');
           const pendingAttention = await request('/v1/dashboard/command', token);
@@ -867,15 +932,46 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         }
         assert.equal(await prisma.taskReviewDecision.count({ where: { taskId: runtimeTask.id } }), 1);
         assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status,
-          action === 'local-approve' ? 'done' : 'todo');
+          action === 'local-approve' ? 'done' : action === 'agent-local-approve' ? 'in_progress' : 'todo');
         const resultView = await request(`${root}/information-result`, token);
-        assert.equal(resultView.body.data.review?.decision, action === 'approve' || action === 'local-approve' ? 'accept' : 'return');
+        const agentApproved = ['agent-approve', 'agent-local-approve'].includes(action);
+        assert.equal(resultView.body.data.review?.decision, agentApproved ? 'verified_pending_owner'
+          : ['approve', 'local-approve'].includes(action) ? 'accept' : 'return');
+        if (agentApproved) {
+          assert.equal(resultView.body.data.canOwnerDecide, true);
+          assert.equal(resultView.body.data.verifierReview.id, reviewed.body.data.decision.id);
+          const ownerDisposition = action === 'agent-approve' ? 'return' : 'accept';
+          const ownerBody = { requestId: randomUUID(), executionId: runtimeExecutionId,
+            reviewId: reviewed.body.data.decision.id, materialVersion: view.body.data.materialVersion,
+            decision: ownerDisposition, summary: `Owner ${ownerDisposition}s the exact independently verified fixture result` };
+          const foreignOwner = await request(`${root}/actions/review-information`, memberToken, ownerBody);
+          assert.equal(foreignOwner.status, 403);
+          const staleOwner = await request(`${root}/actions/review-information`, token,
+            { ...ownerBody, requestId: randomUUID(), materialVersion: 'a'.repeat(64) });
+          assert.equal(staleOwner.status, 409);
+          const accepted = await request(`${root}/actions/review-information`, token, ownerBody);
+          assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+          assert.equal(accepted.body.data.ownerDecision.decision, ownerDisposition);
+          const ownerReplay = await request(`${root}/actions/review-information`, token, ownerBody);
+          assert.equal(ownerReplay.status, 200); assert.equal(ownerReplay.body.data.replayed, true);
+          assert.equal(await prisma.informationOwnerDecision.count({ where: { executionId: runtimeExecutionId } }), 1);
+          assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status,
+            action === 'agent-local-approve' ? 'done' : 'todo');
+          const finalResult = await request(`${root}/information-result`, token);
+          assert.equal(finalResult.body.data.review.decision, ownerDisposition);
+          assert.equal(finalResult.body.data.canOwnerDecide, false);
+          if (ownerDisposition === 'return') {
+            const returnedTask = await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } });
+            assert.equal(returnedTask.executionReadiness.status, 'needs_revalidation');
+            assert.equal(returnedTask.executionReadiness.reason, 'owner_returned');
+          }
+        }
         const operations = await request('/v1/operations/work-items?limit=200', token);
         assert.equal(operations.status, 200);
         assert.equal(operations.body.data.workItems.find(item => item.task.id === runtimeTask.id).informationResult.reviewDecision,
-          action === 'approve' || action === 'local-approve' ? 'accept' : 'return');
+          ['approve', 'local-approve', 'agent-local-approve'].includes(action) ? 'accept' : 'return');
         process.stdout.write(`G11 isolated review ${JSON.stringify({ action, taskId: runtimeTask.id, executionId: runtimeExecutionId,
-          reviewed: true, returned: action === 'reject', providerInvoked: false })}\n`);
+          reviewed: true, returned: ['reject', 'agent-reject'].includes(action), providerInvoked: false })}\n`);
         return;
       }
       // The read-only projection reflects a real admitted row. Native SQL

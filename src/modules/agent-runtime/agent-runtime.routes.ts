@@ -631,8 +631,10 @@ agentRuntimeRouter.post("/tasks/:id/actions/start-information", asyncHandler(asy
   res.status(201).json({ data: result });
 }));
 agentRuntimeRouter.post("/tasks/:id/actions/review-information", asyncHandler(async (req, res) => {
-  const result = await readyTransaction(tx => reviewInformationResult(tx, req.auth!, z.string().uuid().parse(req.params.id), req.body));
-  if ("error" in result && result.error) return sendApiError(res, 409, result.error);
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await reviewTransaction(tx => reviewInformationResult(tx, req.auth!, z.string().uuid().parse(req.params.id), req.body));
+  if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404
+    : result.error === "information_owner_required" ? 403 : 409, result.error);
   res.json({ data: result });
 }));
 

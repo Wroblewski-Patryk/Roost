@@ -27,6 +27,7 @@ test("a spent information attempt cannot start again until its current continuat
   assert.equal(informationStartAllowed("failed", "attempt-1", "attempt-1"), true);
   assert.equal(informationStartAllowed("running", "attempt-1", "attempt-1"), false);
   assert.equal(informationStartAllowed("completed", "attempt-1", "attempt-1", "accept"), false);
+  assert.equal(informationStartAllowed("completed", "attempt-1", "attempt-1", "verified_pending_owner"), false);
   assert.equal(informationStartAllowed("completed", "attempt-1", "attempt-1", "reject"), false);
   assert.equal(informationStartAllowed("completed", "attempt-1", null, "return"), false);
   assert.equal(informationStartAllowed("completed", "attempt-1", "attempt-1", "return"), true);
