@@ -848,7 +848,6 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
           executionId: runtimeExecutionId, inputSeal: sealed.inputSeal,
           readyRevision: sealed.readyRevision, packetRevision: sealed.packetRevision,
           procedureId: checklistProcedureId, providerInvoked: false })}\n`);
-        return;
       }
       process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64 = signer.privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
@@ -868,8 +867,14 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const { verifyInformationAdmission } = await import('./lib/agent-host-company-information-runtime.mjs');
       const leaseDigest = createHash('sha256').update(trustedPilotBytes({ executionId: runtimeExecutionId,
         hostId: host.id, token: claimed.body.data.leaseToken })).digest('hex');
-      verifyInformationAdmission(signedAdmission, signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(), { leaseDigest });
+      verifyInformationAdmission(signedAdmission, signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(), {
+        leaseDigest, readyRevision: sealed.readyRevision, packetRevision: sealed.packetRevision,
+        inputSeal: sealed.inputSeal, selectionDigest: sealed.selectionDigest,
+        profileDigest: 'a'.repeat(64), runtimeDigest: 'b'.repeat(64),
+        backend: 'codex_responses', model: 'gpt-5.6-sol', modelDigest: null, localPreflight: null,
+        tools: [], externalWrites: false });
       assert.equal(signedAdmission.payload.inputSeal, sealed.inputSeal);
+      if (g24cHostInput) return;
       if (process.env.ROOST_G11_REVIEW_ACTION) {
         const admittedEvent = await prisma.agentExecutionEvent.findFirstOrThrow({ where: { executionId: runtimeExecutionId, type: 'information_admitted' } });
         // Isolated fixture for the result/review boundary. The separate G6
