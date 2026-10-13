@@ -3,7 +3,7 @@ import { lstatSync, readdirSync } from 'node:fs';
 import { createHash, createPublicKey, verify } from 'node:crypto';
 import { z } from 'zod';
 import providerContract from './agent-host-provider-contract.cjs';
-import { companyInformationRuntimeClass, companyInformationRuntimeContractSchema, companyInformationRuntimeModelAllowed, validateExecutionPacket } from './agent-host-execution-packet.mjs';
+import { companyInformationRuntimeClass, companyInformationRuntimeContractSchema, companyInformationRuntimeModelAllowed, companySourceHasContent, validateExecutionPacket } from './agent-host-execution-packet.mjs';
 import ready from './agent-host-ready-context.cjs';
 import { managedBackendSelectionSchema } from './agent-host-model-policy.mjs';
 import { inspectHermesProfile, sealHermesProfile, assertHermesProfile, hermesNativeProfileVersion } from './agent-host-hermes-profile.mjs';
@@ -79,7 +79,7 @@ export function buildCompanyInformationInput({ claimed, taskContext, secrets = [
   for (const r of selected) {
     const source = packet.sources.find(s => s.id === r.id);
     if (!source || source.revision !== r.revision || source.workspaceId !== claimed.workspaceId || source.applicationId !== null
-      || ![source.description, source.businessPurpose, source.desiredState, source.expectedBehavior].some(s => typeof s === 'string' && s.trim())) fail('selected_source_missing_or_changed');
+      || !companySourceHasContent(source, c, packet.referenceSiteChecklist)) fail('selected_source_missing_or_changed');
   }
   const pin = claimed.metadata?.readyContextPin, admission = taskContext.readyAdmission;
   if (!hash.safeParse(pin?.revision).success || pin.preparationOnly !== false || pin.modelExecutionQualified !== true

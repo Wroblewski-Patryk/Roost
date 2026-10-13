@@ -287,6 +287,12 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
             sourceKind: 'openai_sites', sourceId: 'appgprj_methodfixture', package: saved } });
         assert.equal(createdSite.status, 201, JSON.stringify(createdSite.body));
         siteRecord = createdSite.body.data;
+        // Published site packages can have no generic CompanyRecord prose. Their
+        // reviewed package and accepted checklist are the source of evidence.
+        const packageOnlySite = await prisma.companyRecord.update({
+          where: { id: siteRecord.id }, data: { description: null }
+        });
+        siteRecord = { ...siteRecord, description: null, updatedAt: packageOnlySite.updatedAt.toISOString() };
         const reviewedSite = await approveSource({ ...siteRecord, updatedAt: new Date(siteRecord.updatedAt) }, runtimeTask.id, token);
         assert.equal(reviewedSite.status, 201, JSON.stringify(reviewedSite.body));
         const agentCredential = await request('/v1/api-keys/agent-credentials', token, {
@@ -330,6 +336,17 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       }
       c.executionClass = 'roost-company-information-runtime-v1'; c.modelSelection = selection;
       if (g24cVerifierQualification) c.procedures.items = c.procedures.items.filter(item => item.id === checklistProcedureId);
+      if (g24cVerifierQualification) {
+        const siteRef = c.context.company.find(row => row.id === siteRecord.id);
+        const siteEligible = async value => (await prisma.$queryRaw`SELECT company_information_risk_site_current(
+          ${runtimeTask.id}::uuid,${workspaceId}::uuid,${JSON.stringify(value)}::jsonb,${JSON.stringify(siteRef)}::jsonb) AS eligible`)[0].eligible;
+        assert.equal(await siteEligible(c), true);
+        const noChecklist = structuredClone(c); noChecklist.procedures.items = [];
+        assert.equal(await siteEligible(noChecklist), false);
+        const wrongRevision = structuredClone(c);
+        wrongRevision.context.company.find(row => row.id === siteRecord.id).revision = new Date(0).toISOString();
+        assert.equal(await siteEligible(wrongRevision), false);
+      }
       const root = `/v1/agent-runtime/tasks/${runtimeTask.id}`;
       if (g24cVerifierQualification) {
         assert.ok(g24cPacketOnly && g23PolicyOnly && verifierEntity);
@@ -376,9 +393,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(memberScope.status, 403, JSON.stringify(memberScope.body));
       const riskScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
-      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
+      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const premature = await request(`${root}/information-approval-candidate`, token);

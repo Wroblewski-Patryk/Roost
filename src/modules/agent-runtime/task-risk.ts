@@ -9,6 +9,8 @@ import { reviewDigest } from "./task-review-contract";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
 import { computeRisk, riskAlgorithm, riskAssessmentSchema, riskScopeSchema, riskScopeIsReadonly } from "./task-risk-contract";
 import { prepareExecutionPacket } from "./execution-packet";
+import { referenceSiteChecklistScope } from "../product-engineering/reference-site-checklist-contract";
+import { referenceSiteChecklistForExecution } from "../product-engineering/reference-site-runtime-context";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 type Db = Prisma.TransactionClient;
@@ -41,7 +43,15 @@ async function prepareCompanyRiskScope(db: Db, workspaceId: string, taskId: stri
     reader.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: taskId }, { toEntityType: "task", toEntityId: taskId }] } }),
     reader.decision.findMany({ where: { workspaceId, id: { in: refs("decisions") } } })
   ]);
+  const selectedChecklists = procedures.filter(procedure => procedure.scope === referenceSiteChecklistScope);
+  if (selectedChecklists.length > 1 || selectedChecklists.length &&
+    input.contract.procedures.items.length !== 1) return { error: "task_risk_scope_invalid" };
+  const checklist = selectedChecklists.length ? await referenceSiteChecklistForExecution(reader, db,
+    workspaceId, taskId, task.assignedWorkforceEntityId ?? "", selectedChecklists[0]!.id,
+    String(input.contract.procedures.items[0]?.revision ?? "")) : null;
+  if (selectedChecklists.length && !checklist) return { error: "task_risk_scope_invalid" };
   const packet: any = await prepareExecutionPacket(envelope, task, reader, { authorId: userId, requestId: input.requestId }, db);
+  if (checklist) packet.referenceSiteChecklist = checklist;
   packet.procedureComposition = { algorithm: "roost-company-information-runtime-v1", preparationOnly: false, modelExecutionQualified: true };
   const { revision: _revision, ...body } = packet;
   packet.revision = createHash("sha256").update(JSON.stringify(body)).digest("hex");

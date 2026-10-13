@@ -35,6 +35,10 @@ function checklistFixture() {
   const f = fixture(), procedureId = randomUUID(), decisionId = randomUUID(), findingId = randomUUID();
   const source = f.packet.sources[0];
   source.recordType = 'reference_site';
+  source.description = null;
+  source.businessPurpose = null;
+  source.desiredState = null;
+  source.expectedBehavior = null;
   const siteId = source.id, taskId = f.claimed.taskId;
   f.packet.contract.procedures = { items: [{ id: procedureId, revision: '1' }], noneReason: null };
   f.packet.referenceSiteChecklist = { schemaVersion: 'roost-reference-site-execution-context-v1',
@@ -90,6 +94,13 @@ test('task-bound checklist enters sealed no-tool input with exact version and sa
   assert.equal(first.readyRevision, replay.readyRevision);
   f.packet.referenceSiteChecklist.items[0].instruction = 'Changed after Ready.';
   assert.throws(() => buildCompanyInformationInput(f));
+});
+test('package-only site requires its accepted checklist at native admission', () => {
+  const f = checklistFixture();
+  assert.equal(JSON.parse(buildCompanyInformationInput(f).input).sources[0].description, null);
+  delete f.packet.referenceSiteChecklist;
+  seal(f);
+  assert.throws(() => buildCompanyInformationInput(f), /company_information_runtime_blocked/);
 });
 for (const [name, mutate] of [
   ['foreign checklist task', f => { f.packet.referenceSiteChecklist.taskId = randomUUID(); }],

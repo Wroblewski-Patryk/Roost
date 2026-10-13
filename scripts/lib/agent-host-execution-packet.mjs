@@ -195,6 +195,17 @@ const companyRuntimePacketSchema = companyPacketSchema.extend({ contract: compan
   referenceSiteChecklist: referenceSiteChecklistSchema.optional() });
 
 const list = (value) => Array.isArray(value) ? value : [];
+export function companySourceHasContent(source, contract, checklist) {
+  if (source?.recordType !== 'reference_site') return [source?.description, source?.businessPurpose,
+    source?.desiredState, source?.expectedBehavior].some(value => typeof value === 'string' && value.trim());
+  return checklist && Array.isArray(checklist.items)
+    && contract?.procedures?.items?.length === 1
+    && contract.procedures.items[0].id === checklist.procedure.id
+    && contract.procedures.items[0].revision === String(checklist.procedure.version)
+    && checklist.items.some(item => item.source.siteId === source.id
+      && item.source.recordRevision === source.revision
+      && item.source.sourceReviewId === source.provenance?.reviewId);
+}
 export function validateExecutionPacket(packet, claimed, taskContext, applicationContext, options = {}) {
   const issues = [];
   const add = (field, reason) => issues.push({ field, reason });
@@ -280,10 +291,11 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     if (c.access.permissions.includes("repository_write") && c.recovery.rollback.mode !== "restore_task_changes") add("contract.recovery.rollback", "mismatch");
     const preparing = company && claimed?.status === "queued" && claimed?.attempt === 0 && claimed?.metadata?.readyContextPin?.preparationOnly === !runtime;
     if (!Number.isInteger(claimed?.attempt) || claimed.attempt < 1 && !preparing || claimed.attempt > c.budgets.maxAttempts) add("contract.budgets.maxAttempts", "blocked");
+    const checklist = p.referenceSiteChecklist;
     for (const category of ["company", "product", "technical"]) {
       for (const reference of c.context[category]) {
         const source = p.sources.find((item) => item.id === reference.id);
-        if (!source || ![source.description, source.businessPurpose, source.desiredState, source.expectedBehavior].some((value) => typeof value === "string" && value.trim())) add(`contract.context.${category}`, "unavailable");
+        if (!source || !companySourceHasContent(source, c, category === "company" ? checklist : null)) add(`contract.context.${category}`, "unavailable");
         else if (source.revision !== reference.revision) add(`contract.context.${category}`, "stale");
         else if (source.workspaceId !== p.identity.workspaceId || (category === "company" ? source.applicationId !== null : source.applicationId !== p.identity.applicationId)) add(`contract.context.${category}`, "mismatch");
         else if (!source.provenance || Date.parse(source.provenance.validFrom) > Date.now()
@@ -303,7 +315,6 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
         else if (!accepted(source)) add(`contract.${field}`, "blocked");
       }
     };
-    const checklist = p.referenceSiteChecklist;
     if (checklist) {
       const sourceIds = new Set(checklist.items.map(item => item.source.siteId));
       if (checklist.workspaceId !== p.identity.workspaceId || checklist.taskId !== p.identity.taskId ||
