@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Two Findings, checklist v1, Goal v1, verifier qualification, Low risk, admission, Decision, Ready and Worker handoff are live. First start failed before queueing; repair awaits release. No Worker/model attempt. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-site-evidence-and-role-repair). Gate open.
+**G24c:** Findings, checklist, Goal, qualification, risk, admission, Decision, Ready and Worker handoff are live. Deployed `85707b00`; the one Worker attempt failed before result, with Writer reconciliation required. No native/model proof. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-site-evidence-and-role-repair). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
