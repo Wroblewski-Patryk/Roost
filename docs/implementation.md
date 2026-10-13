@@ -4,13 +4,15 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
+**G24c live Finding proof (2026-10-13):** The guard is deployed, but the sole approved local model attempt failed in CUDA before any tool call. Both Finding counts remain zero; the attempt budget is exhausted. [Evidence](architecture/reference-site-method-proof-g24c.md#later-bounded-live-finding-session-stopped-before-tools). G24c remains open.
+
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
 **G24a release:** [proof](architecture/reference-site-study-g24a.md).
 
 **G22 release:** Native run/review and deployed read-only checks passed. [Evidence](architecture/local-model-g22.md).
 
-**G21 bounded delivery (2026-10-12):** Deployed `c16efcf6` showed the accepted baseline Decision → exact audit Task → same application owner path, a blocker and unverified product/sale readiness. Disposable PostgreSQL, native Worker cross-application denial, PL/EN browser, Security/UX review, `validate` and `codex:check` passed. Production health matched the commit and PostgreSQL was healthy. [Proof and limits](architecture/application-control-g21.md#verification-and-release). No paid model or business-record edit; two technical incidents arose automatically from earlier rejected read-only requests.
+**G21 bounded delivery (2026-10-12):** Deployed `c16efcf6`; native Worker, PL/EN browser and Security/UX checks passed. The owner path showed a blocker and unverified product/sale readiness. [Proof and limits](architecture/application-control-g21.md#verification-and-release).
 
 **G20 accepted outcome:** One owner-adopted, versioned Goal states a measurable result, metric, numeric target, evidence source and accountable person. Impact preview and a separate owner confirmation precede adoption. A verified evidence record supports each accepted measurement; unknown or stale evidence cannot silently become progress. The owner can inspect linked tasks and attributable execution/review economics while provider tokens, cost and human effort remain unknown where not observed. The assigned agent can read only the current accepted mandate for its task and propose a measurement, never accept its own progress or change the target. The owner has not supplied a real numeric target or baseline, so isolated fictional fixtures are the positive test; production must not create a fictitious goal.
 
