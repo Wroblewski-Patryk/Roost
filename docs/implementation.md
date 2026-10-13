@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c (2026-10-13):** Two approved model attempts are spent; no source GET, Finding or POST slot resulted. The temporary key was revoked. A private pinned Hermes trust-hint repair passed no-model tests, but no governed attempt used it. [Evidence](architecture/reference-site-method-proof-g24c.md#private-pinned-hermes-repair-no-model). G24c remains open.
+**G24c (2026-10-13):** Three approved model attempts are spent. The third passed private Hermes preflight, but made no MCP call after abbreviated tool names failed. No Finding POST or slot; credential revoked. [Evidence](architecture/reference-site-method-proof-g24c.md#third-bounded-local-attempt-stopped-before-agent-source-get). G24c remains open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
