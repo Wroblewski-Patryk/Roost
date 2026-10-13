@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Five attempts spent. Fifth read the first package only; no second read, POST, Finding or supervised proof. Fifth key revoked; bound tools deployed. [Evidence](architecture/reference-site-method-proof-g24c.md#fifth-bounded-attempt). Gate open; no retry authorized.
+**G24c:** Two agent Findings were published and reviewed; checklist v1 and Goal v1 were adopted. The key is revoked. Worker proof is unrun: no independent human verifier and an offline Host. [Evidence](architecture/reference-site-method-proof-g24c.md#guided-production-evidence-and-supervised-stop). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
