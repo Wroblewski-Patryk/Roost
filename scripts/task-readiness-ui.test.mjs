@@ -490,6 +490,8 @@ try {
     } else await checklistPage.getByRole('button',{name:locale==='pl'?'Usuń nieaktualny wybór':'Remove stale selection'}).click();
     assert.equal(await checklistPage.getByText(staleText,{exact:false}).count(),0);
     assert.equal(await checklistPage.getByLabel(locale==='pl'?'Checklista strony dla tego zadania':'Site checklist for this task').inputValue(),'');
+    assert.equal(await checklistPage.getByRole('button',{name:locale==='pl'?'Kwalifikacja weryfikatora':'Verifier qualification'}).isEnabled(),true,
+      'the proposed contract remains available for an exact verifier qualification before Ready');
     assert.deepEqual(errors,[]);await checklistPage.close();checked++;
   }
 
