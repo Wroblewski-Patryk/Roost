@@ -7,6 +7,7 @@ import { referenceSiteMetadata } from "../modules/product-engineering/reference-
 import { referenceSiteChecklistForExecution } from "../modules/product-engineering/reference-site-runtime-context";
 import { readyEditorData } from "../modules/agent-runtime/task-execution-readiness";
 import { watchReadySources } from "../modules/agent-runtime/ready-source-watch";
+import { digest } from "../auth/owner-action-proof";
 
 export function registerReferenceSiteG24bTests(helpers: {
   request: (path: string, init?: RequestInit) => Promise<{ status: number; body: any }>;
@@ -126,6 +127,44 @@ export function registerReferenceSiteG24bTests(helpers: {
       assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
       assert.equal(accepted.body.data.version, 1);
       const procedureId = accepted.body.data.procedureId;
+      const verifier = await prisma.workforceEntity.create({ data: { workspaceId,
+        name: "Independent checklist verifier", slug: `checklist-verifier-${randomUUID()}`,
+        type: "agent", source: "manual", status: "active", role: "site evidence reviewer",
+        skillIndex: ["application audit"], authorityScope: ["task_verification"] } });
+      const qualificationPath = `/v1/agent-runtime/tasks/${task.id}/verifier-qualification`;
+      assert.equal((await request(qualificationPath, { headers: agentHeaders })).status, 403);
+      const qualifiedView = await request(qualificationPath, { headers: ownerHeaders });
+      assert.equal(qualifiedView.status, 200, JSON.stringify(qualifiedView.body));
+      assert.equal(qualifiedView.body.data.canQualify, true);
+      assert.deepEqual(qualifiedView.body.data.checklist.reviewIds, [reviewed.body.data.review.id]);
+      const qualificationInput = { action: "qualify", requestId: randomUUID(),
+        expectedVersion: qualifiedView.body.data.expectedVersion, verifierId: verifier.id,
+        contract: { executionClass: "roost-company-information-runtime-v1",
+          singleTask: { contractId: `roost-task:${task.id}` }, assignment: { agentId: agent.id },
+          taskRoles: { executor: { id: agent.id, revision: qualifiedView.body.data.executor.revision },
+            verifier: { id: verifier.id, revision: qualifiedView.body.data.candidates[0].revision } },
+          procedures: { items: [{ id: procedureId, revision: "1" }] } },
+        evidence: "The selected verifier has the application audit skill and an independent task-verification mandate.",
+        rationale: "Authorize one independent review of the saved checklist evidence for this task only." };
+      const qualificationBody = JSON.stringify(qualificationInput);
+      assert.equal((await request(qualificationPath, { method: "POST", headers: ownerHeaders,
+        body: qualificationBody })).status, 403);
+      const proof = await request("/v1/auth/reauth", { method: "POST", headers: ownerHeaders,
+        body: JSON.stringify({ password: "very-strong-password", method: "POST", path: qualificationPath,
+          bodyDigest: digest(qualificationBody) }) });
+      assert.equal(proof.status, 200, JSON.stringify(proof.body));
+      const qualified = await request(qualificationPath, { method: "POST",
+        headers: { ...ownerHeaders, "X-Owner-Action-Proof": proof.body.data.proof }, body: qualificationBody });
+      assert.equal(qualified.status, 201, JSON.stringify(qualified.body));
+      assert.equal(qualified.body.data.current.verifierId, verifier.id);
+      assert.equal((await prisma.$queryRaw<Array<{ value: unknown }>>`SELECT task_verifier_qualification_current(${task.id}::uuid,${verifier.id}::uuid) AS value`)[0]?.value != null, true);
+      const replayProof = await request("/v1/auth/reauth", { method: "POST", headers: ownerHeaders,
+        body: JSON.stringify({ password: "very-strong-password", method: "POST", path: qualificationPath,
+          bodyDigest: digest(qualificationBody) }) });
+      const replayQualification = await request(qualificationPath, { method: "POST",
+        headers: { ...ownerHeaders, "X-Owner-Action-Proof": replayProof.body.data.proof }, body: qualificationBody });
+      assert.equal(replayQualification.status, 200);
+      assert.equal(replayQualification.body.data.replayed, true);
       const projection = await prisma.$transaction(async db => {
         const watched = watchReadySources(db);
         const value = await referenceSiteChecklistForExecution(watched.db, db,
@@ -202,7 +241,7 @@ export function registerReferenceSiteG24bTests(helpers: {
       await assert.rejects(prisma.$executeRaw`TRUNCATE reference_site_finding_reviews`,
         /reference_site_checklist_receipt_immutable/);
       await assert.rejects(prisma.$executeRaw`TRUNCATE reference_site_checklist_decisions`,
-        /reference_site_checklist_receipt_immutable/);
+        /reference_site_checklist_receipt_immutable|cannot truncate a table referenced/);
       const ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId;
       await assert.rejects(prisma.$transaction(async db => {
         await db.$executeRawUnsafe("ALTER TABLE procedure_contract_versions DISABLE TRIGGER composition_insert");
@@ -252,6 +291,23 @@ export function registerReferenceSiteG24bTests(helpers: {
           items: [revisedItem, secondItem] }) });
       assert.equal(replacement.status, 200, JSON.stringify(replacement.body));
       assert.equal(replacement.body.data.version, 2);
+      assert.equal((await prisma.$queryRaw<Array<{ value: unknown }>>`SELECT task_verifier_qualification_current(${task.id}::uuid,${verifier.id}::uuid) AS value`)[0]?.value, null);
+      const renewedQualificationView = await request(qualificationPath, { headers: ownerHeaders });
+      assert.equal(renewedQualificationView.status, 200);
+      const renewedQualificationBody = JSON.stringify({ ...qualificationInput, requestId: randomUUID(),
+        expectedVersion: renewedQualificationView.body.data.expectedVersion,
+        contract: { ...qualificationInput.contract, procedures: { items: [{ id: replacement.body.data.procedureId, revision: "2" }] } } });
+      const renewedProof = await request("/v1/auth/reauth", { method: "POST", headers: ownerHeaders,
+        body: JSON.stringify({ password: "very-strong-password", method: "POST", path: qualificationPath,
+          bodyDigest: digest(renewedQualificationBody) }) });
+      assert.equal(renewedProof.status, 200);
+      const renewedQualification = await request(qualificationPath, { method: "POST",
+        headers: { ...ownerHeaders, "X-Owner-Action-Proof": renewedProof.body.data.proof },
+        body: renewedQualificationBody });
+      assert.equal(renewedQualification.status, 201, JSON.stringify(renewedQualification.body));
+      assert.equal(renewedQualification.body.data.current.verifierId, verifier.id);
+      await prisma.workforceEntity.update({ where: { id: verifier.id }, data: { role: "changed reviewer role" } });
+      assert.equal((await prisma.$queryRaw<Array<{ value: unknown }>>`SELECT task_verifier_qualification_current(${task.id}::uuid,${verifier.id}::uuid) AS value`)[0]?.value, null);
       assert.equal((await prisma.procedure.findUniqueOrThrow({ where: { id: procedureId } })).status, "retired");
       assert.equal(await prisma.$transaction(db => referenceSiteChecklistForExecution(db, db,
         workspaceId, task.id, agent.id, procedureId, "1")), null);

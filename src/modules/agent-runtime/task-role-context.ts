@@ -5,7 +5,7 @@ const uuid = (value: unknown): value is string => typeof value === "string" && /
 const strings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 export type RoleSubmission = { authorId: string; requestId: string };
 
-export async function resolveTaskRoleContext(db: Prisma.TransactionClient, workspaceId: string, task: { executionReadiness: unknown; executionRoleProvenance: unknown }, contract: unknown, submission?: RoleSubmission) {
+export async function resolveTaskRoleContext(db: Prisma.TransactionClient, workspaceId: string, task: { id: string; executionReadiness: unknown; executionRoleProvenance: unknown }, contract: unknown, submission?: RoleSubmission) {
   const roles = object(object(contract).taskRoles), previous = object(task.executionRoleProvenance), pin = object(task.executionReadiness);
   const authorUserId = submission?.authorId ?? (pin.requestedByType === "user" ? pin.requestedById : null);
   let provenance = Object.keys(previous).length ? previous : null;
@@ -30,5 +30,9 @@ export async function resolveTaskRoleContext(db: Prisma.TransactionClient, works
     return { id: item.id, workspaceId: item.workspaceId, type: item.type, status: item.status, revision: item.updatedAt.toISOString(), role: item.role,
       competencies: strings(item.skillIndex), authorityScope: strings(item.authorityScope), principal, membership: human ? await membership(item.externalId) : null };
   }
-  return { requester, authorMembership, accountableManager: await workforce("accountableManager"), executor: await workforce("executor"), verifier: await workforce("verifier"), releaser: await workforce("releaser"), authorUserId, provenance };
+  const verifierId = object(roles.verifier).id;
+  const verifierQualification = object(contract).executionClass === "roost-company-information-runtime-v1" && uuid(verifierId)
+    ? (await db.$queryRaw<Array<{ value: unknown }>>`SELECT task_verifier_qualification_current(${task.id}::uuid,${verifierId}::uuid) AS value`)[0]?.value ?? null
+    : null;
+  return { requester, authorMembership, accountableManager: await workforce("accountableManager"), executor: await workforce("executor"), verifier: await workforce("verifier"), releaser: await workforce("releaser"), authorUserId, provenance, verifierQualification };
 }

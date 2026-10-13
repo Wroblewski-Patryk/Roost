@@ -514,6 +514,8 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/recovery-blocked", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/context-stopped", capability: "agent-runtime:report" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/risk", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/agent-runtime/tasks/:id/verifier-qualification", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/agent-runtime/tasks/:id/verifier-qualification", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/risk-admission", capability: "agent-runtime:read" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/procedure-composition", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/procedure-composition/selection", capability: "agent-runtime:write" },

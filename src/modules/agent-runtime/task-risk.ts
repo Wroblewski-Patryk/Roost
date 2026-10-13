@@ -41,7 +41,7 @@ async function prepareCompanyRiskScope(db: Db, workspaceId: string, taskId: stri
     reader.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: taskId }, { toEntityType: "task", toEntityId: taskId }] } }),
     reader.decision.findMany({ where: { workspaceId, id: { in: refs("decisions") } } })
   ]);
-  const packet: any = await prepareExecutionPacket(envelope, task, reader, { authorId: userId, requestId: input.requestId });
+  const packet: any = await prepareExecutionPacket(envelope, task, reader, { authorId: userId, requestId: input.requestId }, db);
   packet.procedureComposition = { algorithm: "roost-company-information-runtime-v1", preparationOnly: false, modelExecutionQualified: true };
   const { revision: _revision, ...body } = packet;
   packet.revision = createHash("sha256").update(JSON.stringify(body)).digest("hex");

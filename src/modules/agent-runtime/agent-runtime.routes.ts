@@ -583,6 +583,29 @@ agentRuntimeRouter.get("/tasks/:id/risk-admission", asyncHandler(async (req,res)
   if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:409,result.error!);
   res.json({data:result});
 }));
+agentRuntimeRouter.get("/tasks/:id/verifier-qualification", asyncHandler(async (req,res) => {
+  if (!requireWorkspaceRole(req,res,"owner")) return;
+  if (req.auth!.authType !== "user" || !req.auth!.userId)
+    return sendApiError(res,403,"verifier_qualification_forbidden");
+  const {verifierQualificationView}=await import("./task-verifier-qualification");
+  const result=await readyTransaction(db=>verifierQualificationView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!.userId!));
+  if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:403,result.error!);
+  res.setHeader("Cache-Control","no-store");
+  res.json({data:result});
+}));
+agentRuntimeRouter.post("/tasks/:id/verifier-qualification", asyncHandler(async (req,res) => {
+  if (!requireWorkspaceRole(req,res,"owner")) return;
+  if (req.auth!.authType !== "user" || !req.auth!.userId)
+    return sendApiError(res,403,"verifier_qualification_forbidden");
+  if (!req.header("X-Owner-Action-Proof") || !req.auth!.authenticatedAt
+    || Math.abs(Date.now()/1000-req.auth!.authenticatedAt)>90)
+    return sendApiError(res,403,"owner_reauth_required");
+  const {verifierQualificationCommand}=await import("./task-verifier-qualification");
+  const result=await readyTransaction(db=>verifierQualificationCommand(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!.userId!,req.body));
+  if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:result.error==="verifier_qualification_forbidden"?403:409,result.error!);
+  res.setHeader("Cache-Control","no-store");
+  res.status("replayed" in result && result.replayed?200:201).json({data:result});
+}));
 for (const kind of ["scope","evidence"] as const) agentRuntimeRouter.post(`/tasks/:id/risk-admission/${kind}`, asyncHandler(async(req,res)=>{
   if (!requireWorkspaceRole(req,res,"member")) return;
   const {admissionCommand}=await import("./task-risk-admission");

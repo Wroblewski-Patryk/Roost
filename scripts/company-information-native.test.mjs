@@ -14,6 +14,7 @@ const { prisma } = require('../dist/db/prisma.js');
 const g22Native = process.env.ROOST_G22_NATIVE_RUNTIME === '1';
 const g23PolicyOnly = process.env.ROOST_G23_POLICY_ONLY === '1';
 const g24cPacketOnly = process.env.ROOST_G24C_PACKET_ONLY === '1';
+const g24cVerifierQualification = process.env.ROOST_G24C_VERIFIER_QUALIFICATION === '1';
 const g24cHostInput = g24cPacketOnly && process.env.ROOST_G24C_HOST_INPUT === '1';
 const agentInformationReview = ['agent-approve','agent-local-approve','agent-reject','agent-stale','agent-type-drift'].includes(process.env.ROOST_G11_REVIEW_ACTION);
 const g23Comparison = process.env.ROOST_G23_COMPARISON === '1';
@@ -215,14 +216,14 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       await prisma.workspaceMembership.create({ data: { workspaceId, userId: wrongActor.id, role: 'member' } });
       const { createAuthToken } = require('../dist/auth/token.js');
       const memberToken = createAuthToken({ workspaceId, userId: wrongActor.id });
-      let verifierToken, managerToken;
+      let verifierToken, managerToken, verifierEntity;
       if (process.env.ROOST_G11_REVIEW_ACTION) {
         const verifierUser = agentInformationReview ? null : await prisma.user.create({ data: { email: 'verifier@g11.example.test', passwordHash: 'synthetic-not-a-login' } });
         if (verifierUser) await prisma.workspaceMembership.create({ data: { workspaceId, userId: verifierUser.id, role: 'member' } });
         const humanManager = await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human manager', slug: 'g11-manager', type: 'human', source: 'user', externalId: wrongActor.id,
           role: 'accountable manager', skillIndex: ['javascript'], authorityScope: ['task_accountability'] } });
         const verifier = agentInformationReview
-          ? await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent information verifier', slug: 'g24c-verifier', type: 'agent', role: 'verifier', skillIndex: ['javascript'], authorityScope: ['task_verification'] } })
+          ? await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent information verifier', slug: 'g24c-verifier', type: 'agent', role: 'verifier', skillIndex: [g24cVerifierQualification ? 'application audit' : 'javascript'], authorityScope: ['task_verification'] } })
           : await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human verifier', slug: 'g11-verifier', type: 'human', source: 'user', externalId: verifierUser.id,
             role: 'verifier', skillIndex: ['javascript'], authorityScope: ['task_verification'] } });
         managerToken = memberToken;
@@ -235,6 +236,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         contract.singleTask.accountableManager = ref(humanManager);
         contract.taskRoles.accountableManager = ref(humanManager);
         contract.taskRoles.verifier = ref(verifier);
+        verifierEntity = verifier;
       }
       const foreignOwner = await request('/auth/register', null, { email: 'foreign@g6-risk.example.test', password: 'synthetic-test-password-only', name: 'Foreign owner', workspaceName: 'Foreign risk workspace' });
       assert.equal(foreignOwner.status, 201);
@@ -327,7 +329,41 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         c.context.company.push({ id: siteRecord.id, revision: siteRecord.updatedAt });
       }
       c.executionClass = 'roost-company-information-runtime-v1'; c.modelSelection = selection;
+      if (g24cVerifierQualification) c.procedures.items = c.procedures.items.filter(item => item.id === checklistProcedureId);
       const root = `/v1/agent-runtime/tasks/${runtimeTask.id}`;
+      if (g24cVerifierQualification) {
+        assert.ok(g24cPacketOnly && g23PolicyOnly && verifierEntity);
+        const unqualifiedRisk = await request(`${root}/risk`, token);
+        const refusedScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(),
+          expectedVersion: unqualifiedRisk.body.data.expectedVersion, scopeKind: 'company_information',
+          applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
+        assert.equal(refusedScope.status, 409, JSON.stringify(refusedScope.body));
+        assert.equal(refusedScope.body.error, 'task_risk_scope_invalid');
+        const qualificationPath = `${root}/verifier-qualification`;
+        const candidate = await request(qualificationPath, token);
+        assert.equal(candidate.status, 200, JSON.stringify(candidate.body));
+        assert.equal(candidate.body.data.canQualify, true);
+        const body = { action: 'qualify', requestId: randomUUID(), expectedVersion: candidate.body.data.expectedVersion,
+          verifierId: verifierEntity.id, contract: c,
+          evidence: 'This verifier has application audit competency and an independent task-verification mandate.',
+          rationale: 'Authorize this verifier for the exact saved checklist and one isolated information task.' };
+        const encoded = JSON.stringify(body);
+        const proof = await request('/v1/auth/reauth', token, { password: 'synthetic-test-password-only', method: 'POST',
+          path: qualificationPath, bodyDigest: createHash('sha256').update(encoded).digest('hex') });
+        assert.equal(proof.status, 200, JSON.stringify(proof.body));
+        const qualified = await request(qualificationPath,
+          { Authorization: `Bearer ${token}`, 'X-Owner-Action-Proof': proof.body.data.proof }, body);
+        assert.equal(qualified.status, 201, JSON.stringify(qualified.body));
+        assert.equal(qualified.body.data.current.verifierId, verifierEntity.id);
+        const changed = structuredClone(c);
+        changed.procedures.items.push({ id: procedure.id, revision: String(procedure.version) });
+        const qualificationRisk = await request(`${root}/risk`, token);
+        const changedScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(),
+          expectedVersion: qualificationRisk.body.data.expectedVersion, scopeKind: 'company_information',
+          applicationId: null, contract: changed, prompt: null, baseBranch: null, releaseSet: null });
+        assert.equal(changedScope.status, 409, JSON.stringify(changedScope.body));
+        assert.equal(changedScope.body.error, 'task_risk_scope_invalid');
+      }
       assert.equal((await request(`${root}/risk`, foreignToken)).status, 404);
       const risk = await request(`${root}/risk`, token); assert.equal(risk.status, 200, JSON.stringify(risk.body));
       const mixedApplication = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
@@ -433,7 +469,8 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(mixedAdmission.status, 409, JSON.stringify(mixedAdmission.body));
       const scopeBody = { requestId: randomUUID(), expectedVersion: admission.body.data.expectedVersion,
         scopeKind: 'company_information', taskType: 'information', environment: 'local', targetId: null, releaseId: null, commit: null,
-        destructive: false, procedureId: procedure.id, operations: ['decision_supersede', 'runtime_execute'], rationale: 'Exact selected information task' };
+        destructive: false, procedureId: g24cVerifierQualification ? checklistProcedureId : procedure.id,
+        operations: ['decision_supersede', 'runtime_execute'], rationale: 'Exact selected information task' };
       const memberAdmission = await request(`${admissionRoot}/scope`, memberToken, scopeBody);
       assert.equal(memberAdmission.status, 409, JSON.stringify(memberAdmission.body));
       const scoped = await request(`${admissionRoot}/scope`, token, scopeBody);
@@ -467,6 +504,25 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal((await approveTaskSource('decision', acceptedDecision, runtimeTask.id, token)).status, 201);
       const runtimeContract = structuredClone(c);
       runtimeContract.decisions = { items: [ref(acceptedDecision)], noneReason: null };
+      if (g24cVerifierQualification) {
+        const beforeQualificationRiskVersion = (await request(`${root}/risk`, token)).body.data.expectedVersion;
+        const qualificationPath = `${root}/verifier-qualification`;
+        const candidate = await request(qualificationPath, token);
+        const body = { action: 'qualify', requestId: randomUUID(), expectedVersion: candidate.body.data.expectedVersion,
+          verifierId: verifierEntity.id, contract: runtimeContract,
+          evidence: 'This verifier has application audit competency and an independent task-verification mandate.',
+          rationale: 'Confirm the exact revised information contract for this isolated task and checklist.' };
+        const encoded = JSON.stringify(body);
+        const proof = await request('/v1/auth/reauth', token, { password: 'synthetic-test-password-only', method: 'POST',
+          path: qualificationPath, bodyDigest: createHash('sha256').update(encoded).digest('hex') });
+        assert.equal(proof.status, 200, JSON.stringify(proof.body));
+        const renewed = await request(qualificationPath,
+          { Authorization: `Bearer ${token}`, 'X-Owner-Action-Proof': proof.body.data.proof }, body);
+        assert.equal(renewed.status, 201, JSON.stringify(renewed.body));
+        const afterQualificationRisk = await request(`${root}/risk`, token);
+        assert.notEqual(afterQualificationRisk.body.data.expectedVersion, beforeQualificationRiskVersion);
+        assert.equal(Boolean(afterQualificationRisk.body.data.current), false);
+      }
       const renewedRisk = await request(`${root}/risk`, token);
       const renewedScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: renewedRisk.body.data.expectedVersion,
         scopeKind: 'company_information', applicationId: null, contract: runtimeContract, prompt: g23Case?.prompt ?? null, baseBranch: null, releaseSet: null });

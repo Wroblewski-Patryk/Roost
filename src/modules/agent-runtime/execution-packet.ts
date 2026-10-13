@@ -12,7 +12,8 @@ function object(value: unknown): Record<string, unknown> {
 
 // This is an envelope over an explicit execution contract, not inferred task intent.
 // Missing/invalid contract fields are deliberately preserved for host diagnostics.
-export async function prepareExecutionPacket(execution: AgentExecution, task: Task, db: Prisma.TransactionClient = prisma, submission?: RoleSubmission) {
+export async function prepareExecutionPacket(execution: AgentExecution, task: Task, db: Prisma.TransactionClient = prisma, submission?: RoleSubmission,
+  authorityDb: Prisma.TransactionClient = db) {
   const contract = object(execution.metadata).executionContract ?? null;
   const context = object(object(contract).context);
   const ids = [...new Set(["company", "product", "technical"].flatMap((category) => {
@@ -38,7 +39,7 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     companyDirection: await currentCompanyDirection(db, execution.workspaceId),
     goalMandate: task.goalId ? await currentGoalMandate(db, execution.workspaceId, task.goalId) : null,
     contract,
-    roleAuthorities: await resolveTaskRoleContext(db, execution.workspaceId, task, contract, submission),
+    roleAuthorities: await resolveTaskRoleContext(authorityDb, execution.workspaceId, task, contract, submission),
     scopeAuthorities: {
       component: component ? { id: component.id, applicationId: component.applicationId, status: component.status, revision: component.updatedAt.toISOString() } : null,
       manager: manager ? { id: manager.id, workspaceId: manager.workspaceId, status: manager.status, revision: manager.updatedAt.toISOString() } : null

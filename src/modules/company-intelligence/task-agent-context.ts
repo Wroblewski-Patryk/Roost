@@ -141,7 +141,7 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
         assignedWorkforceEntityId: task.assignedWorkforceEntityId, assignedWorkforceEntity: task.assignedWorkforceEntity ? {
           id: task.assignedWorkforceEntity.id, workspaceId, type: task.assignedWorkforceEntity.type, status: task.assignedWorkforceEntity.status,
           role: task.assignedWorkforceEntity.role, skillIndex: task.assignedWorkforceEntity.skillIndex, toolIndex: [], authorityScope: [] } : null },
-      executionPacket: { ...await prepareExecutionPacket(execution!, task, db, submission),
+      executionPacket: { ...await prepareExecutionPacket(execution!, task, db, submission, rawDb),
         ...(checklist ? { referenceSiteChecklist: checklist } : {}) },
       procedures: admitted("procedure", procedures).map(row => {
         const source = projectTaskSource("procedure", row);
