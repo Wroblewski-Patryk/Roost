@@ -31,6 +31,25 @@ export function markModelRequest(writerDirectory, executionId) {
   }
 }
 
+export function markNativeLaunchIntent(writerDirectory, executionId) {
+  // This proves only that the Codex/Ollama native launch boundary was reached,
+  // not that a process or provider request actually started.
+  const marker = path.join(writerDirectory, `information-${executionId}.native-launch-intent`);
+  const descriptor = openSync(marker, 'wx', 0o600);
+  try {
+    writeFileSync(descriptor, JSON.stringify({ executionId, nativeLaunchIntent: true }) + '\n');
+    fsyncSync(descriptor);
+  } finally {
+    closeSync(descriptor);
+  }
+}
+
+export function informationFailureCode(error, diagnostic) {
+  return error.durationLimit ? 'agent_execution_duration_exceeded' : diagnostic?.preLaunchReason ?? (error.leaseLost ? 'information_lease_lost'
+    : error.message === 'hermes_quiet_empty_result' ? 'hermes_quiet_empty_result'
+    : diagnostic?.code && diagnostic.code !== 'information_failure_unclassified' ? diagnostic.code : 'information_attempt_stopped');
+}
+
 // The operator-installed public anchor is outside every checkout. A task,
 // response or model cannot choose a trust key or its private configuration.
 export function informationInstallationAnchor(writerLock, claimed) {
@@ -64,6 +83,7 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
     running = runCompanyInformationRuntime({ claimed: inputContext, taskContext: context.taskContext, provider,
       authorityPublicKey: anchor.authorityPublicKey, workingDirectory: directory, signal: abort.signal, assertAuthority,
       remainingMs: () => duration.remainingMs, secrets,
+      onNativeLaunchIntent: () => markNativeLaunchIntent(writerDirectory, claimed.id),
       onModelRequest: () => markModelRequest(writerDirectory, claimed.id),
       requestAdmission: async observation => {
         assertAuthority();
@@ -99,19 +119,21 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
         throw Object.assign(stopOrAckError, { leaseLost: true, preemptionRequested: true });
       }
     }
+    let diagnostic;
     if (writerDirectory) {
-      try { writeInformationFailureDiagnostic(writerDirectory, claimed.id, error, isWindowsJobCleanupReceipt(owned)); }
+      try { diagnostic = writeInformationFailureDiagnostic(writerDirectory, claimed.id, error, isWindowsJobCleanupReceipt(owned)); }
       catch { /* A diagnostic write failure must not replace the original stop reason. */ }
     }
     // A late/uncertain completion is never replayed or converted into success.
     // Preserve the real native closure locally; the existing lease/recovery
     // mechanism remains responsible when reporting itself is unavailable.
-    const code = error.durationLimit ? 'agent_execution_duration_exceeded' : error.leaseLost ? 'information_lease_lost'
-      : error.message === 'hermes_quiet_empty_result' ? 'hermes_quiet_empty_result'
-      : error.details?.reason ?? 'information_attempt_stopped';
+    const code = informationFailureCode(error, diagnostic);
     const reported = await api(`/v1/agent-runtime/executions/${claimed.id}/actions/fail`, { method: 'POST', body: JSON.stringify({ leaseToken: claimed.leaseToken,
       code, message: 'Information attempt stopped. No automatic retry; owner diagnosis, changed plan and new budget are required.', retryable: false,
-      details: { nativeCleanupProven: isWindowsJobCleanupReceipt(owned), ...(owned ? { ownedTreeReceipt: owned } : {}) } }) }).then(() => true, () => false);
+      details: { nativeCleanupProven: isWindowsJobCleanupReceipt(owned),
+        ...(diagnostic ? { nativeLaunchIntentPresent: diagnostic.nativeLaunchIntentPresent } : {}),
+        ...(diagnostic?.preLaunchReason ? { preLaunchReason: diagnostic.preLaunchReason } : {}),
+        ...(owned ? { ownedTreeReceipt: owned } : {}) } }) }).then(() => true, () => false);
     if (reported) error.informationFailureReported = true;
     throw error;
   } finally {

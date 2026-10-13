@@ -12,7 +12,7 @@ import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBu
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, assertLaunchAuthority = () => {}, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, readOnlyToolReceipt, informationToolReceipt, jobArtifact, expectedJobSourceDigest, onAssigned = () => {} }) {
+  remainingMs, secrets = [], assertAuthority, assertLaunchAuthority = () => {}, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, readOnlyToolReceipt, informationToolReceipt, jobArtifact, expectedJobSourceDigest, onAssigned = () => {}, onBeforeNativeSpawn = () => {} }) {
   const began = performance.now();
   let observedJob, observedExit, nativeProof, nativeResult, readOnlyProof, readOnlyResult, informationProof, informationResult;
   if ([nativeToolReceipt, readOnlyToolReceipt, informationToolReceipt].filter(Boolean).length > 1) throw Object.assign(failure("hermes_boundary_ambiguous"), { protocolAdmission: true });
@@ -58,6 +58,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     if (nativeDuration < 1) throw failure("hermes_quiet_timeout");
     const runtimeBinding = () => ({ executable: fixtureRuntimeBinding(executable), launcher: fixtureRuntimeBinding(artifact.executable), node: fixtureRuntimeBinding(process.execPath) });
     if (nativeProof) prepareNativeBoundaryResume(nativeProof, runtimeBinding());
+    onBeforeNativeSpawn();
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
       ...(nativeProof || readOnlyProof || informationProof ? { confirmResume: assignment => {
         check(); if (problem) throw problem;

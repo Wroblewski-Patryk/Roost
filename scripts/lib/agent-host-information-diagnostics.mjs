@@ -41,7 +41,7 @@ working_directory_overlay working_directory_unreadable`.split(/\s+/));
 // Never persist an arbitrary exception message, cause, HTTP body or provider
 // output. Only fixed codes from our own runtime may cross into this file.
 export function informationFailureDiagnostic(error, { nativeCleanupProven = false,
-  modelRequestMarkerPresent = false } = {}) {
+  modelRequestMarkerPresent = false, nativeLaunchIntentPresent = false } = {}) {
   const observerReason = error?.details?.observerReason;
   const reason = error?.details?.reason;
   const message = error?.message;
@@ -61,10 +61,13 @@ export function informationFailureDiagnostic(error, { nativeCleanupProven = fals
   } else if (workerCodes.has(message)) {
     code = message;
   }
+  const preLaunchReason = !nativeLaunchIntentPresent && error?.protocolAdmission === true && runtimeReasons.has(reason)
+    ? reason : null;
   return Object.freeze({ schemaVersion: 'roost-information-failure-diagnostic-v1', origin, code,
-    observerCode,
+    observerCode, preLaunchReason,
     nativeCleanupProven: nativeCleanupProven === true,
     modelRequestMarkerPresent: modelRequestMarkerPresent === true,
+    nativeLaunchIntentPresent: nativeLaunchIntentPresent === true,
     providerFailure: error?.providerFailure === true, protocolAdmission: error?.protocolAdmission === true,
     leaseLost: error?.leaseLost === true, durationLimit: error?.durationLimit === true });
 }
@@ -77,9 +80,11 @@ export function writeInformationFailureDiagnostic(writerDirectory, executionId, 
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(executionId))
     throw Error('information_diagnostic_execution_invalid');
   const marker = path.join(writerDirectory, `information-${executionId}.model-requested`);
+  const launchMarker = path.join(writerDirectory, `information-${executionId}.native-launch-intent`);
   const destination = path.join(writerDirectory, `information-${executionId}.failure.json`);
   const record = { executionId, ...informationFailureDiagnostic(error, {
-    nativeCleanupProven, modelRequestMarkerPresent: existsSync(marker) }) };
+    nativeCleanupProven, modelRequestMarkerPresent: existsSync(marker),
+    nativeLaunchIntentPresent: existsSync(launchMarker) }) };
   const descriptor = openSync(destination, 'wx', 0o600);
   try {
     writeFileSync(descriptor, JSON.stringify(record) + '\n');

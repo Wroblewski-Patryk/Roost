@@ -167,8 +167,9 @@ export function completeInformationQualification(receipt, ownedTreeReceipt) {
 }
 
 export async function runCompanyInformationRuntime({ claimed, taskContext, provider, authorityPublicKey, requestAdmission,
-  workingDirectory, signal, assertAuthority, remainingMs, onModelRequest, secrets = [] }) {
-  if (process.platform !== 'win32' || typeof assertAuthority !== 'function' || typeof remainingMs !== 'function' || typeof requestAdmission !== 'function') fail('native_configuration_invalid');
+  workingDirectory, signal, assertAuthority, remainingMs, onNativeLaunchIntent, onModelRequest, secrets = [] }) {
+  if (process.platform !== 'win32' || typeof assertAuthority !== 'function' || typeof remainingMs !== 'function'
+    || typeof requestAdmission !== 'function' || typeof onNativeLaunchIntent !== 'function') fail('native_configuration_invalid');
   const pinned = providerContract.registry.providers.find(p => p.kind === 'hermes_codex');
   if (provider?.kind !== 'hermes_codex' || provider.enabled !== true || provider.version !== pinned.version || provider.commit !== pinned.commit
     || provider.officialSource !== pinned.officialSource || !same(provider.policy, providerContract.registry.hermesPolicy)
@@ -244,6 +245,7 @@ export async function runCompanyInformationRuntime({ claimed, taskContext, provi
   try {
     result = await runHermesOwnedProcess({ ...processOptions, informationToolReceipt: receipt, remainingMs: allowedMs,
       secrets: [claimed.leaseToken, ...secrets], assertAuthority, assertLaunchAuthority: assertLaunch, signal,
+      onBeforeNativeSpawn: onNativeLaunchIntent,
       expectedJobSourceDigest: runtime.launcher.sourceDigest });
   } catch (error) {
     const observerReason = safeObserverFailureCode(observer?.failureCode());

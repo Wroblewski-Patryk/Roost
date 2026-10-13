@@ -33,6 +33,14 @@ test('only fixed observer, Job, Hermes and Worker codes enter a diagnostic', () 
     details: { observerReason: 'ollama_observer_upstream_failed' } });
   assert.equal(nested.observerCode, 'ollama_observer_upstream_failed');
   assert.equal(nested.nativeCleanupProven, false);
+  const preLaunch = informationFailureDiagnostic({ message: 'company_information_runtime_blocked', leaseLost: true,
+    protocolAdmission: true, details: { reason: 'signed_binding_changed' } });
+  assert.equal(preLaunch.code, 'native_cleanup_unproven');
+  assert.equal(preLaunch.preLaunchReason, 'signed_binding_changed');
+  assert.equal(informationFailureDiagnostic({ message: 'company_information_runtime_blocked', leaseLost: true,
+    protocolAdmission: true, details: { reason: 'signed_binding_changed' } }, { nativeLaunchIntentPresent: true }).preLaunchReason, null);
+  assert.equal(informationFailureDiagnostic({ message: 'company_information_runtime_blocked', leaseLost: true,
+    protocolAdmission: true, details: { reason: 'CANARY' } }).preLaunchReason, null);
 });
 
 test('private failure checkpoint records only bounded metadata and never overwrites', async () => {

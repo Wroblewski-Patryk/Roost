@@ -89,6 +89,13 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
    assert.ok(result.finalResponse.includes("synthetic quiet input"));assert.ok(isWindowsJobReceipt(result.ownedTreeReceipt));
    await gone([...result.finalResponse.matchAll(/PID:(\d+)/g)].map(m=>Number(m[1])));
   });
+  await t.test("native launch intent callback runs before Job creation and can deny it",async()=>{
+   let intentCalls=0, assignments=0;
+   await assert.rejects(runHermesOwnedProcess({executable:fixture,argv:["echo"],cwd:directory,environment:env,input:"synthetic quiet input",
+    remainingMs:()=>3000,assertAuthority:()=>{},secrets:[],onBeforeNativeSpawn:()=>{intentCalls++;throw Error('synthetic_pre_spawn_stop');},
+    onAssigned:()=>{assignments++;}}),/synthetic_pre_spawn_stop/);
+   assert.equal(intentCalls,1);assert.equal(assignments,0);
+  });
   await t.test("surviving child/grandchild are terminated after normal root exit",async()=>{
    const r=await run("survivor");assert.equal(r.pids.length,4);assert.equal(r.receipt.terminationReason,"root_exit");assert.equal(r.receipt.rootExit,0);
   });
