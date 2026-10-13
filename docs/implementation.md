@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c live Finding proof (2026-10-13):** Two approved local attempts are spent: the first failed in CUDA; after reboot, Hermes tool trust denied the second before source GET. No Findings or POST slots; the temporary key was revoked. [Evidence](architecture/reference-site-method-proof-g24c.md#after-reboot-retry-stopped-before-source-read). G24c remains open.
+**G24c (2026-10-13):** Two approved model attempts are spent; no source GET, Finding or POST slot resulted. The temporary key was revoked. A private pinned Hermes trust-hint repair passed no-model tests, but no governed attempt used it. [Evidence](architecture/reference-site-method-proof-g24c.md#private-pinned-hermes-repair-no-model). G24c remains open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
