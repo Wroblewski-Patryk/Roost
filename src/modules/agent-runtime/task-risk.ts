@@ -176,9 +176,15 @@ export async function recordRiskAssessment(db: Db, workspaceId: string, taskId: 
     const companyScope = companyScopes.find(s => s.taskId === entry.taskId && s.id === source.scopeId);
     if (companyScope && references.some(ref => !companyScope.contract?.context?.company?.some((selected: any) => selected.id === ref.id && selected.revision === ref.revision))) return {error:"task_risk_evidence_stale"};
     for (const ref of references) {
-      const record=await db.companyRecord.findFirst({where:{id:ref.id,workspaceId,status:{not:"archived"},OR:[{applicationId:null},{applicationId:source.applicationId}]},select:{updatedAt:true,description:true,businessPurpose:true,desiredState:true,expectedBehavior:true}});
+      const record=await db.companyRecord.findFirst({where:{id:ref.id,workspaceId,status:{not:"archived"},OR:[{applicationId:null},{applicationId:source.applicationId}]},select:{updatedAt:true,recordType:true,description:true,businessPurpose:true,desiredState:true,expectedBehavior:true}});
       if (!record || record.updatedAt.toISOString()!==ref.revision) return {error:"task_risk_evidence_stale"};
-      if (![record.description,record.businessPurpose,record.desiredState,record.expectedBehavior].some(s=>s?.trim())) return {error:"task_risk_evidence_unverifiable"};
+      if (companyScope && record.recordType === "reference_site") {
+        const current = (await db.$queryRaw<Array<{ valid: boolean }>>`SELECT company_information_risk_site_current(
+          ${entry.taskId}::uuid,${workspaceId}::uuid,${JSON.stringify(companyScope.contract)}::jsonb,
+          ${JSON.stringify(ref)}::jsonb) AS valid`)[0]?.valid;
+        if (current !== true) return {error:"task_risk_evidence_unverifiable"};
+      } else if (![record.description,record.businessPurpose,record.desiredState,record.expectedBehavior].some(s=>s?.trim()))
+        return {error:"task_risk_evidence_unverifiable"};
       requireRuntimeContent(record,"task_risk.evidence",{workspaceId,taskId:entry.taskId,recordId:ref.id});
     }
     const predicate=JSON.stringify({op:"in",column:"id",values:references.map(r=>r.id)});

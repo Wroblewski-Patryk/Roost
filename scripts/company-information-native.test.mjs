@@ -406,7 +406,11 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(staleScope.status, 409); assert.equal(staleScope.body.error, 'task_risk_stale');
       const riskVersion = (await request(`${root}/risk`, token)).body.data.expectedVersion;
-      const evidence = ref(currentSource);
+      // The G24c assessment must use the package-only Site itself as evidence.
+      // Its generic CompanyRecord prose is deliberately absent.
+      const evidence = g24cVerifierQualification
+        ? { id: siteRecord.id, revision: siteRecord.updatedAt }
+        : ref(currentSource);
       const dimensions = Object.fromEntries(['money', 'data', 'security', 'availability', 'legal', 'reversibility', 'users'].map(name => [name, { level: 'low', rationale: 'Selected source and no external effect', evidence: [evidence] }]));
       const assessmentBody = { requestId: randomUUID(), expectedVersion: riskVersion,
         entries: [{ taskId: runtimeTask.id, dimensions, uncertainty: { level: 'none', reasons: 'Selected current source is sufficient', evidence: [evidence] }, contradictions: [] }],
