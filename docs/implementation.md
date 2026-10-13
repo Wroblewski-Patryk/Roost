@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Four model attempts spent; no Finding; fourth key revoked. Bound tools pass local checks and are deployed; agent use remains unproved. [Evidence](architecture/reference-site-method-proof-g24c.md#bound-tools-release). Gate open.
+**G24c:** Five attempts spent. Fifth read the first package only; no second read, POST, Finding or supervised proof. Fifth key revoked; bound tools deployed. [Evidence](architecture/reference-site-method-proof-g24c.md#fifth-bounded-attempt). Gate open; no retry authorized.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
