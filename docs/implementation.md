@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Three model attempts spent; no G24c Finding. No-model direct-tool checks passed on prior schemas and fixture; key revoked, guard expired. [Evidence](architecture/reference-site-method-proof-g24c.md#private-direct-tool-profile-and-no-model-checkpoint). Gate open; no model retry authorized.
+**G24c:** Four model attempts spent; no Finding; fourth key revoked. Bound tools pass local STDIO and credential-free Hermes checks, but are not released. [Evidence](architecture/reference-site-method-proof-g24c.md#bound-tools-no-model-checkpoint). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 

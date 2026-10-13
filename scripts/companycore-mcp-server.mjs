@@ -166,16 +166,17 @@ function summarizeBody(body) {
 
 async function callTool(name, args) {
   const manifest = await loadManifest();
-  const tool = manifest.tools.find((candidate) => candidate.name === name);
-  if (!tool) {
+  const rawArgs = args && typeof args === "object" && !Array.isArray(args) ? args : {};
+  const bound = findingGuard ? findingGuard.resolveCall(manifest.tools, name, rawArgs) : null;
+  const tool = bound?.tool ?? manifest.tools.find((candidate) => candidate.name === name);
+  if (!tool || (findingGuard && !bound)) {
     const available = manifest.tools.map((candidate) => candidate.name).sort();
     const error = new Error(`Unknown tool: ${name}`);
     error.data = { available };
     throw error;
   }
 
-  const toolArgs = args && typeof args === "object" && !Array.isArray(args) ? args : {};
-  findingGuard?.checkCall(tool, toolArgs);
+  const toolArgs = bound?.toolArgs ?? rawArgs;
 
   if (tool.requiresApproval === true && commandMode !== "supervised_operator") {
     const structuredContent = {
@@ -297,7 +298,7 @@ async function handleRequest(message) {
       case "tools/list": {
         const manifest = await loadManifest();
         response(message.id, {
-          tools: manifest.tools.filter(tool => !findingGuard || findingGuard.permitsTool(tool)).map(publicTool)
+          tools: (findingGuard ? findingGuard.publicTools(manifest.tools) : manifest.tools).map(publicTool)
         });
         break;
       }
