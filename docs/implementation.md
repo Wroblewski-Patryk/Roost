@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Two Findings, checklist v1 and Goal v1 are accepted; key revoked. Agent-verifier migration and native tests pass locally. Release and supervised Worker proof remain. [Evidence](architecture/reference-site-method-proof-g24c.md#agent-verifier-local-checkpoint). Gate open.
+**G24c:** Two Findings, checklist v1, Goal v1 and agent-verifier release `210e0dc9` are verified. Worker credential renewal stopped before delivery; supervised Worker, verifier and owner review remain. [Evidence](architecture/reference-site-method-proof-g24c.md#agent-verifier-release-and-host-checkpoint). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
