@@ -171,7 +171,8 @@ export async function startInformationTask(db: Db, auth: AuthContext, taskId: st
   const approval = await informationApproval(db, auth.workspaceId, taskId, c.modelSelection);
   if (!approval) return { error: "runtime_authority_required" };
   if (await db.agentExecution.count({ where: { workspaceId: auth.workspaceId, taskId, metadata: { path: ["readyContextPin", "runtimeDecisionId"], equals: approval.decisionId } } })) return { error: "information_budget_spent_new_plan_required" };
-  c.decisions = { items: [...c.decisions.items.filter((r: any) => r.id !== approval.decisionId), { id: approval.decisionId, revision: approval.revision }], noneReason: null };
+  // The owner Decision authorizes the runtime through runtimeApproval and the
+  // bound execution pin. It is not a task source selected for the agent.
   const submitted = await submitReady(db, auth.workspaceId, taskId, { requestId: input.requestId, expectedVersion: await submissionVersion(db, auth.workspaceId, taskId, null), applicationId: null, contract: c, prompt: pin.prompt, baseBranch: null }, { requestedByType: "user", requestedById: auth.userId });
   if ("error" in submitted && submitted.error) return submitted;
   const checked = await inspectReady(db, auth.workspaceId, taskId);

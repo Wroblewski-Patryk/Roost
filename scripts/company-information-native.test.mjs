@@ -522,9 +522,11 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.ok(!acceptedAttention.body.data.priorityItems.some(item => item.kind === 'decision' && item.id === decisionId));
       assert.equal(await prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id='${decisionId}'`).then(rows => rows[0].n), 1);
       const acceptedDecision = await prisma.decision.findUniqueOrThrow({ where: { id: decisionId } });
-      assert.equal((await approveTaskSource('decision', acceptedDecision, runtimeTask.id, token)).status, 201);
+      if (!g24cVerifierQualification)
+        assert.equal((await approveTaskSource('decision', acceptedDecision, runtimeTask.id, token)).status, 201);
       const runtimeContract = structuredClone(c);
-      runtimeContract.decisions = { items: [ref(acceptedDecision)], noneReason: null };
+      if (!g24cVerifierQualification)
+        runtimeContract.decisions = { items: [ref(acceptedDecision)], noneReason: null };
       if (g24cVerifierQualification) {
         const beforeQualificationRiskVersion = (await request(`${root}/risk`, token)).body.data.expectedVersion;
         const qualificationPath = `${root}/verifier-qualification`;
@@ -632,6 +634,10 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const persisted = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
       assert.equal(persisted.applicationId, null); assert.equal(persisted.attempt, 0); assert.equal(persisted.status, 'queued');
       assert.equal(persisted.metadata.readyContextPin.modelExecutionQualified, true);
+      if (g24cVerifierQualification) {
+        assert.deepEqual(persisted.metadata.executionContract.decisions.items, []);
+        assert.equal(persisted.metadata.readyContextPin.runtimeDecisionId, decisionId);
+      }
       const protocol = require('../src/modules/agent-runtime/host-protocol.json');
       const hostSlug = 'synthetic-company-information-host';
       const host = await prisma.agentHost.create({ data: { workspaceId, name: 'Synthetic company information host', slug: hostSlug,
