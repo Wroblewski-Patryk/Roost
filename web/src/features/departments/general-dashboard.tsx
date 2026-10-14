@@ -34,8 +34,21 @@ function itemMeta(item: DashboardPriorityItem, locale: "en" | "pl", t: ReturnTyp
   return [item.kind ? t(`general.attention.${item.kind}`) : item.source, attentionStatus(item.status, locale)].filter(Boolean).join(" · ");
 }
 
+function reasonLabel(item: DashboardPriorityItem, t: ReturnType<typeof useLanguage>["t"]) {
+  return item.reason ? t(`general.reason.${item.reason}`) : t("general.reason.inspect");
+}
+
+function actionLabel(item: DashboardPriorityItem, t: ReturnType<typeof useLanguage>["t"]) {
+  return item.kind === "decision" ? t("general.action.decision")
+    : item.kind === "result" ? t("general.action.result")
+    : item.kind === "blocker" ? t("general.action.blocker")
+    : item.kind === "task" ? t("general.action.task")
+    : item.kind === "incident" ? t("general.action.incident")
+    : item.kind === "risk" ? t("general.action.risk") : t("general.action.record");
+}
+
 function attentionStatus(status: string | undefined, locale: "en" | "pl") {
-  return ({ pending: locale === "pl" ? "oczekuje" : "pending", review: locale === "pl" ? "do odbioru" : "review needed", failed: locale === "pl" ? "nieudany" : "failed", blocked: locale === "pl" ? "zablokowane" : "blocked", active: locale === "pl" ? "aktywny" : "active", todo: locale === "pl" ? "do zrobienia" : "to do", in_progress: locale === "pl" ? "w toku" : "in progress" } as Record<string, string>)[status || ""] || status;
+  return ({ pending: locale === "pl" ? "oczekuje" : "pending", owner_pending: locale === "pl" ? "decyzja właściciela" : "owner decision", review: locale === "pl" ? "do odbioru" : "review needed", failed: locale === "pl" ? "nieudany" : "failed", blocked: locale === "pl" ? "zablokowane" : "blocked", active: locale === "pl" ? "aktywny" : "active", todo: locale === "pl" ? "do zrobienia" : "to do", in_progress: locale === "pl" ? "w toku" : "in progress" } as Record<string, string>)[status || ""] || status;
 }
 
 function priorityTone(item: DashboardPriorityItem) {
@@ -66,8 +79,13 @@ export function GeneralDashboard() {
   const priorityItems = [...(command.data?.priorityItems || []), ...moreItems];
   const hasMoreAttention = moreHasMore ?? Boolean(command.data?.attentionHasMore);
   const departmentSignals = command.data?.departmentSignals || [];
+  const healthCounts = {
+    blocked: departmentSignals.filter(signal => signal.health === "blocked").length,
+    watch: departmentSignals.filter(signal => signal.health === "watch").length,
+    ready: departmentSignals.filter(signal => signal.health === "ready").length
+  };
   const summaryEntries = Object.entries(command.data?.summary || {}).filter((entry): entry is [string, number] => typeof entry[1] === "number").slice(0, 4);
-  const [selectedPriorityId, setSelectedPriorityId] = useState<string>();
+  const [selectedPriorityKey, setSelectedPriorityKey] = useState<string>();
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [narrowInspector, setNarrowInspector] = useState(() => window.matchMedia("(max-width: 1279px)").matches);
   const [showAllAttention, setShowAllAttention] = useState(false);
@@ -97,7 +115,7 @@ export function GeneralDashboard() {
     return () => { window.cancelAnimationFrame(focusId); window.removeEventListener("keydown", handleKey); };
   }, [inspectorOpen, narrowInspector]);
 
-  const selectedPriority = priorityItems.find((item) => item.id === selectedPriorityId);
+  const selectedPriority = priorityItems.find((item) => `${item.kind}:${item.id}` === selectedPriorityKey);
   const pulseMetrics = useMemo(() => {
     const icons = ["ph-check-square-offset", "ph-rocket-launch", "ph-list-checks", "ph-warning-octagon"];
     const base = summaryEntries.map(([label, value], index) => ({ label: summaryLabel(label, t), value, icon: icons[index] || "ph-chart-line-up" }));
@@ -108,7 +126,7 @@ export function GeneralDashboard() {
   }, [rows.length, summaryEntries, t]);
   function choosePriority(item: DashboardPriorityItem, trigger: HTMLButtonElement) {
     triggerRef.current = trigger;
-    setSelectedPriorityId(item.id);
+    setSelectedPriorityKey(`${item.kind}:${item.id}`);
     setInspectorOpen(true);
   }
   function closeInspector() { setInspectorOpen(false); triggerRef.current?.focus(); }
@@ -150,21 +168,21 @@ export function GeneralDashboard() {
               <section className="roost-owner-decisions" aria-labelledby="owner-decisions-heading">
                 <header>
                   <h2 id="owner-decisions-heading">{t("general.ownerDecisions")}</h2>
-                  <span>{priorityItems.length}{hasMoreAttention ? "+" : ""} {pluralLabel(locale, priorityItems.length, t("general.signal.one"), t("general.signal.few"), t("general.signal.many"))}</span>
+                  <span>{command.data?.attentionTotal ?? priorityItems.length} {t("general.currentItems")}</span>
                 </header>
                 <div className="roost-decision-columns" aria-hidden="true"><span></span><span>{t("general.status")}</span><span>{t("general.source")}</span><span>{t("general.due")}</span><span></span></div>
                 {priorityItems.length ? (
                   <div className="roost-decision-list">
                     {(showAllAttention ? priorityItems : priorityItems.slice(0, 5)).map((item, index) => {
-                      const selected = item.id === selectedPriority?.id;
+                      const selected = item.id === selectedPriority?.id && item.kind === selectedPriority?.kind;
                       return (
                         <button aria-pressed={selected} className={`roost-decision-row ${priorityTone(item)}${selected ? " is-selected" : ""}`} key={`${item.kind || item.source}-${item.id}`} onClick={(event) => choosePriority(item, event.currentTarget)} type="button">
                           <span className="roost-decision-number">{String(index + 1).padStart(2, "0")}</span>
-                          <span className="roost-decision-copy"><strong>{item.title}</strong><small>{item.outcome || itemMeta(item, locale, t)}</small></span>
+                          <span className="roost-decision-copy"><strong>{item.title}</strong><small>{reasonLabel(item, t)} · {item.responsible || t("general.responsibleUnknown")}{item.related ? ` · ${item.related}` : ""}</small></span>
                           <span className="roost-decision-impact">{attentionStatus(item.status, locale) || t("state.normal")}</span>
                           <span className="roost-decision-source">{item.kind ? t(`general.attention.${item.kind}`) : item.source}</span>
                           <span className="roost-decision-due">{item.dueDate ? formattedDate(item.dueDate) : "—"}</span>
-                          <span className="roost-decision-review">{t("general.review")}<i className="ph-bold ph-arrow-right" aria-hidden="true"></i></span>
+                          <span className="roost-decision-review">{t("general.inspect")}<i className="ph-bold ph-arrow-right" aria-hidden="true"></i></span>
                         </button>
                       );
                     })}
@@ -177,10 +195,19 @@ export function GeneralDashboard() {
                 {moreError ? <CcNotice live tone="error" title={t("general.attention.moreError")} action={<button className="roost-attention-toggle" type="button" onClick={() => void loadMoreAttention()}>{t("general.attention.retry")}</button>} /> : null}
               </section>
 
-              <div className="grid gap-4">
-                <TaskProposalReview />
+              <TaskProposalReview />
+
+              <nav className="roost-today-history" aria-label={t("general.historyTitle")}>
+                <strong>{t("general.historyTitle")}</strong>
+                <a href="/areas?area=04-operacje&view=tasks">{t("general.workLink")}</a>
+                <a href="/areas?area=01-strategia&view=decisions">{t("general.decisionHistoryLink")}</a>
+              </nav>
+
+              <details className="roost-today-secondary">
+                <summary>{t("general.secondaryTitle")} <span>{departmentSignals.length
+                  ? `${healthCounts.blocked} ${t("general.healthBlocked")} · ${healthCounts.watch} ${t("general.healthWatch")} · ${healthCounts.ready} ${t("general.healthReady")}`
+                  : t("general.healthUnknown")}</span></summary>
                 <TaskProposalMandates />
-              </div>
 
               {pulseMetrics.length ? <section className="roost-company-pulse" aria-labelledby="company-pulse-heading">
                 <header><h2 id="company-pulse-heading">{t("general.companyPulse")}</h2><span><i aria-hidden="true"></i>{t("general.live")}</span></header>
@@ -223,6 +250,7 @@ export function GeneralDashboard() {
                   </div>
                 </section>
               ) : null}
+              </details>
             </>
           )}
         </div>
@@ -236,10 +264,12 @@ export function GeneralDashboard() {
               <p>{itemMeta(selectedPriority, locale, t)}</p>
               {selectedPriority.dueDate ? <time dateTime={selectedPriority.dueDate}>{t("general.due")}: {formattedDate(selectedPriority.dueDate)}</time> : null}
             </section>
-            <section><h3>{t("general.whyItMatters")}</h3><p>{selectedPriority.outcome || t("general.noOutcomeContext")}</p></section>
-            <section><h3>{t("general.governanceContext")}</h3><p>{t("general.readOnlyMode")} · {t("general.governedContext")}</p></section>
+            <section><h3>{t("general.whyItMatters")}</h3><p>{reasonLabel(selectedPriority, t)}</p>
+              {selectedPriority.context ? <p>{selectedPriority.context}</p> : null}</section>
+            <section><h3>{t("general.nextResponsible")}</h3><p>{selectedPriority.responsible || t("general.responsibleUnknown")}</p>{selectedPriority.related ? <p>{t("general.relatedObject")}: {selectedPriority.related}</p> : null}</section>
+            <section><h3>{t("general.provenanceTitle")}</h3><p>{selectedPriority.provenance || t("general.provenanceUnknown")} · {selectedPriority.provenanceConfirmed ? t("general.provenanceConfirmed") : t("general.provenanceUnconfirmed")}</p></section>
             <footer>
-              {selectedPriority.target ? <a className="roost-inspector-primary" href={selectedPriority.target}>{selectedPriority.kind === "risk" ? t("general.openRegister") : t("general.openSource")}<i className="ph-bold ph-arrow-right" aria-hidden="true"></i></a> : null}
+              {selectedPriority.target ? <a className="roost-inspector-primary" href={selectedPriority.target}>{actionLabel(selectedPriority, t)}<i className="ph-bold ph-arrow-right" aria-hidden="true"></i></a> : null}
               <small><i className="ph-bold ph-lock" aria-hidden="true"></i>{t("general.governedContext")}</small>
             </footer>
           </aside>

@@ -5,6 +5,8 @@
 *.yml text
 *.yaml text
 *.json text
+# Migration recipes hash embedded SQL literals; Windows checkout must retain LF.
+prisma/migrations/**/*.sql text eol=lf
 # The native launcher's historical source receipt pins these exact LF bytes.
 scripts/roost-windows-job.cs text eol=lf
 # Installed Compose policies pin these exact executable source bytes too.

@@ -18,6 +18,7 @@ export type AuthMe = {
   authType: "user" | "api_key";
   userId?: string;
   workspaceId: string;
+  workspaceRole?: "viewer" | "member" | "admin" | "owner";
   taskScopeId?: string | null;
   user?: {
     email: string;
@@ -125,6 +126,12 @@ export type DashboardPriorityItem = {
   outcome?: string | null;
   dueDate?: string | null;
   updatedAt?: string;
+  reason?: "decision_pending" | "result_failed" | "result_review" | "task_blocked" | "task_overdue" | "incident_blocked" | "risk_high";
+  context?: string | null;
+  responsible?: string | null;
+  related?: string | null;
+  provenance?: string | null;
+  provenanceConfirmed?: boolean;
 };
 
 export type DashboardNextAction = {
@@ -150,6 +157,7 @@ export type DashboardCommandPacket = {
   priorityItems?: DashboardPriorityItem[];
   attentionHasMore?: boolean;
   attentionNextOffset?: number;
+  attentionTotal?: number;
   nextActions?: DashboardNextAction[];
   latestRouteProposals?: RouteProposal[];
   blockedActions?: Array<string | { action?: string; reason?: string }>;

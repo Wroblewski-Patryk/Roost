@@ -2,7 +2,9 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none. The owner stopped G24c on 2026-10-14. Do not resume it or start G25 from the historical sequence.
+**Active gate:** none. Outcome 1 Today is held at release preflight; G24c remains stopped. No later gate or G24c retry is authorized
+
+**Outcome 1 local checkpoint (2026-10-15):** Today and repeat-import changes passed focused and native local proof. The known disposable Task is archived; wider provenance and signed-in deployed proof remain open. Release held at preflight by a writing Decision GET and an unpushed parent commit. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
 **G24c stopped, incomplete:** Its accepted Findings and checklist remain recorded, but there is no verified supervised Worker result, independent review and owner final. The Windows Host is stopped. The spent Decision and failed execution remain audit evidence; no model retry is authorized by this status. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint).
 
@@ -801,7 +803,7 @@ The accepted direction is one Windows Host running separate role-scoped Hermes i
 | Order | Working outcome and acceptance boundary | Inspected status |
 | --- | --- | --- |
 | 0. Inventory and cleanup design | Classify business, test, audit and unknown data; prove repeated imports preserve the active/history split. RF-UX-010/012. | **Partial:** 52 area views and two settings surfaces inspected signed-in at desktop; Rdzeń table counts reported. Provenance, safe deletion, complete journeys, responsive/accessibility and importer behavior remain open. [Observed UI](ux/owner-console-production-audit-2026-10-14.md). |
-| 1. Owner work surface | Actionable home; linked tasks, files, blockers and results; history separate. PL/EN, responsive and accessible. RF-OUT-001, RF-UX-012. | **Partial:** signed-in dashboard is dominated by repeated technical decisions and ambiguous health, so a coherent deployed owner journey is unproved. |
+| 1. Owner work surface | Actionable home; linked tasks, files, blockers and results; history separate. PL/EN, responsive and accessible. RF-OUT-001, RF-UX-012. | **Partial, local candidate:** Today/API and repeat-import fixes passed focused/native proof; wider provenance and signed-in deployed owner journey remain open. See the 2026-10-15 checkpoint above. |
 | 2. Questions and goals | Show material questions with recommendation; make goals measurable, owned and linked to work. RF-OUT-003/007/008, RF-CTX-016. | **Partial:** models exist; owner journey unproved. |
 | 3. Procedures that create work | Preview and launch a versioned procedure into one run and linked tasks; track results and improvement. RF-CTX-029. | **Missing:** catalog exists, launch/run unproved. |
 | 4. Application work system | Existing-app audit or new-app definition; one lifecycle from requirements to readiness with visible gaps. RF-APP-003/010/014. | **Partial:** records/G21 path exist; both journeys unproved. |

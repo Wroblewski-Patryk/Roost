@@ -536,6 +536,49 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
   } finally { delete process.env.ROOST_REDACTION_TEST_SECRET; if (previousPwd === undefined) delete process.env.PWD; else process.env.PWD = previousPwd; }
 });
 
+test("Today lists current response work and keeps archived test history out", async () => {
+  const owner = await registerOwner(`today-owner-${randomUUID()}@example.test`, "Today isolated workspace");
+  const workspaceId = owner.workspace.id;
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId;
+  const yesterday = new Date(Date.now() - 2 * 86_400_000);
+  const blocked = await prisma.task.create({ data: { workspaceId, title: "Repair current blocker", status: "blocked", source: "companycore", ownerUserId } });
+  const overdue = await prisma.task.create({ data: { workspaceId, title: "Complete overdue response", status: "todo", source: "companycore", dueDate: yesterday, ownerUserId } });
+  const closed = await prisma.task.create({ data: { workspaceId, title: "Closed overdue history", status: "done", source: "companycore", dueDate: yesterday } });
+  const archived = await prisma.task.create({ data: { workspaceId, title: "Confirmed disposable CRUD test", status: "archived", source: "companycore", dueDate: yesterday } });
+  const unknown = await prisma.task.create({ data: { workspaceId, title: "Check uncertain current blocker", status: "blocked", source: "unverified_origin" } });
+  const incident = await prisma.companyRecord.create({ data: { workspaceId, recordType: "technical_incident", key: "today-blocked", title: "Blocked technical incident", status: "blocked", source: "companycore" } });
+  const monitoring = await prisma.companyRecord.create({ data: { workspaceId, recordType: "technical_incident", key: "today-monitoring", title: "Monitored incident", status: "active", source: "companycore" } });
+  const unknownIncident = await prisma.companyRecord.create({ data: { workspaceId, recordType: "technical_incident", key: "today-unknown", title: "Blocked incident with uncertain origin", status: "blocked", source: "companycore", metadata: { sourceKind: "unverified" } } });
+  const risk = await prisma.risk.create({ data: { workspaceId, name: "High risk without a response assignment", riskLevel: "high", status: "active" } });
+  const attention = await request("/v1/dashboard/attention", { headers: auth });
+  assert.equal(attention.status, 200);
+  const packet = (attention.body as { data: { items: Array<{ id: string; kind: string; target: string; responsible: string | null; reason: string; provenanceConfirmed: boolean }>; totalCount: number; decisionCount: number } }).data;
+  assert.equal(packet.totalCount, 5);
+  assert.equal(packet.decisionCount, 0);
+  assert.deepEqual(new Set(packet.items.map(item => item.id)), new Set([blocked.id, overdue.id, unknown.id, incident.id, unknownIncident.id]));
+  assert.ok(!packet.items.some(item => [closed.id, archived.id, monitoring.id, risk.id].includes(item.id)));
+  assert.equal(packet.items.find(item => item.id === blocked.id)?.responsible, "Test Owner");
+  assert.equal(packet.items.find(item => item.id === unknown.id)?.provenanceConfirmed, false);
+  assert.equal(packet.items.find(item => item.id === overdue.id)?.target, `/areas?area=04-operacje&view=tasks&taskId=${overdue.id}&from=attention`);
+  assert.equal(packet.items.find(item => item.id === incident.id)?.reason, "incident_blocked");
+  const command = await request("/v1/dashboard/command", { headers: auth });
+  assert.equal(command.status, 200);
+  assert.equal((command.body as { data: { attentionTotal: number; decisionCount: number } }).data.attentionTotal, 5);
+  const { createAuthToken } = await import("../auth/token");
+  for (const role of ["admin", "member", "viewer"] as const) {
+    const user = await prisma.user.create({ data: { email: `today-${role}-${randomUUID()}@example.test`, passwordHash: "synthetic-not-a-login" } });
+    await prisma.workspaceMembership.create({ data: { workspaceId, userId: user.id, role } });
+    const limitedAuth = { Authorization: `Bearer ${createAuthToken({ workspaceId, userId: user.id })}` };
+    assert.equal((await request("/v1/dashboard/attention", { headers: limitedAuth })).status, 403);
+    assert.equal((await request("/v1/dashboard/command", { headers: limitedAuth })).status, 403);
+  }
+  const other = await registerOwner(`today-other-${randomUUID()}@example.test`, "Other isolated workspace");
+  const foreign = await request("/v1/dashboard/attention", { headers: { Authorization: `Bearer ${other.token}` } });
+  assert.equal(foreign.status, 200);
+  assert.equal((foreign.body as { data: { totalCount: number } }).data.totalCount, 0);
+});
+
 test("G21 owner operation retains an older current task after 101 newer scope revisions", { timeout: 180000 }, async () => {
   const owner = await registerOwner(`g21-history-${randomUUID()}@example.test`, "G21 scope history fixture");
   const workspaceId = owner.workspace.id, ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId!;
@@ -1794,6 +1837,45 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal("metadata" in executionAgentContext.application, false);
   assert.equal(executionAgentContext.documentationIndex.length, 1);
   assert.ok(executionAgentContext.companyRecords.every((record) => record.metadata.sourceKind === "canonical_documentation"));
+  const archivedImportedRecord = importedDocumentation.find((record) => record.recordType === "architecture_document")!;
+  const archivedImportedComponent = importedArchitecture.find((component) => component.name === "Owner console")!;
+  await prisma.companyRecord.update({ where: { id: archivedImportedRecord.id }, data: { status: "archived" } });
+  await prisma.applicationArchitectureComponent.update({ where: { id: archivedImportedComponent.id }, data: { status: "archived" } });
+  const expandedDocumentationPayload = {
+    ...documentationPayload,
+    records: [
+      { ...documentationPayload.records[0], title: "Changed archived source" },
+      documentationPayload.records[1],
+      { sourceId: "file:docs/product/new.md", recordType: "architecture_document", title: "New source", description: "New documentation context.", filePath: "docs/product/new.md", headingPath: ["New source"] }
+    ],
+    architecture: [
+      { ...documentationPayload.architecture[0], name: "Changed archived component" },
+      documentationPayload.architecture[1],
+      { sourceId: "NEW", type: "backend", name: "New service", atomType: "service", layer: "backend", completionPercent: 0, relations: [] }
+    ]
+  };
+  const repeatPreview = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...expandedDocumentationPayload, mode: "preview" }) });
+  assert.equal(repeatPreview.status, 200);
+  const repeatImpact = (repeatPreview.body as { data: { recordCreateCount: number; architectureCreateCount: number; recordInactivePreservedCount: number; architectureInactivePreservedCount: number; deleteCount: number } }).data;
+  assert.equal(repeatImpact.recordCreateCount, 1, "unknown record source is created");
+  assert.equal(repeatImpact.architectureCreateCount, 1, "unknown architecture source is created");
+  assert.equal(repeatImpact.recordInactivePreservedCount, 1);
+  assert.equal(repeatImpact.architectureInactivePreservedCount, 1);
+  assert.equal(repeatImpact.deleteCount, 0);
+  assert.equal((await prisma.companyRecord.findUniqueOrThrow({ where: { id: archivedImportedRecord.id } })).status, "archived", "preview does not reactivate a record");
+  assert.equal((await prisma.applicationArchitectureComponent.findUniqueOrThrow({ where: { id: archivedImportedComponent.id } })).status, "archived", "preview does not reactivate a component");
+  const repeatApply = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...expandedDocumentationPayload, mode: "apply" }) });
+  assert.equal(repeatApply.status, 200);
+  assert.equal((await prisma.companyRecord.findUniqueOrThrow({ where: { id: archivedImportedRecord.id } })).status, "archived", "repeat import keeps the same archived record");
+  assert.equal((await prisma.applicationArchitectureComponent.findUniqueOrThrow({ where: { id: archivedImportedComponent.id } })).status, "archived", "repeat import keeps the same archived component");
+  assert.equal((await prisma.companyRecord.findUniqueOrThrow({ where: { id: archivedImportedRecord.id } })).title, archivedImportedRecord.title, "repeat import does not rewrite archived content");
+  assert.equal((await prisma.applicationArchitectureComponent.findUniqueOrThrow({ where: { id: archivedImportedComponent.id } })).name, archivedImportedComponent.name, "repeat import does not rewrite archived architecture");
+  const importedRecordsAfterRepeat = await prisma.companyRecord.findMany({ where: { applicationId: roostId, source: "documentation-import" } });
+  assert.equal(importedRecordsAfterRepeat.length, 3);
+  assert.equal(importedRecordsAfterRepeat.find((record) => (record.metadata as { sourceId?: string }).sourceId === "file:docs/product/new.md")?.status, "active");
+  const importedArchitectureAfterRepeat = await prisma.applicationArchitectureComponent.findMany({ where: { applicationId: roostId } });
+  assert.equal(importedArchitectureAfterRepeat.length, 3);
+  assert.equal(importedArchitectureAfterRepeat.find((component) => (component.metadata as { sourceId?: string } | null)?.sourceId === "NEW")?.status, "active");
   const crossWorkspace = await request(`/v1/product-engineering/applications/${roostId}`, { headers: { Authorization: `Bearer ${otherOwner.token}` } });
   assert.equal(crossWorkspace.status, 404);
 

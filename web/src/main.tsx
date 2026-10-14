@@ -145,9 +145,17 @@ function PrivateAppRoute({ activeArea, children }: { activeArea?: string; childr
     window.history.replaceState(null, "", taskWorkPath(exactScope));
     return <TaskWorkRoute taskId={exactScope} />;
   }
+  if (signedIn && profile.status === "ready" && activeArea === "00-ogolny" && currentAreaView() === "overview"
+    && profile.data?.workspaceRole !== "owner") {
+    return <PrivateRoute><Shell activeArea={activeArea}><CcNotice tone="warning" title={t("general.ownerAccessTitle")}
+      detail={t("general.ownerAccessDetail")}
+      action={<a href="/areas?area=04-operacje&view=tasks">{t("general.workLink")}</a>} /></Shell></PrivateRoute>;
+  }
   const dashboardView = ["overview", "directory", "departments"].includes(currentAreaView()) || (activeArea === "04-operacje" && currentAreaView() === "tasks");
   const showToolPreview = Boolean(activeArea && activeArea !== "00-ogolny" && currentAreaView() === "overview");
-  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}{showToolPreview ? <DepartmentToolsPreview departmentKey={activeArea as CoreAreaKey} /> : null}</LazyRoute></Shell></PrivateRoute>;
+  // The General page counts actionable owner items. Department health uses a
+  // different denominator, so display it only on contextual area surfaces.
+  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && activeArea !== "00-ogolny" && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}{showToolPreview ? <DepartmentToolsPreview departmentKey={activeArea as CoreAreaKey} /> : null}</LazyRoute></Shell></PrivateRoute>;
 }
 
 function App() {

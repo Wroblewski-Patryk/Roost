@@ -78,18 +78,18 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       await prisma.$executeRaw`UPDATE company_records SET source='runtime_redaction_v1' WHERE id=${redacted.id}::uuid`;
       const initialAttention = await request('/v1/dashboard/command', token);
       assert.equal(initialAttention.status, 200, JSON.stringify(initialAttention.body));
-      assert.ok(initialAttention.body.data.priorityItems.some(item => item.kind === 'incident' && item.id === redacted.id
-        && item.target === `/areas?area=09-technologia&view=incidents&recordId=${redacted.id}&from=attention`));
-      await prisma.companyRecord.createMany({ data: Array.from({ length: 26 }, (_, index) => ({ workspaceId, recordType: 'technical_incident', key: `g7-attention-${index}`, title: `Synthetic attention incident ${index}`, status: 'active' })) });
+      assert.ok(!initialAttention.body.data.priorityItems.some(item => item.id === redacted.id));
+      await prisma.companyRecord.createMany({ data: Array.from({ length: 26 }, (_, index) => ({ workspaceId, recordType: 'technical_incident', key: `g7-attention-${index}`, title: `Current technical incident ${index}`, status: 'blocked', source: 'companycore' })) });
       const firstAttentionPage = await request('/v1/dashboard/command', token);
       assert.equal(firstAttentionPage.status, 200, JSON.stringify(firstAttentionPage.body));
       assert.equal(firstAttentionPage.body.data.priorityItems.length, 25);
       assert.equal(firstAttentionPage.body.data.attentionHasMore, true);
       const secondAttentionPage = await request(`/v1/dashboard/attention?offset=${firstAttentionPage.body.data.attentionNextOffset}`, token);
       assert.equal(secondAttentionPage.status, 200, JSON.stringify(secondAttentionPage.body));
-      assert.ok(secondAttentionPage.body.data.items.some(item => item.id === redacted.id && item.kind === 'incident'));
+      assert.equal(secondAttentionPage.body.data.items.length, 1);
+      assert.ok(!secondAttentionPage.body.data.items.some(item => item.id === redacted.id));
       assert.equal(secondAttentionPage.body.data.hasMore, false);
-      assert.equal(new Set([...firstAttentionPage.body.data.priorityItems, ...secondAttentionPage.body.data.items].map(item => `${item.kind}:${item.id}`)).size, 27);
+      assert.equal(new Set([...firstAttentionPage.body.data.priorityItems, ...secondAttentionPage.body.data.items].map(item => `${item.kind}:${item.id}`)).size, 26);
       contract = companyInformationFixture().packet.contract;
       contract.objective.goalId = goal.id; contract.assignment.agentId = agent.id;
       contract.singleTask.contractId = `roost-task:${task.id}`; contract.singleTask.accountableManager = ref(manager);
@@ -393,9 +393,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(memberScope.status, 403, JSON.stringify(memberScope.body));
       const riskScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_G11_REVIEW_ACTION ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
-      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
+      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_G11_REVIEW_ACTION ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const premature = await request(`${root}/information-approval-candidate`, token);
@@ -1029,6 +1029,11 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         if (agentApproved) {
           assert.equal(resultView.body.data.canOwnerDecide, true);
           assert.equal(resultView.body.data.verifierReview.id, reviewed.body.data.decision.id);
+          const todayPendingOwner = await request('/v1/dashboard/attention', token);
+          assert.equal(todayPendingOwner.status, 200, JSON.stringify(todayPendingOwner.body));
+          assert.ok(todayPendingOwner.body.data.items.some(item => item.kind === 'result' && item.id === runtimeTask.id
+            && item.status === 'owner_pending' && item.reason === 'result_owner_pending'
+            && item.responsible === 'Synthetic owner'));
           const ownerDisposition = action === 'agent-approve' ? 'return' : 'accept';
           const ownerBody = { requestId: randomUUID(), executionId: runtimeExecutionId,
             reviewId: reviewed.body.data.decision.id, materialVersion: view.body.data.materialVersion,
@@ -1049,6 +1054,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
           const finalResult = await request(`${root}/information-result`, token);
           assert.equal(finalResult.body.data.review.decision, ownerDisposition);
           assert.equal(finalResult.body.data.canOwnerDecide, false);
+          const todayAfterOwner = await request('/v1/dashboard/attention', token);
+          assert.equal(todayAfterOwner.status, 200);
+          assert.ok(!todayAfterOwner.body.data.items.some(item => item.kind === 'result' && item.id === runtimeTask.id));
           if (ownerDisposition === 'return') {
             const returnedTask = await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } });
             assert.equal(returnedTask.executionReadiness.status, 'needs_revalidation');

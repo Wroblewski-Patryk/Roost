@@ -30,11 +30,11 @@ const browser = await chromium.launch({ headless: true });
 const origin = `http://127.0.0.1:${server.address().port}`;
 const decisionTarget = `/areas?area=01-strategia&view=decisions&decisionId=${decisionId}&from=attention`;
 const resultTarget = `/areas?area=04-operacje&view=tasks&taskId=${id}&from=attention`;
-function dashboardPacket() { return { generatedAt: new Date().toISOString(), summary: {}, departmentSignals: [], latestRouteProposals: [], priorityItems: [
-  { id: decisionId, kind: "decision", title: "Approve information plan", status: "pending", target: decisionTarget },
-  { id, kind: "result", title: "Review worker finding", status: "review", target: resultTarget },
+function dashboardPacket() { return { generatedAt: new Date().toISOString(), summary: {}, departmentSignals: [], latestRouteProposals: [], attentionTotal: 2, priorityItems: [
+  { id: decisionId, kind: "decision", title: "Approve information plan", status: "pending", reason: "decision_pending", responsible: "Owner", related: "Orchid project", provenance: "roost_decision", provenanceConfirmed: false, target: decisionTarget },
+  { id, kind: "result", title: "Review worker finding", status: "review", reason: "result_review", responsible: "Analyst", target: resultTarget },
 ] }; }
-function resultPacket(mode) { return { status: ({ running: "running", failed: "failed", stopped: "stopped", pending: "queued" })[mode] || "completed", executionId: id, summary: mode === "failed" ? null : "Six current principles summarized.", finalResponse: ["failed", "running", "pending", "stopped"].includes(mode) ? null : "Full source-backed result.", reason: mode === "failed" ? "provider_auth_expired" : null, canReview: mode === "result", materialVersion: "a".repeat(64), review: mode === "accepted" ? { decision: "accept", summary: "Reviewed in the owner account." } : mode === "returned" ? { decision: "return", summary: "Needs a source correction." } : null, sources: [{ id: decisionId, title: "Orchid sample governance note", revision: "2026-10-04T00:25:08.165Z" }], budget: { maxAttempts: 1, maxDurationSeconds: 600, maxOutputTokensIntent: 1200, tokenCostEnforcement: "unavailable" }, execution: { attempt: 1, startedAt: "2026-10-10T10:00:00Z", completedAt: ["running", "pending"].includes(mode) ? null : "2026-10-10T10:01:00Z", model: "gpt-5.6-sol", effort: "low", checkpoint: ["running", "pending"].includes(mode) ? null : "complete", eventsTruncated: false, events: [{ id: decisionId, type: "information_admitted", at: "2026-10-10T10:00:00Z" }] } }; }
+function resultPacket(mode) { return { status: ({ running: "running", failed: "failed", stopped: "stopped", pending: "queued" })[mode] || "completed", executionId: id, summary: mode === "failed" ? null : "Six current principles summarized.", finalResponse: ["failed", "running", "pending", "stopped"].includes(mode) ? null : "Full source-backed result.", reason: mode === "failed" ? "provider_auth_expired" : null, canReview: mode === "result", materialVersion: "a".repeat(64), review: mode === "accepted" ? { decision: "accept", summary: "Reviewed in the owner account." } : mode === "returned" ? { decision: "return", summary: "Needs a source correction." } : null, verifierReview: mode === "result" ? { id: decisionId, decision: "verified_pending_owner", summary: "Source review complete.", materialVersion: "a".repeat(64), evidence: {}, actorAgentId: id, actorCredentialPrefix: null } : null, canOwnerDecide: mode === "result", sources: [{ id: decisionId, title: "Orchid sample governance note", revision: "2026-10-04T00:25:08.165Z" }], budget: { maxAttempts: 1, maxDurationSeconds: 600, maxOutputTokensIntent: 1200, tokenCostEnforcement: "unavailable" }, execution: { attempt: 1, startedAt: "2026-10-10T10:00:00Z", completedAt: ["running", "pending"].includes(mode) ? null : "2026-10-10T10:01:00Z", model: "gpt-5.6-sol", effort: "low", checkpoint: ["running", "pending"].includes(mode) ? null : "complete", eventsTruncated: false, events: [{ id: decisionId, type: "information_admitted", at: "2026-10-10T10:00:00Z" }] } }; }
 let checked = 0;
 try {
   for (const locale of ["pl", "en"]) for (const width of [390, 720, 834, 1440]) {
@@ -47,13 +47,14 @@ try {
         assert.equal(route.request().method(), "GET");
         if (mode === "error") return route.fulfill({ status: 503, json: { error: "server_error", message: "SYNTHETIC_SECRET_SERVER" } });
         if (url.includes("/information-result")) return route.fulfill({ json: { data: resultPacket(mode) } });
-        if (url.includes("/dashboard/command")) return route.fulfill({ json: { data: mode === "empty" ? { ...dashboardPacket(), priorityItems: [] } : dashboardPacket() } });
+        if (url.includes("/dashboard/command")) return route.fulfill({ json: { data: mode === "empty" ? { ...dashboardPacket(), attentionTotal: 0, priorityItems: [] } : dashboardPacket() } });
+        if (url.includes("/task-proposals")) return route.fulfill({ json: { data: { items: mode === "dashboard" ? [{ id, title: "Current sourced task proposal", category: "defect", priorityBand: "blocked_core_flow", status: "pending", proposerLabel: "Verifier", sourceTitle: "Orchid source", sourceCurrent: true, createdAt: new Date().toISOString() }] : [], page: 0, hasMore: false } } });
         return route.fulfill({ json: { data: {} } });
       });
       const result = ["result", "accepted", "returned", "running", "failed", "stopped", "pending"].includes(mode);
       await page.goto(`${origin}${result ? "?result" : ""}`);
       if (mode === "error") await page.getByRole("alert").first().waitFor();
-      else if (mode === "empty") await page.getByText(locale === "pl" ? /Brak pilnych sygnałów/ : /No urgent.*signals/).first().waitFor();
+      else if (mode === "empty") await page.getByText(locale === "pl" ? /Brak bieżącej sprawy/ : /No current item/).first().waitFor();
       else if (result) await page.getByRole("region", { name: locale === "pl" ? "Wynik zadania informacyjnego" : "Information task result" }).waitFor();
       else {
         const decision = page.getByRole("button", { name: /Approve information plan/ });
@@ -63,6 +64,9 @@ try {
         const link = page.locator(`a[href='${decisionTarget}']`);
         await link.waitFor();
         assert.equal(await link.isVisible(), true);
+        await page.getByText("Orchid project", { exact: false }).first().waitFor();
+        await page.getByText("Current sourced task proposal").waitFor();
+        await page.getByText(locale === "pl" ? /klasyfikacja jeszcze niepotwierdzona/ : /classification not yet confirmed/).waitFor();
         const close = page.getByRole("button", { name: locale === "pl" ? "Zamknij szczegóły uwagi" : "Close attention details" });
         if (width < 1280) {
           await close.evaluate(node => new Promise(resolve => requestAnimationFrame(resolve)));
@@ -91,11 +95,11 @@ try {
         }
       }
       if (result && mode === "result") {
-        assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Przyjmij wynik informacyjny" : "Accept information result" }).isDisabled(), true);
+        assert.equal(await page.getByText("Six current principles summarized.").isVisible(), true);
         await page.getByText(locale === "pl" ? "Oś wykonania" : "Execution timeline").click();
         assert.equal(await page.getByText(locale === "pl" ? "Dopuszczono próbę" : "Attempt admitted").isVisible(), true);
       }
-      if (result && mode === "accepted") assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Przyjmij wynik informacyjny" : "Accept information result" }).count(), 0);
+      if (result && mode === "accepted") await page.getByText(locale === "pl" ? "Wynik informacyjny przyjęty." : "Information result accepted.").waitFor();
       if (result && mode === "returned") await page.getByText(locale === "pl" ? "Wynik informacyjny zwrócony." : "Information result returned.").waitFor();
       if (result && mode === "failed") await page.getByText(locale === "pl" ? "Wygasło uwierzytelnienie dostawcy." : "Provider authentication expired.").waitFor();
       if (result && mode === "running") await page.getByText(locale === "pl" ? "Zadanie informacyjne jest wykonywane." : "Information task is running.").waitFor();
@@ -112,6 +116,7 @@ try {
   await page.addInitScript(() => localStorage.setItem("companycoreLocale", "en"));
   let pageReads = 0;
   await page.route("**/v1/**", route => {
+    if (route.request().url().includes("/task-proposals")) return route.fulfill({ json: { data: { items: [], page: 0, hasMore: false } } });
     if (route.request().url().includes("/dashboard/attention")) {
       pageReads++;
       return route.fulfill({ json: { data: { items: [{ id: decisionId, kind: "decision", title: "Older pending decision", status: "pending", target: decisionTarget }], hasMore: false, nextOffset: 26 } } });
@@ -132,20 +137,20 @@ try {
     let reviewWrites = 0;
     await conflictPage.route("**/v1/**", route => {
       if (route.request().method() === "POST") {
-        assert.ok(route.request().url().includes("/review-information"));
+        assert.ok(route.request().url().includes("/actions/review-information"));
         reviewWrites++;
         return route.fulfill({ status: 409, json: { error: "information_result_changed" } });
       }
       return route.fulfill({ json: { data: resultPacket("result") } });
     });
     await conflictPage.goto(`${origin}?result`);
-    await conflictPage.getByRole("textbox", { name: locale === "pl" ? "Uzasadnienie odbioru" : "Review explanation" }).fill("Source revision needs confirmation.");
-    await conflictPage.getByRole("button", { name: locale === "pl" ? "Przyjmij wynik informacyjny" : "Accept information result" }).click();
+    await conflictPage.getByRole("textbox", { name: locale === "pl" ? "Uzasadnienie Twojej decyzji" : "Reason for your decision" }).fill("Source revision needs confirmation.");
+    await conflictPage.getByRole("button", { name: locale === "pl" ? "Przyjmij dokładnie ten wynik" : "Accept this exact result" }).click();
     await conflictPage.getByText(locale === "pl" ? /Wynik lub jego uprawnienie uległy zmianie/ : /The result or its authority changed/).waitFor();
     assert.equal(reviewWrites, 1);
     assert.equal(await conflictPage.getByText(locale === "pl" ? "Wynik informacyjny przyjęty." : "Information result accepted.").count(), 0);
     await conflictPage.getByRole("button", { name: locale === "pl" ? "Odśwież wynik" : "Refresh result" }).click();
-    await conflictPage.getByRole("button", { name: locale === "pl" ? "Przyjmij wynik informacyjny" : "Accept information result" }).waitFor();
+    await conflictPage.getByRole("button", { name: locale === "pl" ? "Przyjmij dokładnie ten wynik" : "Accept this exact result" }).waitFor();
     await conflictPage.close(); checked++;
   }
   console.log(`G7 attention UI: ${checked} checks passed (80 PL/EN × 390/720/834/1440 attention and result states, pagination, and PL/EN review-conflict recovery). Screenshots: ${output}`);

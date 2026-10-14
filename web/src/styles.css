@@ -8038,6 +8038,45 @@ textarea:focus-visible,
   margin: 0 clamp(1rem, 2vw, 1.55rem);
 }
 
+.roost-today-history,
+.roost-today-secondary {
+  margin: 1rem clamp(1rem, 2vw, 1.55rem);
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  padding-top: 0.8rem;
+  color: #c7d9f3;
+  font-size: 0.75rem;
+}
+
+.roost-today-history {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem 1.2rem;
+}
+
+.roost-today-history a,
+.roost-today-secondary summary {
+  color: #c7d9f3;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.roost-today-secondary summary {
+  width: fit-content;
+  min-height: 2.75rem;
+  cursor: pointer;
+  padding: 0.7rem 0;
+  font-weight: 700;
+}
+
+.roost-today-secondary > div { margin-bottom: 1rem; }
+
+.roost-today-history a:focus-visible,
+.roost-today-secondary summary:focus-visible {
+  outline: 2px solid #8b83ff;
+  outline-offset: 3px;
+}
+
 .roost-owner-decisions > header,
 .roost-company-pulse > header,
 .roost-operating-ledgers section > header {
@@ -8736,7 +8775,11 @@ textarea:focus-visible,
   }
 
   .roost-decision-inspector > footer {
+    position: sticky;
+    bottom: 0;
     margin-top: 1rem;
+    border-top: 1px solid var(--roost-glass-line);
+    background: #0b1c2b;
   }
 }
 
@@ -8877,6 +8920,13 @@ textarea:focus-visible,
     grid-template-columns: 2.4rem minmax(0, 1fr) 1.2rem;
     gap: 0.45rem;
     padding: 0.55rem 0.45rem;
+  }
+
+  .roost-decision-copy small {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .roost-decision-impact,

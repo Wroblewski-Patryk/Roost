@@ -452,11 +452,19 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
     recordCount: input.records.length,
     architectureCount: input.architecture.length,
     recordCreateCount: input.records.filter((record) => !existingBySourceId.has(record.sourceId)).length,
-    recordUpdateCount: input.records.filter((record) => existingBySourceId.has(record.sourceId)).length,
+    recordUpdateCount: input.records.filter((record) => existingBySourceId.get(record.sourceId)?.status === "active").length,
+    recordInactivePreservedCount: input.records.filter((record) => {
+      const existing = existingBySourceId.get(record.sourceId);
+      return existing && existing.status !== "active";
+    }).length,
     architectureCreateCount: input.architecture.filter((component) => !existingArchitectureBySourceId.has(component.sourceId)).length,
-    architectureUpdateCount: input.architecture.filter((component) => existingArchitectureBySourceId.has(component.sourceId)).length,
+    architectureUpdateCount: input.architecture.filter((component) => existingArchitectureBySourceId.get(component.sourceId)?.status === OperatingStatus.active).length,
+    architectureInactivePreservedCount: input.architecture.filter((component) => {
+      const existing = existingArchitectureBySourceId.get(component.sourceId);
+      return existing && existing.status !== OperatingStatus.active;
+    }).length,
     createCount: input.records.filter((record) => !existingBySourceId.has(record.sourceId)).length + input.architecture.filter((component) => !existingArchitectureBySourceId.has(component.sourceId)).length,
-    updateCount: input.records.filter((record) => existingBySourceId.has(record.sourceId)).length + input.architecture.filter((component) => existingArchitectureBySourceId.has(component.sourceId)).length,
+    updateCount: input.records.filter((record) => existingBySourceId.get(record.sourceId)?.status === "active").length + input.architecture.filter((component) => existingArchitectureBySourceId.get(component.sourceId)?.status === OperatingStatus.active).length,
     deleteCount: 0
   };
   if (input.mode === "preview") return res.json({ data: preview });
@@ -466,6 +474,10 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
   await prisma.$transaction(async (transaction) => {
     for (const record of orderedRecords) {
       const existing = existingBySourceId.get(record.sourceId);
+      if (existing && existing.status !== "active") {
+        idBySourceId.set(record.sourceId, existing.id);
+        continue;
+      }
       const parentId = record.parentSourceId ? idBySourceId.get(record.parentSourceId) ?? null : null;
       const metadata = {
         sourceSystem: input.sourceSystem,
@@ -484,7 +496,6 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
         businessPurpose: record.recordType === "application_goal" ? record.description ?? record.title : null,
         desiredState: ["application_goal", "architecture_requirement"].includes(record.recordType) ? record.description ?? record.title : null,
         priority: record.recordType === "application_goal" ? "high" : "normal",
-        status: "active",
         functionalState: FunctionalState.expected,
         verificationState: "not_started" as const,
         source: "documentation-import",
@@ -494,11 +505,12 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
       };
       const saved = existing
         ? await transaction.companyRecord.update({ where: { id: existing.id }, data })
-        : await transaction.companyRecord.create({ data: { ...data, workspaceId, key: documentationRecordKey(application.slug, input.sourceSystem, record.sourceId) } });
+        : await transaction.companyRecord.create({ data: { ...data, status: "active", workspaceId, key: documentationRecordKey(application.slug, input.sourceSystem, record.sourceId) } });
       idBySourceId.set(record.sourceId, saved.id);
     }
     for (const component of input.architecture) {
       const existing = existingArchitectureBySourceId.get(component.sourceId);
+      if (existing && existing.status !== OperatingStatus.active) continue;
       const metadata = {
         sourceSystem: input.sourceSystem,
         sourceKind: input.sourceKind,
@@ -517,9 +529,9 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
         relations: component.relations,
         provenance: "architecture-registry"
       } satisfies Prisma.InputJsonObject;
-      const data = { type: component.type, name: component.name, description: component.description ?? null, status: OperatingStatus.active, metadata };
+      const data = { type: component.type, name: component.name, description: component.description ?? null, metadata };
       if (existing) await transaction.applicationArchitectureComponent.update({ where: { id: existing.id }, data });
-      else await transaction.applicationArchitectureComponent.create({ data: { ...data, applicationId: application.id } });
+      else await transaction.applicationArchitectureComponent.create({ data: { ...data, status: OperatingStatus.active, applicationId: application.id } });
     }
   }, { maxWait: 10_000, timeout: 120_000 });
   await audit(req, "application.documentation_context.import", "Application", application.id, { ...preview, sourceRevision: input.sourceRevision ?? null });

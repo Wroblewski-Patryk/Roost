@@ -3,6 +3,7 @@ import { TaskStatus } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { companyRuntimeClass } from "../agent-runtime/company-information-runtime";
+import { requireWorkspaceRole } from "../../auth/workspace-access";
 
 const OPEN_TASK_STATUSES: TaskStatus[] = ["todo", "in_progress", "blocked"];
 
@@ -41,10 +42,15 @@ function pickHealth(status: "ready" | "watch" | "blocked", count: number) {
   return status;
 }
 
+function briefContext(value: string | null | undefined) {
+  const text = value?.replace(/\s+/g, " ").trim();
+  return text ? text.slice(0, 360) : null;
+}
+
 export const dashboardRouter = Router();
 
 const ATTENTION_PAGE_SIZE = 25;
-type AttentionRow = { id: string; kind: "decision" | "result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date };
+type AttentionRow = { id: string; kind: "decision" | "result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date; executionId: string | null; totalCount: bigint; decisionCount: bigint };
 async function attentionPage(workspaceId: string, offset: number) {
   const rows = await prisma.$queryRaw<AttentionRow[]>`
     WITH latest_execution AS (
@@ -54,63 +60,133 @@ async function attentionPage(workspaceId: string, offset: number) {
         AND e.metadata->'executionContract'->>'executionClass'=${companyRuntimeClass}
       ORDER BY e.task_id, e.created_at DESC, e.id DESC
     ), current_result AS (
-      SELECT e.* FROM latest_execution e WHERE e.status IN ('completed', 'failed')
+      SELECT e.*, EXISTS (SELECT 1 FROM task_review_decisions r
+        WHERE r.workspace_id=${workspaceId}::uuid AND r.execution_id=e.id
+          AND r.decision='approve' AND r.actor_agent_id IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM information_owner_decisions o
+            WHERE o.workspace_id=r.workspace_id AND o.execution_id=e.id)) AS owner_pending
+      FROM latest_execution e WHERE e.status IN ('completed', 'failed')
         AND NOT EXISTS (SELECT 1 FROM agent_execution_events r
           WHERE r.workspace_id=${workspaceId}::uuid AND r.execution_id=e.id AND r.type='information_review')
         AND NOT EXISTS (SELECT 1 FROM task_review_decisions r
           WHERE r.workspace_id=${workspaceId}::uuid AND r.execution_id=e.id
-            AND (r.decision='approve' OR EXISTS (SELECT 1 FROM task_review_actions a
+            AND ((r.decision='approve' AND (r.actor_agent_id IS NULL OR EXISTS
+              (SELECT 1 FROM information_owner_decisions o WHERE o.workspace_id=r.workspace_id AND o.execution_id=e.id)))
+              OR EXISTS (SELECT 1 FROM task_review_actions a
               WHERE a.workspace_id=r.workspace_id AND a.review_id=r.id AND a.action='return_to_executor')))
     ), attention AS (
       SELECT 1 AS rank, d.id, 'decision'::text AS kind, d.title, 'pending'::text AS status, 'high'::text AS severity,
-        NULL::timestamp AS due_date, revision.created_at AS updated_at
+        NULL::timestamp AS due_date, revision.created_at AS updated_at, NULL::uuid AS execution_id
       FROM decisions d JOIN LATERAL (
-        SELECT r.created_at FROM decision_revisions r WHERE r.workspace_id=d.workspace_id AND r.decision_id=d.id
+        SELECT r.created_at, r.body FROM decision_revisions r WHERE r.workspace_id=d.workspace_id AND r.decision_id=d.id
         ORDER BY r.version DESC LIMIT 1
       ) revision ON true
       WHERE d.workspace_id=${workspaceId}::uuid AND d.source='roost_decision' AND decision_state(d.id)='pending'
+        AND d.status NOT IN ('archived', 'rejected', 'superseded')
+        AND (
+          revision.body->'workerCredential' IS NULL OR (
+            (revision.body->'workerCredential'->>'validUntil')::timestamptz > now()
+            AND (revision.body->'workerCredential'->'handoff' IS NULL OR EXISTS (
+              SELECT 1 FROM worker_credential_handoffs h
+              WHERE h.workspace_id=d.workspace_id
+                AND h.id::text=revision.body->'workerCredential'->'handoff'->>'requestId'
+                AND h.state='requested' AND h.expires_at>now()
+            ))
+          )
+        )
       UNION ALL
-      SELECT 2, t.id, 'result', t.title, CASE WHEN e.status='failed' THEN 'failed' ELSE 'review' END,
-        CASE WHEN e.status='failed' THEN 'high' ELSE 'medium' END, NULL::timestamp, e.updated_at
+      SELECT 2, t.id, 'result', t.title, CASE WHEN e.status='failed' THEN 'failed' WHEN e.owner_pending THEN 'owner_pending' ELSE 'review' END,
+        CASE WHEN e.status='failed' THEN 'high' ELSE 'medium' END, NULL::timestamp, e.updated_at, e.id
       FROM current_result e JOIN tasks t ON t.id=e.task_id AND t.workspace_id=${workspaceId}::uuid
+        AND t.status IN ('todo', 'in_progress', 'blocked')
       UNION ALL
-      SELECT 3, t.id, 'blocker', t.title, 'blocked', 'high', t.due_date, t.updated_at
+      SELECT 3, t.id, 'blocker', t.title, 'blocked', 'high', t.due_date, t.updated_at, NULL::uuid
       FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.status='blocked'
         AND NOT EXISTS (SELECT 1 FROM current_result e WHERE e.task_id=t.id)
       UNION ALL
-      SELECT 4, c.id, 'incident', c.title, c.status, c.priority, NULL::timestamp, c.updated_at
+      SELECT 5, c.id, 'incident', c.title, c.status, c.priority, NULL::timestamp, c.updated_at, NULL::uuid
       FROM company_records c WHERE c.workspace_id=${workspaceId}::uuid AND c.record_type='technical_incident'
-        AND c.status IN ('active', 'blocked')
+        AND c.status='blocked'
       UNION ALL
-      SELECT 5, t.id, 'task', t.title, t.status::text, 'medium', t.due_date, t.updated_at
+      SELECT 4, t.id, 'task', t.title, t.status::text, 'medium', t.due_date, t.updated_at, NULL::uuid
       FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.status IN ('todo', 'in_progress')
         AND t.due_date < ${startOfToday()} AND NOT EXISTS (SELECT 1 FROM current_result e WHERE e.task_id=t.id)
-      UNION ALL
-      SELECT 6, r.id, 'risk', r.name, 'active', r.risk_level::text, NULL::timestamp, r.updated_at
-      FROM risks r WHERE r.workspace_id=${workspaceId}::uuid AND r.status='active' AND r.risk_level IN ('high', 'critical')
     )
-    SELECT id, kind, title, status, severity, due_date AS "dueDate", updated_at AS "updatedAt"
+    SELECT id, kind, title, status, severity, due_date AS "dueDate", updated_at AS "updatedAt", execution_id AS "executionId",
+      count(*) OVER() AS "totalCount", count(*) FILTER (WHERE kind='decision') OVER() AS "decisionCount"
     FROM attention ORDER BY rank, updated_at DESC, id DESC
     LIMIT ${ATTENTION_PAGE_SIZE + 1} OFFSET ${offset}
   `;
-  const items = rows.slice(0, ATTENTION_PAGE_SIZE).map(row => ({
+  const pageRows = rows.slice(0, ATTENTION_PAGE_SIZE);
+  const taskIds = pageRows.filter(row => ["result", "blocker", "task"].includes(row.kind)).map(row => row.id);
+  const decisionIds = pageRows.filter(row => row.kind === "decision").map(row => row.id);
+  const incidentIds = pageRows.filter(row => row.kind === "incident").map(row => row.id);
+  const executionIds = pageRows.filter(row => row.kind === "result" && row.executionId).map(row => row.executionId!);
+  const [tasks, decisions, incidents, executions, workspace] = await Promise.all([
+    prisma.task.findMany({ where: { workspaceId, id: { in: taskIds } }, select: {
+      id: true, source: true, description: true, project: { select: { name: true } }, goal: { select: { title: true } },
+      ownerUser: { select: { name: true } },
+      assignedWorkforceEntity: { select: { name: true } }
+    } }),
+    prisma.decision.findMany({ where: { workspaceId, id: { in: decisionIds } }, select: {
+      id: true, source: true, problem: true, context: true, rationale: true, project: { select: { name: true } }
+    } }),
+    prisma.companyRecord.findMany({ where: { workspaceId, id: { in: incidentIds } }, select: {
+      id: true, source: true, description: true
+    } }),
+    prisma.agentExecution.findMany({ where: { workspaceId, id: { in: executionIds } },
+      select: { taskId: true, metadata: true } }),
+    prisma.workspace.findUnique({ where: { id: workspaceId }, select: { owner: { select: { name: true } } } })
+  ]);
+  const verifierIds = executions.map(execution => {
+    const metadata = execution.metadata as Record<string, any> | null;
+    return metadata?.executionContract?.taskRoles?.verifier?.id;
+  }).filter((id): id is string => typeof id === "string");
+  const verifiers = await prisma.workforceEntity.findMany({ where: { workspaceId, id: { in: verifierIds } }, select: { id: true, name: true } });
+  const verifierById = new Map(verifiers.map(verifier => [verifier.id, verifier.name]));
+  const verifierByTask = new Map<string, string | null>();
+  for (const execution of executions) {
+    if (verifierByTask.has(execution.taskId)) continue;
+    const metadata = execution.metadata as Record<string, any> | null;
+    verifierByTask.set(execution.taskId, verifierById.get(metadata?.executionContract?.taskRoles?.verifier?.id) ?? null);
+  }
+  const taskById = new Map(tasks.map(task => [task.id, task]));
+  const decisionById = new Map(decisions.map(decision => [decision.id, decision]));
+  const incidentById = new Map(incidents.map(incident => [incident.id, incident]));
+  const items = pageRows.map(row => ({
     id: row.id, kind: row.kind, title: row.title, source: row.kind, severity: row.severity,
     status: row.status, dueDate: row.dueDate, updatedAt: row.updatedAt,
+    reason: row.kind === "decision" ? "decision_pending" : row.kind === "result" ? row.status === "failed" ? "result_failed" : row.status === "owner_pending" ? "result_owner_pending" : "result_review"
+      : row.kind === "blocker" ? "task_blocked" : row.kind === "task" ? "task_overdue"
+      : row.kind === "incident" ? "incident_blocked" : "risk_high",
+    context: briefContext(taskById.get(row.id)?.description ?? decisionById.get(row.id)?.problem
+      ?? decisionById.get(row.id)?.context ?? decisionById.get(row.id)?.rationale
+      ?? incidentById.get(row.id)?.description),
+    responsible: row.kind === "result" && row.status === "owner_pending" ? workspace?.owner.name ?? null
+      : row.kind === "result" && row.status === "review" ? verifierByTask.get(row.id) ?? null
+      : row.kind === "result" ? null
+      : taskById.get(row.id)?.ownerUser?.name ?? taskById.get(row.id)?.assignedWorkforceEntity?.name ?? null,
+    related: taskById.get(row.id)?.project?.name ?? taskById.get(row.id)?.goal?.title
+      ?? decisionById.get(row.id)?.project?.name ?? null,
+    provenance: taskById.get(row.id)?.source ?? decisionById.get(row.id)?.source ?? incidentById.get(row.id)?.source ?? null,
+    provenanceConfirmed: false,
     target: row.kind === "decision" ? `/areas?area=01-strategia&view=decisions&decisionId=${row.id}&from=attention`
       : ["result", "blocker", "task"].includes(row.kind) ? `/areas?area=04-operacje&view=tasks&taskId=${row.id}&from=attention`
       : row.kind === "incident" ? `/areas?area=09-technologia&view=incidents&recordId=${row.id}&from=attention`
-      : "/areas?area=12-zarzadzanie&view=risks"
+      : `/areas?area=12-zarzadzanie&view=risks&recordId=${row.id}&from=attention`
   }));
-  return { items, hasMore: rows.length > ATTENTION_PAGE_SIZE, nextOffset: offset + items.length };
+  return { items, totalCount: Number(rows[0]?.totalCount ?? 0), decisionCount: Number(rows[0]?.decisionCount ?? 0), hasMore: rows.length > ATTENTION_PAGE_SIZE, nextOffset: offset + items.length };
 }
 
 dashboardRouter.get("/attention", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
   const raw = req.query.offset;
   const offset = typeof raw === "string" && /^(0|[1-9]\d{0,5})$/.test(raw) ? Number(raw) : 0;
   res.json({ data: await attentionPage(req.auth!.workspaceId, offset) });
 }));
 
 dashboardRouter.get("/command", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
   const workspaceId = req.auth!.workspaceId;
   const today = startOfToday();
   const tomorrow = startOfTomorrow();
@@ -252,13 +328,13 @@ dashboardRouter.get("/command", asyncHandler(async (req, res) => {
   const operationPressure = sumCounts([taskStatusCounts.blocked, overdueTasks.length, unscheduledOpenTasks]);
   const peoplePressure = sumCounts([autonomousAgents, pendingWorkforceSyncs]);
 
-  // The newest Worker attempt is the only current result for a Task. A review
-  // closes that result's attention without changing a provider-owned Task state.
+  // The newest Worker attempt is the only current result for a Task. Agent
+  // verification stays visible until the separate owner decision is recorded.
   const attention = await attentionPage(workspaceId, 0);
   const priorityItems = attention.items;
 
   const interviewCount=(await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM task_interview_cases c WHERE workspace_id=${workspaceId}::uuid AND task_interview_status(c.id) IN ('pending','proposed') AND NOT EXISTS(SELECT 1 FROM task_interview_cases n WHERE n.supersedes_id=c.id)`)[0].count;
-  const decisionCount=(await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM decision_revisions WHERE workspace_id=${workspaceId}::uuid AND decision_state(decision_id)='pending'`)[0].count;
+  const decisionCount=attention.decisionCount;
   const nextActions = [
     decisionCount>0?{key:"review_decision_impact",label:"Review decision impact",target:"/areas?area=01-strategia&view=decisions",count:decisionCount,priority:"high"}:null,
     interviewCount>0?{key:"resolve_material_questions",label:"Resolve material decision questions",target:"/areas?area=01-strategia&view=decisions",count:interviewCount,priority:"high"}:null,
@@ -352,6 +428,7 @@ dashboardRouter.get("/command", asyncHandler(async (req, res) => {
         }
       ],
       priorityItems,
+      attentionTotal: attention.totalCount,
       attentionHasMore: attention.hasMore,
       attentionNextOffset: attention.nextOffset,
       nextActions,
