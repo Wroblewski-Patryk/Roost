@@ -89,14 +89,16 @@ function signedFixture() {
 test('delayed signed admission reattests the bound installation after the reply, before native launch', async () => {
   const f = signedFixture(), priorInstallation = { manifestDigest: 'a'.repeat(64), executableDigest: 'b'.repeat(64), inventoryFiles: 24969 };
   const calls = [], paths = { manifestPath: 'fixture-manifest', attestationPath: 'fixture-attestation' };
+  const priorAttestedAt = f.now - 75000;
+  assert.equal(f.now - priorAttestedAt > 60000, true, 'original receipt would already be expired');
   let clock = f.now + 55000;
   const refreshed = await verifyInformationPostAdmissionInstallation({ signed: f.signed,
     authorityPublicKey: publicKey, expected: f.expected, priorInstallation, installationPaths: paths,
     now: () => clock, verifyInstallation: async value => {
-      calls.push(value); clock += 3000; return { ...priorInstallation };
+      calls.push(value); clock += 3000; return { ...priorInstallation, attestedAt: clock };
     } });
   assert.deepEqual(calls, [paths]);
-  assert.deepEqual(refreshed, priorInstallation);
+  assert.deepEqual(refreshed, { ...priorInstallation, attestedAt: clock });
   assert.equal(clock < Date.parse(f.payload.expiresAt), true);
 });
 test('expired admission refuses before or during post-admission reattestation', async () => {
