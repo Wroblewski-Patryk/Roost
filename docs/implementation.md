@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** `9d0bb7b` deployed; Host stopped. Decision spent. Local v4 withdrawal, native continuation and fresh backup pass. Release and supervised proof remain; cause/contact unknown. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint). Gate open.
+**G24c:** `6f68874a` deployed; Host stopped. Decision spent. V4 withdrawal and backup verify; owner correction and supervised proof remain. Cause/contact unknown. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
