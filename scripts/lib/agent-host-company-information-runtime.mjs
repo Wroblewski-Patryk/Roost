@@ -65,6 +65,24 @@ export function verifyInformationAdmission(signed, authorityPublicKey, expected,
   return checked.data.payload;
 }
 
+export function assertInformationInstallationContinuity(before, after) {
+  if (!before || !after || before.manifestDigest !== after.manifestDigest
+    || before.executableDigest !== after.executableDigest || before.inventoryFiles !== after.inventoryFiles)
+    fail('installation_digest_changed');
+  return after;
+}
+
+export async function verifyInformationPostAdmissionInstallation({ signed, authorityPublicKey, expected,
+  priorInstallation, installationPaths, verifyInstallation = verifyHermesSmokeInstallation, now = Date.now }) {
+  // The signed admission lives for at most 60 seconds. Reattest after receiving
+  // it so a still-valid ticket also bounds the age of the new 60-second receipt.
+  verifyInformationAdmission(signed, authorityPublicKey, expected, now());
+  const installation = assertInformationInstallationContinuity(priorInstallation,
+    await verifyInstallation(installationPaths));
+  verifyInformationAdmission(signed, authorityPublicKey, expected, now());
+  return installation;
+}
+
 export function buildCompanyInformationInput({ claimed, taskContext, secrets = [] }) {
   const packet = taskContext?.executionPacket, parsed = companyInformationRuntimeContractSchema.safeParse(packet?.contract);
   if (!parsed.success || claimed?.applicationId !== null || claimed?.baseBranch !== null || claimed?.application != null
@@ -188,8 +206,9 @@ export async function runCompanyInformationRuntime({ claimed, taskContext, provi
   const profileSeal = local ? null : sealHermesProfile(provider.profile, { repositoryPath: workingDirectory, readyRevision: sealed.readyRevision });
   const environment = hermesStartupEnvironment(local ? localProfile : provider.profile, process.env, workingDirectory);
   assertStartupOverlays(provider, environment, workingDirectory);
-  const installation = await verifyHermesSmokeInstallation({ manifestPath: provider.attestation.manifestPath,
-    attestationPath: path.join(path.dirname(provider.attestation.manifestPath), 'roost-installation-attestation.json') });
+  const installationPaths = { manifestPath: provider.attestation.manifestPath,
+    attestationPath: path.join(path.dirname(provider.attestation.manifestPath), 'roost-installation-attestation.json') };
+  let installation = await verifyHermesSmokeInstallation(installationPaths);
   if (installation.manifestDigest !== provider.attestation.sha256) fail('installation_digest_changed');
   const tools = qualifyHermesReadOnlyTools(provider, environment);
   const runtime = { executable: fixtureRuntimeBinding(provider.executablePath), node: fixtureRuntimeBinding(process.execPath), launcher: { sourceDigest: windowsJobSourceDigest() },
@@ -224,7 +243,10 @@ export async function runCompanyInformationRuntime({ claimed, taskContext, provi
   if (usedExecutions.has(claimed.id)) fail('automatic_retry_forbidden');
   const signed = await requestAdmission(Object.freeze({ ...expected, modelSelection: sealed.modelSelection, nativeObservation: {
     profile: observedProfile, runtime, argvDigest: sha(argv), environmentDigest: sha(environment), zeroNativeTools: true } }));
-  verifyInformationAdmission(signed, authorityPublicKey, expected);
+  assertAuthority();
+  installation = await verifyInformationPostAdmissionInstallation({ signed, authorityPublicKey, expected,
+    priorInstallation: installation, installationPaths });
+  assertAuthority();
   const assertLaunch = () => {
     assertAuthority(); if (signal?.aborted || allowedMs() <= 0 || sha({ claimed, taskContext, provider }) !== snapshot) fail('authority_or_context_changed');
     verifyInformationAdmission(signed, authorityPublicKey, expected); assertWorkingRoot(workingDirectory);

@@ -89,6 +89,7 @@ export async function executeInformationTask({ claimed, api, writerLock, provide
         assertAuthority();
         const fresh = await fetchExecutionContext(api, claimed, { signal: abort.signal, secrets });
         if (fresh.taskContext.executionPacket.revision !== context.taskContext.executionPacket.revision) throw Error('information_context_changed');
+        assertAuthority();
         return api(`/v1/agent-runtime/executions/${claimed.id}/actions/managed-admission`, { method: 'POST', body: JSON.stringify({ schemaVersion: 'roost-managed-admission-v1', phase: 'information', executionId: claimed.id, leaseToken: claimed.leaseToken, observation }) });
       } });
     void running.catch(() => {});

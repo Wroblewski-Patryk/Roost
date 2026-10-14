@@ -39,6 +39,12 @@ test('only fixed observer, Job, Hermes and Worker codes enter a diagnostic', () 
   assert.equal(preLaunch.preLaunchReason, 'signed_binding_changed');
   assert.equal(informationFailureDiagnostic({ message: 'company_information_runtime_blocked', leaseLost: true,
     protocolAdmission: true, details: { reason: 'signed_binding_changed' } }, { nativeLaunchIntentPresent: true }).preLaunchReason, null);
+  assert.equal(informationFailureDiagnostic({ message: 'hermes_smoke_installation_unverified', leaseLost: true,
+    protocolAdmission: true }, { nativeLaunchIntentPresent: false }).preLaunchReason, 'hermes_smoke_installation_unverified');
+  assert.equal(informationFailureDiagnostic({ message: 'hermes_smoke_installation_unverified', leaseLost: true,
+    protocolAdmission: true }, { nativeLaunchIntentPresent: true }).preLaunchReason, null);
+  assert.equal(informationFailureDiagnostic({ message: 'hermes_smoke_installation_unverified', leaseLost: true },
+    { nativeLaunchIntentPresent: false }).preLaunchReason, null);
   assert.equal(informationFailureDiagnostic({ message: 'company_information_runtime_blocked', leaseLost: true,
     protocolAdmission: true, details: { reason: 'CANARY' } }).preLaunchReason, null);
 });

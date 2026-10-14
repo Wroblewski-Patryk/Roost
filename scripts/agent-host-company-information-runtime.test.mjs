@@ -6,7 +6,8 @@ import { companyInformationFixture } from './fixtures/company-information.mjs';
 import { sealPacket } from './fixtures/execution-packet.mjs';
 import ready from './lib/agent-host-ready-context.cjs';
 import { trustedPilotBytes } from './lib/agent-host-trusted-pilot.mjs';
-import { buildCompanyInformationInput, informationAdmissionSchema, verifyInformationAdmission, consumeInformationQualification,
+import { buildCompanyInformationInput, informationAdmissionSchema, verifyInformationAdmission, assertInformationInstallationContinuity,
+  verifyInformationPostAdmissionInstallation, consumeInformationQualification,
   assertInformationQualification, authorizeInformationResume, completeInformationQualification } from './lib/agent-host-company-information-runtime.mjs';
 
 function fixture() {
@@ -62,6 +63,19 @@ function checklistFixture() {
   seal(f); return f;
 }
 const keys = generateKeyPairSync('ed25519');
+
+test('fresh post-admission installation must match the inventory already bound into the runtime observation', () => {
+  const prior = { manifestDigest: 'a'.repeat(64), executableDigest: 'b'.repeat(64), inventoryFiles: 24969 };
+  const refreshed = { ...prior };
+  assert.equal(assertInformationInstallationContinuity(prior, refreshed), refreshed);
+  assert.throws(() => assertInformationInstallationContinuity(prior, { ...prior, manifestDigest: 'c'.repeat(64) }),
+    error => error.protocolAdmission === true && error.details?.reason === 'installation_digest_changed');
+  assert.throws(() => assertInformationInstallationContinuity(prior, { ...prior, executableDigest: 'c'.repeat(64) }),
+    error => error.protocolAdmission === true && error.details?.reason === 'installation_digest_changed');
+  assert.throws(() => assertInformationInstallationContinuity(prior, { ...prior, inventoryFiles: 24968 }),
+    error => error.protocolAdmission === true && error.details?.reason === 'installation_digest_changed');
+});
+
 const publicKey = keys.publicKey.export({ type: 'spki', format: 'pem' });
 function signedFixture() {
   const now = Date.now(), payload = { schemaVersion: 'roost-company-information-admission-v1', domain: 'roost-company-information-admission-v1',
@@ -72,6 +86,32 @@ function signedFixture() {
   const expected = structuredClone(payload); delete expected.issuedAt; delete expected.expiresAt; delete expected.decisionId; delete expected.decisionVersion;
   return { payload, expected, signed: { payload, signature: sign(null, trustedPilotBytes(payload), keys.privateKey).toString('hex') }, now };
 }
+test('delayed signed admission reattests the bound installation after the reply, before native launch', async () => {
+  const f = signedFixture(), priorInstallation = { manifestDigest: 'a'.repeat(64), executableDigest: 'b'.repeat(64), inventoryFiles: 24969 };
+  const calls = [], paths = { manifestPath: 'fixture-manifest', attestationPath: 'fixture-attestation' };
+  let clock = f.now + 55000;
+  const refreshed = await verifyInformationPostAdmissionInstallation({ signed: f.signed,
+    authorityPublicKey: publicKey, expected: f.expected, priorInstallation, installationPaths: paths,
+    now: () => clock, verifyInstallation: async value => {
+      calls.push(value); clock += 3000; return { ...priorInstallation };
+    } });
+  assert.deepEqual(calls, [paths]);
+  assert.deepEqual(refreshed, priorInstallation);
+  assert.equal(clock < Date.parse(f.payload.expiresAt), true);
+});
+test('expired admission refuses before or during post-admission reattestation', async () => {
+  const f = signedFixture(), priorInstallation = { manifestDigest: 'a'.repeat(64), executableDigest: 'b'.repeat(64), inventoryFiles: 24969 };
+  let clock = f.now + 58000, calls = 0;
+  const options = { signed: f.signed, authorityPublicKey: publicKey, expected: f.expected,
+    priorInstallation, installationPaths: {}, now: () => clock,
+    verifyInstallation: async () => { calls++; clock += 2000; return { ...priorInstallation }; } };
+  await assert.rejects(verifyInformationPostAdmissionInstallation(options),
+    error => error.protocolAdmission === true && error.details?.reason === 'signed_expired_or_future');
+  assert.equal(calls, 1);
+  await assert.rejects(verifyInformationPostAdmissionInstallation(options),
+    error => error.protocolAdmission === true && error.details?.reason === 'signed_expired_or_future');
+  assert.equal(calls, 1);
+});
 test('informational stdin contains exactly selected company records and no lease or native observations', () => {
   const f = fixture(), value = buildCompanyInformationInput(f), body = JSON.parse(value.input);
   assert.equal(body.executionClass, 'roost-company-information-runtime-v1');

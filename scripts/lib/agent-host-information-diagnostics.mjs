@@ -37,6 +37,9 @@ selection_invalid signature_invalid signed_binding_changed signed_expired_or_fut
 signed_shape_invalid startup_overlay_present startup_overlay_unreadable
 task_scope_invalid trusted_key_invalid working_directory_not_empty
 working_directory_overlay working_directory_unreadable`.split(/\s+/));
+// A fixed installation refusal may occur after signed admission and before
+// native launch. Preserve only its code, never an exception body or path.
+const installationPreLaunchCodes = new Set(['hermes_smoke_installation_unverified']);
 
 // Never persist an arbitrary exception message, cause, HTTP body or provider
 // output. Only fixed codes from our own runtime may cross into this file.
@@ -61,8 +64,9 @@ export function informationFailureDiagnostic(error, { nativeCleanupProven = fals
   } else if (workerCodes.has(message)) {
     code = message;
   }
-  const preLaunchReason = !nativeLaunchIntentPresent && error?.protocolAdmission === true && runtimeReasons.has(reason)
-    ? reason : null;
+  const preLaunchReason = !nativeLaunchIntentPresent && error?.protocolAdmission === true
+    ? runtimeReasons.has(reason) ? reason : installationPreLaunchCodes.has(message) ? message : null
+    : null;
   return Object.freeze({ schemaVersion: 'roost-information-failure-diagnostic-v1', origin, code,
     observerCode, preLaunchReason,
     nativeCleanupProven: nativeCleanupProven === true,
