@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Governed Sites inputs and Ready are live. One Worker attempt failed; its Writer was reconciled. The Windows Host is stopped at deployed `3f971d55`. The earlier model call and refusal cause remain unknown; no new attempt. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-site-evidence-and-role-repair). Gate open.
+**G24c:** Diagnostic and Writer guard deployed at `58173b99`; Host stopped. The failed attempt spent its Decision. A new plan, Decision and Ready are needed. Earlier provider contact and cause remain unknown. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-post-release-preflight). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
