@@ -4,7 +4,7 @@ import { reviewDigest } from "../agent-runtime/task-review-contract";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { interviewCommand,interviewView } from "../agent-runtime/task-interview";
 import { decisionAction,decisionDeferral,decisionProposal,decisionWithdrawal,reopeningEvent } from "./decision-governance-contract";
-import { decisionAuthority,mandateView } from "./decision-authority";
+import { authorityState,decisionAuthority,mandateView } from "./decision-authority";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { admitCapability,recordCapabilityUse,grantState } from "../agent-runtime/task-capability-admission";
 import { admissionCommand,admissionVersion } from "../agent-runtime/task-risk-admission";
@@ -17,11 +17,11 @@ export function decisionTaskStateProjection(row:{id:string;title:string;executio
  return {id:row.id,title:row.title,executionReadiness:{status}};
 }
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
-async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
+async function state(db:Db,w:string,actor:ReviewActor|null,id?:string,readOnly=false){
  if(id&&!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))return {error:"decision_not_found"};
- await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
+ if(!readOnly)await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
  const u=typeof actor==="string"?actor:actor?.userId??null;
- const principal=await resolveReviewPrincipal(db,w,actor??undefined);
+ const principal=await resolveReviewPrincipal(db,w,actor??undefined,readOnly);
  const role=u?(await db.workspaceMembership.findFirst({where:{workspaceId:w,userId:u}}))?.role:null;
  const ownerUserId=(await db.workspace.findUnique({where:{id:w},select:{ownerUserId:true}}))?.ownerUserId;
  const revisions=await db.$queryRaw<any[]>`SELECT r.*,decision_state(r.decision_id) AS state FROM decision_revisions r WHERE workspace_id=${w}::uuid ORDER BY created_at DESC LIMIT 201`;
@@ -37,12 +37,12 @@ async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
   return {id:f.id,revision:record?reviewDigest(record):null,sqlRevision:record?(await db.$queryRaw<any[]>`SELECT encode(sha256(convert_to(decision_node(${w}::uuid,${k!},${f.condition.referenceId}::uuid)::text,'UTF8')),'hex') AS value`)[0].value:null};
  }));
  const impact=selected?(await db.$queryRaw<any[]>`SELECT decision_current_impact(${w}::uuid,${JSON.stringify(selected.body.scope)}::jsonb) AS value`)[0].value:null;
- const authority=selected?await decisionAuthority(db,w,selected.body,impact):null;
+ const authority=selected?await decisionAuthority(db,w,selected.body,impact,readOnly?await authorityState(db,w,true):undefined):null;
  const expectedVersion=reviewDigest({u,role,principal,ownerUserId,authority,revisions:revisions.map(r=>[r.decision_id,r.state]),previews:previews.map(p=>p.id),acceptance:acceptance?.id,withdrawal:withdrawal?.id,deferrals:deferrals.map(f=>[f.id,f.event_id]),references,impact});
  return {u,principal,role,ownerUserId,authority,revisions,selected,previews,acceptance,withdrawal,deferrals,references,impact,expectedVersion};
 }
 export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|null,id?:string,options:{versionOnly?:boolean}={}){
- const s=await state(db,w,actor,id);if("error" in s)return s;const u=s.u;
+ const s=await state(db,w,actor,id,true);if("error" in s)return s;const u=s.u;
  if(typeof actor!=="string"&&actor?.authType==="api_key"&&s.principal?.kind!=="agent")return {error:"decision_forbidden"};
  if(s.principal?.kind==="agent"){
   // Issuing an exact decision_supersede grant is the owner's admission of
@@ -77,7 +77,7 @@ export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|nu
    current:!!s.impact&&!!s.previews[0]&&reviewDigest(s.impact)===reviewDigest(s.previews[0].impact)&&(!s.previews[0].authority||reviewDigest(s.authority)===reviewDigest(s.previews[0].authority))};
   requireRuntimeContent(data,"decision.read",{workspaceId:w});return data;
  }
- const authorityCatalog=await mandateView(db,w,actor??undefined);
+ const authorityCatalog=await mandateView(db,w,actor??undefined,true);
  const catalog=id?[]:await db.task.findMany({where:{workspaceId:w},select:{id:true,title:true},orderBy:{id:"asc"},take:101});
  const resourceCatalog=id?[]:await db.resource.findMany({where:{workspaceId:w},select:{id:true,name:true},orderBy:{id:"asc"},take:101});
  const configurationCatalog=id?[]:await db.companyRecord.findMany({where:{workspaceId:w,recordType:"configuration",status:{not:"archived"}},select:{id:true,title:true},orderBy:{id:"asc"},take:101});

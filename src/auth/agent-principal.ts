@@ -29,14 +29,14 @@ export function agentPrincipalRoute(method: string, path: string) {
     method === "POST" && (/^\/agent-runtime\/tasks\/[a-f0-9-]+\/actions\/review(?:-return)?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/handoffs(?:\/actions\/(?:accept|reject))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/clarifications(?:\/actions\/(?:reply|read))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/specialist-offer\/actions\/(?:accept|reject)$/i.test(route));
 }
 export type ReviewActor = string | AuthContext | undefined;
-export async function resolveReviewPrincipal(db: Prisma.TransactionClient, workspaceId: string, actor: ReviewActor) {
+export async function resolveReviewPrincipal(db: Prisma.TransactionClient, workspaceId: string, actor: ReviewActor, readOnly = false) {
   const auth = typeof actor === "string" ? { authType: "user", userId: actor } : actor;
   if (auth?.authType === "user" && auth.userId) {
     const member = await db.workspaceMembership.findFirst({ where: { workspaceId, userId: auth.userId, role: { in: ["owner", "admin", "member"] } } });
     return member ? { kind: "user" as const, id: member.userId, credentialId: null, credentialPrefix: null } : null;
   }
   if (!auth || !("agentId" in auth) || !auth.agentId || !auth.apiKeyId || auth.workspaceId !== workspaceId) return null;
-  await db.$queryRaw`SELECT id FROM api_keys WHERE id=${auth.apiKeyId}::uuid AND workspace_id=${workspaceId}::uuid FOR UPDATE`;
+  if (!readOnly) await db.$queryRaw`SELECT id FROM api_keys WHERE id=${auth.apiKeyId}::uuid AND workspace_id=${workspaceId}::uuid FOR UPDATE`;
   const key = await db.apiKey.findFirst({ where: { id: auth.apiKeyId, workspaceId }, include: { boundAgent: true } });
   const worker = key?.boundAgent;
   if (!key?.active || key.revokedAt || !key.expiresAt || key.expiresAt <= new Date() || key.credentialVersion !== auth.credentialVersion ||

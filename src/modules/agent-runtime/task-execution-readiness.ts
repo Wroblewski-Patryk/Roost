@@ -41,10 +41,11 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
   const revision = readyContextRevision({ ...wire(context), executionPacket: { contract: null, sources: [] } }, wire(application ?? {}), {});
   return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness, riskVersion:await riskContextVersion(db,taskId), admissionVersion:await admissionVersion(db,taskId),compositionVersion:await compositionVersion(db,taskId) });
 }
-export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, options: { timeoutMs?: 20000 | 90000; serializationRetries?: 0 | 1 | 2 } = {}): Promise<T | { error: string }> {
+export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, options: { timeoutMs?: 20000 | 90000; serializationRetries?: 0 | 1 | 2; readOnly?: boolean } = {}): Promise<T | { error: string }> {
   const startedAt=Date.now(),timeoutMs=options.timeoutMs??20000;
   for (let attempt = 0; ; attempt++) {
   try { return await prisma.$transaction(async tx => {
+    if (options.readOnly) await tx.$executeRaw`SET TRANSACTION READ ONLY`;
     // Complete-impact acceptance repeatedly checks current native dependencies.
     // Compiling each short graph query costs more than executing it. LOCAL keeps
     // this tuning inside this transaction; no gate, source or isolation changes.

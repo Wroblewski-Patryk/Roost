@@ -15840,13 +15840,38 @@ test("decision authority issues owner-backed mandates and preserves delegated ac
  const catalog=(await request(f.root+'/capability-grants',{headers:f.auth})).body as any;
  assert.ok(catalog.data.options.some((o:any)=>o.operation==="decision_supersede"&&o.decision.decisionId===agentProposal.id));
  const grant=await f.post(f.root+'/capability-grants',{requestId:randomUUID(),expectedVersion:catalog.data.expectedVersion,credentialId:agentKey.id,operation:"decision_supersede",decision:{decisionId:agentProposal.id,previewId:ownerProposalView.previews[0].id},validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+600000).toISOString(),reason:"Accept this exact decision preview"});assert.equal(grant.status,201,JSON.stringify(grant.body));
+ const readFingerprint=async()=>({
+  fence:String((await prisma.$queryRaw<Array<{revision:bigint}>>`SELECT revision FROM ready_source_fence WHERE id=1`)[0].revision),
+  invalidations:String((await prisma.$queryRaw<Array<{count:bigint}>>`SELECT count(*) AS count FROM decision_authority_invalidations WHERE workspace_id=${w}::uuid`)[0].count),
+  readiness:JSON.stringify((await prisma.task.findUniqueOrThrow({where:{id:f.task.id},select:{executionReadiness:true}})).executionReadiness),
+  grant:JSON.stringify(await prisma.taskCapabilityGrant.findUniqueOrThrow({where:{id:(grant.body as any).data.grant.id},include:{usage:true}})),
+  keyLastUsedAt:(await prisma.apiKey.findUniqueOrThrow({where:{id:agentKey.id},select:{lastUsedAt:true}})).lastUsedAt?.toISOString()??null,
+  incidents:await prisma.companyRecord.count({where:{workspaceId:w,source:"runtime_redaction_v1"}}),
+  incidentEvents:await prisma.event.count({where:{workspaceId:w,type:"agent_execution_redaction_incident"}})
+ });
+ const beforeGovernanceGets=await readFingerprint();
+ for(const path of ['/v1/decisions/governance',`/v1/decisions/${agentProposal.id}/governance`,`/v1/decisions/${agentProposal.id}/governance?version=1`,'/v1/decisions/mandates','/decisions/governance',`/decisions/${agentProposal.id}/governance`,'/decisions/mandates']){
+  const response=await request(path,{headers:f.auth});assert.equal(response.status,200,JSON.stringify(response.body));
+ }
+ assert.deepEqual(await readFingerprint(),beforeGovernanceGets,"Governance GETs must not change the fence, authority invalidations, Ready, or grant usage");
+ for(const path of ['/v1/decisions/governance',`/v1/decisions/${agentProposal.id}/governance`,'/v1/decisions/mandates','/decisions/governance',`/decisions/${agentProposal.id}/governance`,'/decisions/mandates']){
+  const response=await request(path,{headers:{...f.auth,"X-Roost-Redaction-Notice":"1"}});assert.equal(response.status,200,JSON.stringify(response.body));
+ }
+ const agentGovernanceGet=await request(`/v1/decisions/${agentProposal.id}/governance`,{headers:agentAuth});assert.equal(agentGovernanceGet.status,200,JSON.stringify(agentGovernanceGet.body));
+ const rootAgentGovernanceGet=await request(`/decisions/${agentProposal.id}/governance`,{headers:agentAuth});assert.equal(rootAgentGovernanceGet.status,403,JSON.stringify(rootAgentGovernanceGet.body));
+ assert.deepEqual(await readFingerprint(),beforeGovernanceGets,"Owner and agent governance GETs, including redaction notices, must leave domain state and auth usage unchanged");
+ const staleWithGrant=await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,{...agentInput,grantIds:[{taskId:f.task.id,grantId:(grant.body as any).data.grant.id}]},agentAuth);
+ assert.equal(staleWithGrant.status,409,JSON.stringify(staleWithGrant.body));
+ assert.equal((staleWithGrant.body as any).error,"decision_stale");
  const agentView=await read(agentProposal.id,agentAuth as any);assert.equal(agentView.canAccept,true);
  assert.equal(agentView.revisions,undefined);assert.equal(agentView.impact,undefined);assert.equal(agentView.authorityCatalog,undefined);
  const agentVersion=(await request(`/v1/decisions/${agentProposal.id}/governance?version=1`,{headers:agentAuth})).body as any;
  assert.equal(agentVersion.data.impact,undefined);assert.equal(agentVersion.data.selected.body.title,agentView.selected.body.title);
  const inputWithGrant={...agentInput,expectedVersion:agentView.expectedVersion,grantIds:[{taskId:f.task.id,grantId:(grant.body as any).data.grant.id}]};
+ const fenceBeforeAccept=BigInt((await prisma.$queryRaw<Array<{revision:bigint}>>`SELECT revision FROM ready_source_fence WHERE id=1`)[0].revision);
  const agentAccepted=await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth);
  assert.equal(agentAccepted.status,201,JSON.stringify(agentAccepted.body));
+ assert.ok(BigInt((await prisma.$queryRaw<Array<{revision:bigint}>>`SELECT revision FROM ready_source_fence WHERE id=1`)[0].revision)>fenceBeforeAccept,"Accepted POST still advances the guarded source fence");
  assert.equal((await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth)).status,200);
  const agentHistory=(await read(agentProposal.id)).acceptance;assert.equal(agentHistory.actorAgentId,innovation.id);assert.equal(agentHistory.actorUserId,null);assert.equal(agentHistory.authority.mandate.version,1);
  assert.equal((await f.post(f.root+'/capability-grants/'+(grant.body as any).data.grant.id+'/actions/revoke',{requestId:randomUUID(),reason:"Revoke permission for replay"})).status,200);
@@ -15864,6 +15889,13 @@ test("decision authority issues owner-backed mandates and preserves delegated ac
  const closingSource=await source();await prisma.workforceEntity.update({where:{id:innovation.id},data:{status:"inactive"}});
  const closed=await f.post('/v1/decisions/mandates',{requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId:(agentIssued.body as any).data.record.id,body:{...body,holder:{kind:"agent",id:innovation.id},departmentKey:"11-innowacje",sourceDecisionId:closingSource,status:"revoked"}});
  assert.equal(closed.status,201,JSON.stringify(closed.body));
+ await prisma.task.update({where:{id:f.task.id},data:{title:"password=synthetic-decision-fixture-only"}});
+ const beforeUnsafeReads=await readFingerprint();
+ for(const path of ['/v1/decisions/governance',`/v1/decisions/${agentProposal.id}/governance`,'/v1/decisions/mandates','/decisions/governance',`/decisions/${agentProposal.id}/governance`,'/decisions/mandates']){
+  const response=await request(path,{headers:f.auth});assert.equal(response.status,409,JSON.stringify(response.body));
+  assert.equal((response.body as any).error,"agent_runtime_content_blocked");
+ }
+ assert.deepEqual(await readFingerprint(),beforeUnsafeReads,"A blocked secret-pattern source read must not create incidents, events, or change Ready and authority state");
 });
 
 test("decision governance preserves nonconflicting history and fences exact impact at acceptance",async t=>{

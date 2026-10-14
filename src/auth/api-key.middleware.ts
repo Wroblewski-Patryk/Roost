@@ -9,6 +9,7 @@ import { digest, proofEligibleAction } from "./owner-action-proof";
 import { sendApiError } from "../middleware/api-error";
 import type { WorkspaceRole, PrismaClient } from "@prisma/client";
 import { workerCredentialRoute, workerTicketPrincipal, type WorkerTicketIdentity } from "./worker-ticket-principal";
+import { isDecisionGovernanceRead } from "../modules/decisions/decision-governance-read-path";
 
 export type AuthContext = {
   userId?: string;
@@ -187,7 +188,7 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
   // Status is strictly observational; consumption records its actor atomically
   // in the ticket Event. Denied owner-only operations also leave no usage write.
   const ticketRequest = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/(?:issue|consume|status|revoke|rotate)$/.test(`${req.baseUrl}${req.path}`.replace(/\/+$/, ""));
-  if (!ticketRequest && !record.workerHostId) await db.apiKey.update({
+  if (!ticketRequest && !isDecisionGovernanceRead(req.method, requestPath) && !record.workerHostId) await db.apiKey.update({
     where: { id: record.id },
     data: { lastUsedAt: new Date(), updatedAt: record.updatedAt }
   });

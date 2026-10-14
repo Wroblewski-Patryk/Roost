@@ -5,6 +5,7 @@ import { replaceOrganizationalContext } from "../organizational-context/organiza
 import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { inspectRuntime, redactionPolicy, redactionState, runtimeSecrets, safeRuntimeId, type RedactionState } from "./runtime-redaction-policy";
 import { workerTicketProofSchema } from "../../auth/worker-ticket-principal";
+import { isDecisionGovernanceRead } from "../decisions/decision-governance-read-path";
 
 export const nativePath = (path: string) => path.startsWith("/v1/agent-runtime/") || path.endsWith("/agent-context") || /^\/v1\/decisions\/(?:governance(?:\/|$)|[^/]+\/governance(?:\/|$)|mandates$|deferrals$|reopening-events$)/.test(path) || /^\/v1\/product-engineering\/(?:applications\/[^/]+\/findings(?:\/catalog)?|findings\/[^/]+(?:\/(?:versions|occurrences|actions|grants))?|tasks\/[^/]+\/reference-sites(?:\/[^/]+\/(?:package|findings))?)$/.test(path);
 export async function flushRuntimeIncidents(state: RedactionState) {
@@ -79,7 +80,8 @@ export function runtimeRedactionBoundary(req: Request, res: Response, next: Next
   const executionId = safeRuntimeId(parts[parts.indexOf("executions") + 1]);
   const taskId = safeRuntimeId(parts[parts.indexOf("tasks") + 1] ?? req.body?.taskId);
   const state: RedactionState = { scope: { workspaceId: req.auth.workspaceId, taskId: taskId ?? safeRuntimeId(req.body?.taskId), executionId, applicationId: safeRuntimeId(req.body?.applicationId), correlationId: safeRuntimeId(req.body?.requestId) ?? safeRuntimeId(req.requestId) ?? randomUUID(), surface: "native_http" }, secrets: runtimeSecrets([req.get("X-API-Key") ?? "", req.get("Authorization")?.replace(/^Bearer /i, "") ?? "", req.body?.leaseToken ?? ""]), notices: [], incidentIds: [], flushing: false };
-  state.observationOnly = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/status\/?$/.test(path);
+  state.observationOnly = isDecisionGovernanceRead(req.method, path)
+    || req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/status\/?$/.test(path);
   const workerProof = ticketControl ? workerTicketProofSchema.safeParse(req.body?.worker) : null;
   if (workerProof?.success) state.secrets = runtimeSecrets([...state.secrets, workerProof.data.leaseToken]);
   redactionState.run(state, () => {

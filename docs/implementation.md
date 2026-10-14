@@ -2,9 +2,9 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none. Outcome 1 Today is held at release preflight; G24c remains stopped. No later gate or G24c retry is authorized
+**Active gate:** none in the historical G-series. Outcome 1 Today is in bounded release verification in the current owner task; G24c remains stopped. No later gate or G24c retry is authorized.
 
-**Outcome 1 local checkpoint (2026-10-15):** Today and repeat-import changes passed focused and native local proof. The known disposable Task is archived; wider provenance and signed-in deployed proof remain open. Release held at preflight by a writing Decision GET and an unpushed parent commit. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
+**Outcome 1 local checkpoint (2026-10-15):** Today and repeat-import changes passed focused and native local proof. The known disposable Task is archived; wider provenance and signed-in deployed proof remain open. Decision GET now has a tested observational path; final preflight and deployment remain. The owner authorized the earlier reviewed documentation commit in this release. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
 **G24c stopped, incomplete:** Its accepted Findings and checklist remain recorded, but there is no verified supervised Worker result, independent review and owner final. The Windows Host is stopped. The spent Decision and failed execution remain audit evidence; no model retry is authorized by this status. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint).
 

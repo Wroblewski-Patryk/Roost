@@ -15,9 +15,11 @@ export async function taskDecisionAuthorities(db: Db, workspaceId: string, taskI
 const wire = (row: any) => ({ id: row.mandate_id, versionId: row.id, workspaceId: row.workspace_id, workforceId: row.workforce_id, version: row.version,
   ...row.body, issuer: { kind: "user" as const, id: row.issuer_user_id }, createdAt: row.created_at, revision: row.id });
 
-export async function authorityState(db: Db, workspaceId: string) {
-  await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
-  await db.$executeRaw`SELECT decision_authority_invalidate(${workspaceId}::uuid)`;
+export async function authorityState(db: Db, workspaceId: string, readOnly = false) {
+  if (!readOnly) {
+    await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
+    await db.$executeRaw`SELECT decision_authority_invalidate(${workspaceId}::uuid)`;
+  }
   const workspace = await db.workspace.findUnique({ where: { id: workspaceId }, select: { ownerUserId: true } });
   const ownerActive = !!workspace && !!await db.workspaceMembership.findFirst({where:{workspaceId,userId:workspace.ownerUserId,role:"owner"}});
   const rows = await db.$queryRaw<any[]>`SELECT DISTINCT ON(mandate_id) * FROM workforce_mandate_versions WHERE workspace_id=${workspaceId}::uuid ORDER BY mandate_id,version DESC LIMIT 2001`;
@@ -65,9 +67,9 @@ export async function interviewDecisionAuthority(db: Db, workspaceId: string, bl
   return answer;
 }
 
-export async function mandateView(db: Db, workspaceId: string, actor: ReviewActor) {
-  const state = await authorityState(db, workspaceId);
-  const principal = await resolveReviewPrincipal(db, workspaceId, actor);
+export async function mandateView(db: Db, workspaceId: string, actor: ReviewActor, readOnly = false) {
+  const state = await authorityState(db, workspaceId, readOnly);
+  const principal = await resolveReviewPrincipal(db, workspaceId, actor, readOnly);
   const history = await db.$queryRaw<any[]>`SELECT * FROM workforce_mandate_versions WHERE workspace_id=${workspaceId}::uuid ORDER BY created_at DESC,id DESC LIMIT 201`;
   const sources = await db.$queryRaw<any[]>`SELECT d.id,d.title FROM decisions d JOIN decision_revisions r ON r.decision_id=d.id JOIN decision_acceptances a ON a.decision_id=d.id WHERE d.workspace_id=${workspaceId}::uuid AND d.status='accepted' AND r.body->'authority'->>'domain'='mandate_change' AND a.actor_user_id=${state.ownerUserId}::uuid ORDER BY d.id LIMIT 101`;
   const expectedVersion = reviewDigest({ owner: state.ownerUserId, mandates: state.mandates, workers: state.workers, principal });
