@@ -8,6 +8,7 @@ import { DecisionGovernanceModal } from "./decision-governance";
 
 type Candidate = { approval: Record<string, unknown>; backend?: "codex_responses" | "ollama_loopback"; model: string; modelDigest?: string | null; reasoningEffort: string;
   maxDurationSeconds: number; maxOutputTokensIntent: number;
+  taskOutcome: string;
   previousDecision: { id: string; decision: string } | null };
 
 export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: { taskId: string; taskTitle: string; onClose: () => void }) {
@@ -15,7 +16,7 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
   const [candidate, setCandidate] = useState<Candidate | null>(null), [decisionId, setDecisionId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null), [acknowledged, setAcknowledged] = useState(false);
   const candidateBackend = candidate?.approval.backend;
-  const candidateValid = !!candidate && (candidateBackend === "codex_responses" || candidateBackend === "ollama_loopback")
+  const candidateValid = !!candidate && candidate.taskOutcome.trim().length >= 3 && (candidateBackend === "codex_responses" || candidateBackend === "ollama_loopback")
     && (!candidate.backend || candidate.backend === candidateBackend)
     && (candidateBackend !== "ollama_loopback" || candidate.model === "gpt-oss:20b"
       && typeof candidate.modelDigest === "string" && /^sha256:[a-f0-9]{64}$/.test(candidate.modelDigest));
@@ -42,7 +43,7 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
           title: `One information runtime attempt: ${taskTitle}`,
           context: "The owner accepted this company information Task with selected current Roost records. The Task remains read only and has no Application or repository authority.",
           decision,
-          rationale: "Obtain the requested source-bound company summary in the owner console.",
+          rationale: candidate.taskOutcome,
           consequences: "One provider attempt under the Task duration limit. Provider token and cost usage remain unknown unless measured; the output token count is intent, not an enforced cap. The Windows account boundary is not OS isolation. No repository, native tool, external write, push or deployment is authorized.",
           scopeReason: "This exact Task and installation are the narrowest available scope; the signed selection digest binds the model choice.",
           scope: [{ type: "task", id: taskId }], supersedesId: previous?.id ?? null,
@@ -65,6 +66,7 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
     {candidate && !candidateValid ? <CcNotice tone="error" title={pl ? "Wybór modelu wymaga odświeżenia" : "Model selection needs refresh"} detail={pl ? "Backend lub dokładny digest modelu nie zgadza się z propozycją. Odśwież Ready przed zapisaniem decyzji." : "Backend or exact model digest does not match the proposal. Refresh Ready before recording the decision."} /> : null}
     {candidate ? <div className="grid gap-4 text-sm">
       <p className="font-semibold">{taskTitle}</p>
+      <p className="whitespace-pre-wrap">{candidate.taskOutcome}</p>
       <dl className="grid gap-2 sm:grid-cols-2"><div><dt>Backend</dt><dd>{(candidate.backend ?? candidate.approval.backend) === "ollama_loopback" ? "Ollama · 127.0.0.1" : "Codex Responses"}</dd></div>
         <div><dt>{pl ? "Model" : "Model"}</dt><dd>{candidate.model} · {candidate.reasoningEffort}</dd></div>
         {(candidate.backend ?? candidate.approval.backend) === "ollama_loopback" ? <div className="sm:col-span-2"><dt>{pl ? "Dokładny digest modelu" : "Exact model digest"}</dt><dd className="break-all font-mono">{candidate.modelDigest || (pl ? "Nieustalony" : "Unknown")}</dd></div> : null}

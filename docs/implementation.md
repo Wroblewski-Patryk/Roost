@@ -4,7 +4,7 @@ Current delivery status and evidence.
 
 **Active gate:** G24c.
 
-**G24c:** Diagnostic and Writer guard deployed at `58173b99`; Host stopped. The failed attempt spent its Decision. A new plan, Decision and Ready are needed. Earlier provider contact and cause remain unknown. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-post-release-preflight). Gate open.
+**G24c:** `9d0bb7b` deployed; Host stopped. Decision spent. Local v4 withdrawal, native continuation and fresh backup pass. Release and supervised proof remain; cause/contact unknown. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint). Gate open.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 

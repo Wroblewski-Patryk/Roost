@@ -393,9 +393,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(memberScope.status, 403, JSON.stringify(memberScope.body));
       const riskScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
-      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
+      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const premature = await request(`${root}/information-approval-candidate`, token);
@@ -513,7 +513,8 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         operation: 'decision_supersede', gate: 'procedure', verdict: 'passed', evidence, rationale: 'Old version must fail',
         validation: 'Old version', observedResult: 'No new evidence' });
       assert.equal(staleEvidence.status, 409); assert.equal(staleEvidence.body.error, 'risk_admission_stale');
-      assert.ok((await prisma.$queryRawUnsafe(`SELECT task_admission_seal('${runtimeTask.id}'::uuid,'decision_supersede') AS seal`))[0].seal);
+      const decisionAdmission = (await prisma.$queryRawUnsafe(`SELECT task_admission_view('${runtimeTask.id}'::uuid,'decision_supersede') AS value`))[0].value;
+      assert.ok(decisionAdmission.seal, JSON.stringify(decisionAdmission));
       decision = await request(`/v1/decisions/${decisionId}/governance`, token);
       accepted = await request(`/v1/decisions/${decisionId}/governance/actions`, token, { requestId: randomUUID(), expectedVersion: decision.body.data.expectedVersion, action: 'accept', previewId: decision.body.data.previews[0].id });
       assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
@@ -1159,7 +1160,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         const revisedScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(),
           expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion,
           scopeKind: 'company_information', applicationId: null, contract: revised,
-          prompt: 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+          prompt: null, baseBranch: null, releaseSet: null });
         assert.equal(revisedScope.status, 200, JSON.stringify(revisedScope.body));
         const revisedAssessment = await request(`${root}/risk/assessments`, token, { ...assessmentBody,
           requestId: randomUUID(), expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion });
@@ -1171,7 +1172,33 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         assert.equal(nextCandidate.status, 200, JSON.stringify(nextCandidate.body));
         assert.equal(nextCandidate.body.data.previousDecision?.id, decisionId);
         assert.equal(nextCandidate.body.data.maxDurationSeconds, 360);
+        assert.equal(nextCandidate.body.data.taskOutcome, revised.objective.outcome);
         const nextDecisionText = 'Run one revised tool-free informational task after failed attempt';
+        const wrongProposal = await request('/v1/decisions/governance/proposals', token, { requestId: randomUUID(),
+          expectedVersion: (await request('/v1/decisions/governance', token)).body.data.expectedVersion,
+          title: 'Incorrect informational continuation', context: 'Synthetic failed attempt',
+          decision: 'Run a generic status summary', rationale: 'Obtain a generic summary',
+          consequences: 'One bounded attempt', scopeReason: 'Only this informational Task',
+          scope: [{ type: 'task', id: runtimeTask.id }], supersedesId: decisionId,
+          conflicts: [{ kind: 'replaces', oldProvision: 'Run one tool-free informational task',
+            newProvision: 'Run a generic status summary', explanation: 'Synthetic correction fixture' }],
+          managedRuntimeApproval: nextCandidate.body.data.approval });
+        assert.equal(wrongProposal.status, 201, JSON.stringify(wrongProposal.body));
+        const wrongDecisionId = wrongProposal.body.data.record.id;
+        const withdrawPath = `/v1/decisions/${wrongDecisionId}/governance/withdrawals`;
+        const withdrawBody = { requestId: randomUUID(),
+          expectedVersion: (await request(`/v1/decisions/${wrongDecisionId}/governance`, token)).body.data.expectedVersion,
+          reason: 'Synthetic proposal lacks the accepted task outcome and must be replaced.' };
+        const proof = await request('/v1/auth/reauth', token, { password: 'synthetic-test-password-only',
+          method: 'POST', path: withdrawPath, bodyDigest: createHash('sha256').update(JSON.stringify(withdrawBody)).digest('hex') });
+        assert.equal(proof.status, 200, JSON.stringify(proof.body));
+        const withdrawn = await request(withdrawPath,
+          { Authorization: `Bearer ${token}`, 'X-Owner-Action-Proof': proof.body.data.proof }, withdrawBody);
+        assert.equal(withdrawn.status, 201, JSON.stringify(withdrawn.body));
+        assert.equal((await request(`/v1/decisions/${wrongDecisionId}/governance`, token)).body.data.selected.state, 'withdrawn');
+        const list = await request('/v1/decisions', token);
+        assert.equal(list.body.data.find(row => row.id === wrongDecisionId).governanceState, 'withdrawn');
+        assert.ok(!list.body.data.find(row => row.id === decisionId).supersededBy.some(row => row.id === wrongDecisionId));
         const governance = await request('/v1/decisions/governance', token);
         const nextProposal = await request('/v1/decisions/governance/proposals', token, { requestId: randomUUID(),
           expectedVersion: governance.body.data.expectedVersion, title: 'Revised company information runtime',

@@ -463,6 +463,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/decisions/:id/governance", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/decisions/governance/proposals", capability: "decisions:write" },
       { method: "POST", path: "/v1/decisions/:id/governance/actions", capability: "agent-runtime:write" },
+      { method: "POST", path: "/v1/decisions/:id/governance/withdrawals", capability: "decisions:write" },
       { method: "POST", path: "/v1/decisions/deferrals", capability: "decisions:write" },
       { method: "POST", path: "/v1/decisions/reopening-events", capability: "decisions:write" },
       { method: "GET", path: "/v1/decisions", capability: "decisions:read" },

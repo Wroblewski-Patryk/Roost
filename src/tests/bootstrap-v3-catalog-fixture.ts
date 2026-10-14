@@ -1,7 +1,9 @@
-import {v3CatalogManifest,v3UpgradePins} from '../modules/api-keys/bootstrap-v3-backend-pins';
+import {v3UpgradePins} from '../modules/api-keys/bootstrap-v3-backend-pins';
+import {v3HostGuardHash} from '../modules/api-keys/bootstrap-v3-catalog-v3-pins';
+import {v3CatalogV4Manifest} from '../modules/api-keys/bootstrap-v3-catalog-v4-pins';
 export function catalogAnswer(sql:string):any[]|undefined {
- if(sql.includes('v3 backend functions'))return structuredClone(v3CatalogManifest.functions).map(f=>({...f,enabled:true}));
- if(sql.includes('v3 backend manifest'))return [{id:true,record:structuredClone(v3CatalogManifest)}];
+ if(sql.includes('v3 backend functions'))return structuredClone(v3CatalogV4Manifest.functions).map(f=>({...f,enabled:true}));
+ if(sql.includes('v3 backend manifest'))return [{id:true,record:structuredClone(v3CatalogV4Manifest)}];
  if(sql.includes('v3 backend catalog'))return [{valid:true,bound:true}];
  return undefined;
 }
@@ -17,6 +19,7 @@ export function upgradeLegacyClient(client:any,mutate?:(sql:string,rows:any[])=>
    const rows=await query(parts,...args);
    return rows.map((r:any)=>{
     const name=r.function??r.name,pin=name&&Object.hasOwn(v3UpgradePins,name)?v3UpgradePins[name as keyof typeof v3UpgradePins]:null;
+    if(name==='worker_identity_host_anchor_guard')return {...r,hash:v3HostGuardHash};
     return pin&&r.hash===pin.old?{...r,hash:pin.hash}:r;
    });
   };return work(db);

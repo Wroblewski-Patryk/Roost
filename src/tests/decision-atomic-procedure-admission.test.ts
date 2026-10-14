@@ -34,6 +34,7 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
  const db:any={
   workspaceMembership:{findFirst:async()=>({role:options.membershipRole??"owner",userId:ownerId})},
   workspace:{findUnique:async()=>({ownerUserId:ownerId})},
+  companyDirectionHead:{findUnique:async()=>null},
   task:{findFirst:async({where}:any)=>where.id===options.missingTask?null:{id:where.id,title:"Certification task"}},
   companyRecord:{findFirst:async()=>({description:"Inspected technical context"})},
   event:{create:async({data}:any)=>{events.push(data);return data;}},
@@ -43,7 +44,7 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
    const sql=text(parts);calls.push({sql,values});
    if(sql.includes("FROM decision_revisions"))return [revision];
    if(sql.includes("FROM decision_impact_previews"))return [preview];
-   if(sql.includes("FROM decision_acceptances")||sql.includes("FROM decision_deferrals")||sql.includes("FROM workforce_mandate_versions")||sql.includes("FROM workforce_entities")||sql.startsWith("SELECT * FROM ? WHERE"))return [];
+   if(sql.includes("FROM decision_acceptances")||sql.includes("FROM decision_withdrawals")||sql.includes("FROM decision_deferrals")||sql.includes("FROM task_risk_scopes")||sql.includes("FROM workforce_mandate_versions")||sql.includes("FROM workforce_entities")||sql.startsWith("SELECT * FROM ? WHERE"))return [];
    if(sql.includes("decision_current_impact"))return [{value:impact}];
    if(sql.includes("AS version")){
     const version=admissionEpoch>1?admissionEpoch.toString(16).padStart(64,"0"):(admissionEpoch?"d":"c").repeat(64);

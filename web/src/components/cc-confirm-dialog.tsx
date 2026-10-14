@@ -9,6 +9,7 @@ export function CcConfirmDialog({
   confirmLabel,
   confirmIcon,
   confirmTone = "warning",
+  confirmDisabled = false,
   busy = false,
   onCancel,
   onConfirm
@@ -20,6 +21,7 @@ export function CcConfirmDialog({
   confirmLabel: string;
   confirmIcon?: string;
   confirmTone?: "warning" | "danger";
+  confirmDisabled?: boolean;
   busy?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -34,7 +36,7 @@ export function CcConfirmDialog({
         {detail ? <div className="mt-4 rounded-company border border-base-300 bg-base-200/50 p-3 text-sm">{detail}</div> : null}
         <div className="modal-action">
           <CcButton onClick={onCancel} variant="ghost">Cancel</CcButton>
-          <CcButton iconLeft={confirmIcon} loading={busy} onClick={onConfirm} variant={confirmTone}>{confirmLabel}</CcButton>
+          <CcButton iconLeft={confirmIcon} loading={busy} disabled={confirmDisabled} onClick={onConfirm} variant={confirmTone}>{confirmLabel}</CcButton>
         </div>
       </div>
       <form className="modal-backdrop" method="dialog"><button onClick={onCancel}>close</button></form>

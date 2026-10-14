@@ -26,5 +26,6 @@ export function proofEligibleAction(method: string, path: string) {
     || /^\/v1\/agent-runtime\/tasks\/[0-9a-f-]{36}\/proposal-mandates(?:\/[0-9a-f-]{36}\/actions\/revoke)?$/.test(path)
     || /^\/v1\/google-drive\/tasks\/[0-9a-f-]{36}\/docs\/[0-9a-f-]{36}\/governed\/mandate$/.test(path)
     || /^\/v1\/agent-runtime\/executions\/[0-9a-f-]{36}\/actions\/request-critical-preemption$/.test(path)
-    || /^\/v1\/agent-runtime\/tasks\/[0-9a-f-]{36}\/verifier-qualification$/.test(path);
+    || /^\/v1\/agent-runtime\/tasks\/[0-9a-f-]{36}\/verifier-qualification$/.test(path)
+    || /^\/v1\/decisions\/[0-9a-f-]{36}\/governance\/withdrawals$/.test(path);
 }

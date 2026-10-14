@@ -1,6 +1,7 @@
 import { inspectReady, readyTransaction } from "../agent-runtime/task-execution-readiness";
 import { retryContextRead } from "../agent-runtime/context-read-retry";
 import { Router } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operating-model/department-registry";
@@ -335,11 +336,15 @@ companyIntelligenceRouter.get("/health", asyncHandler(async (req, res) => {
     prisma.workforceEntity.count({ where: { workspaceId, ...(workforceIds ? { OR: [{ id: { in: workforceIds } }, ...(departmentKey ? [{ department: departmentKey }] : [])] } : {}), status: { not: "archived" } } }),
     prisma.resource.count({ where: { workspaceId, ...(resourceIds ? { id: { in: resourceIds } } : {}) } }),
     prisma.companyRecord.count({ where: { workspaceId, ...(recordIds ? { id: { in: recordIds } } : {}), recordType: { in: ["technical_incident", "operational_issue"] }, status: { not: "archived" } } }),
-    prisma.decision.count({ where: { workspaceId, ...(decisionIds ? { id: { in: decisionIds } } : {}), status: { in: ["draft", "proposed", "review_required", "pending"] } } }),
+    decisionIds?.length===0 ? Promise.resolve([{ count: 0 }]) : prisma.$queryRaw<Array<{count:number}>>(Prisma.sql`
+      SELECT count(*)::int AS count FROM decisions d WHERE d.workspace_id=${workspaceId}::uuid
+      AND d.status IN ('draft','proposed','review_required','pending')
+      AND (d.source IS DISTINCT FROM 'roost_decision' OR decision_state(d.id) IN ('pending','deferred'))
+      ${decisionIds ? Prisma.sql`AND d.id IN (${Prisma.join(decisionIds.map(id=>Prisma.sql`${id}::uuid`))})` : Prisma.empty}`),
     prisma.metric.count({ where: { workspaceId, ...(metricIds ? { id: { in: metricIds } } : {}), status: { not: "archived" } } })
   ]); const stateCounts = Object.fromEntries(records.map((x) => [x.functionalState, x._count]));
   const issueLoad = overdueTasks + blockedTasks + staleEvidence + (stateCounts.broken ?? 0) + (stateCounts.missing ?? 0); const score = Math.max(0, Math.round(100 - Math.min(100, issueLoad * 4)));
-  res.json({ data: { scope: departmentKey ? { type: "department", departmentKey } : { type: "company" }, score, status: score >= 80 ? "healthy" : score >= 55 ? "attention" : "critical", signals: { activeProjects: projects, openTasks, overdueTasks, blockedTasks, applicableProcedures: procedures, assignedPeopleAndAgents: people, resources, incidentsAndIssues: incidents, decisionsRequiringReview: decisions, activeRisks: risks, activeGoals: goals, trackedMetrics: metrics, staleOrRejectedEvidence: staleEvidence, functionalStates: stateCounts } } });
+  res.json({ data: { scope: departmentKey ? { type: "department", departmentKey } : { type: "company" }, score, status: score >= 80 ? "healthy" : score >= 55 ? "attention" : "critical", signals: { activeProjects: projects, openTasks, overdueTasks, blockedTasks, applicableProcedures: procedures, assignedPeopleAndAgents: people, resources, incidentsAndIssues: incidents, decisionsRequiringReview: decisions[0]?.count??0, activeRisks: risks, activeGoals: goals, trackedMetrics: metrics, staleOrRejectedEvidence: staleEvidence, functionalStates: stateCounts } } });
 }));
 
 companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (req, res) => {

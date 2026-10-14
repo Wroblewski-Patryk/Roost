@@ -6,6 +6,7 @@ import { chromium } from 'playwright';
 
 const taskId = '00000000-0000-4000-8000-000000000002';
 const oldId = '00000000-0000-4000-8000-000000000003';
+const taskOutcome = 'Produce the two accepted reference-site Findings and their evidence matrix.';
 const approval = { schemaVersion: 'roost-managed-runtime-approval-v1', taskId, applicationId: null,
   executionClass: 'roost-company-information-runtime-v1', installationId: '00000000-0000-4000-8000-000000000004',
   selectionDigest: 'a'.repeat(64), backend: 'codex_responses', riskClass: 'low', mode: 'trusted_provider_pilot',
@@ -30,7 +31,7 @@ try {
         return route.fulfill({ json: { data: { record: { id: oldId } } } });
       }
       if (url.includes('information-approval-candidate')) return route.fulfill({ json: { data: {
-        approval, model: 'gpt-5.6-sol', reasoningEffort: 'low', maxDurationSeconds: 600,
+        approval, taskOutcome, model: 'gpt-5.6-sol', reasoningEffort: 'low', maxDurationSeconds: 600,
         maxOutputTokensIntent: 1200, previousDecision: previous } } });
       return route.fulfill({ json: { data: { expectedVersion: 'b'.repeat(64), canWrite: true,
         authorityCatalog: { workforce: [], departments: [] }, catalog: [], revisions: [], deferrals: [], truncated: false } } });
@@ -44,6 +45,7 @@ try {
     assert.equal(writes.length, 1);
     assert.deepEqual(writes[0].managedRuntimeApproval, approval);
     assert.deepEqual(writes[0].scope, [{ type: 'task', id: taskId }]);
+    assert.equal(writes[0].rationale, taskOutcome);
     assert.equal(writes[0].supersedesId, previous?.id ?? null);
     if (previous) {
       assert.equal(writes[0].conflicts[0].oldProvision, previous.decision);
@@ -64,7 +66,7 @@ try {
         return route.fulfill({ json: { data: { record: { id: oldId } } } });
       }
       if (route.request().url().includes('information-approval-candidate')) return route.fulfill({ json: { data: {
-        approval: localApproval, backend: 'ollama_loopback', model: 'gpt-oss:20b', modelDigest,
+        approval: localApproval, taskOutcome, backend: 'ollama_loopback', model: 'gpt-oss:20b', modelDigest,
         reasoningEffort: 'low', maxDurationSeconds: 600, maxOutputTokensIntent: 1200,
         previousDecision: null } } });
       return route.fulfill({ json: { data: { expectedVersion: 'b'.repeat(64), canWrite: true,
@@ -91,7 +93,7 @@ try {
         status: 'failed', executionId: oldId, summary: null, finalResponse: null, reason: 'synthetic_provider_unavailable',
         canReview: false, materialVersion: null, review: null, sources: [], budget: null } } });
       if (route.request().url().includes('information-approval-candidate')) return route.fulfill({ json: { data: {
-        approval, model: 'gpt-5.6-sol', reasoningEffort: 'low', maxDurationSeconds: 600,
+        approval, taskOutcome, model: 'gpt-5.6-sol', reasoningEffort: 'low', maxDurationSeconds: 600,
         maxOutputTokensIntent: 1200, previousDecision: { id: oldId, decision: 'Authorize the previous single attempt.' } } } });
       if (route.request().url().includes('execution-continuation')) return route.fulfill({ json: { data: {
         previousExecution: null, eligible: false, reason: null, readyPinId: null, readyRevision: null, continuation: null } } });

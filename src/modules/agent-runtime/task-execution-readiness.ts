@@ -57,6 +57,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     const findingError=nativeDiagnostic.match(/ERROR:\s+(finding_[a-z_]+)\b/)?.[1];if(findingError)return {error:findingError};
     const authorityError = nativeDiagnostic.match(/\bdecision_authority_[a-z_]+\b/)?.[0];
     if (authorityError) return { error: authorityError };
+    const withdrawalError = nativeDiagnostic.match(/\bdecision_withdrawal_[a-z_]+\b/)?.[0];
+    if (withdrawalError) return { error: withdrawalError };
     const decisionError=nativeDiagnostic.match(/\bdecision_(?:impact_too_large|scope_invalid|scope_expansion|history_immutable|forbidden|proposal_invalid|conflict_invalid|task_required|stale|risk_admission_required|transition_invalid|event_invalid|event_not_due|governed_command_required)\b/)?.[0];
     if(decisionError)return {error:decisionError};
     if (suspensionError) return {error:suspensionError};

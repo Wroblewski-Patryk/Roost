@@ -98,6 +98,8 @@ export async function informationApprovalCandidate(db: Db, auth: AuthContext, ta
   if (scopes.length !== 1) return { error: "company_risk_assessment_required" };
   const contract = scopes[0].contract;
   if (contract?.executionClass !== companyRuntimeClass) return { error: "company_information_scope_invalid" };
+  const taskOutcome = contract.objective?.outcome?.trim();
+  if (!taskOutcome || taskOutcome.length > 1800) return { error: "company_information_outcome_invalid" };
   const key = await db.trustedProviderTicketKey.findUnique({ where: { workspaceId: auth.workspaceId }, select: { installationId: true } });
   if (!key) return { error: "managed_installation_unavailable" };
   const previous = await db.$queryRaw<{ id: string; decision: string }[]>`SELECT d.id,r.body->>'decision' AS decision
@@ -114,7 +116,7 @@ export async function informationApprovalCandidate(db: Db, auth: AuthContext, ta
   if (previous.length > 1) return { error: "runtime_authority_ambiguous" };
   const selection = managedInformationSelection(contract);
   if (!(await runtime).companyInformationRuntimeModelAllowed(selection)) return { error: "company_runtime_model_unqualified" };
-  return { approval: { schemaVersion: "roost-managed-runtime-approval-v1" as const, taskId, applicationId: null,
+  return { taskOutcome, approval: { schemaVersion: "roost-managed-runtime-approval-v1" as const, taskId, applicationId: null,
     executionClass: companyRuntimeClass, installationId: key.installationId, selectionDigest: await digest(selection),
     backend: selection.backend, riskClass: "low" as const, mode: "trusted_provider_pilot" as const,
     residualRiskAccepted: true as const, acknowledgement: "windows_account_authority_not_os_isolation" as const },

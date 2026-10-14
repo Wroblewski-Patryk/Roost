@@ -2,10 +2,29 @@
 
 The existing Decision register owns the statement and predecessor link. Native
 `decision_revisions` preserves an immutable proposal, rationale, consequences,
-exact conflicting provisions and the predecessor snapshot. A proposal has one
-successor line (`supersedesId`, projected `supersededBy`); it never overwrites or
-deletes the previous Decision. Independent proposals preserve other decisions.
-Pending successors cannot be silently replaced or broadened.
+exact conflicting provisions and the predecessor snapshot. A predecessor has at
+most one live successor proposal (`supersedesId`, projected `supersededBy`); it
+never overwrites or deletes the previous Decision. Independent proposals
+preserve other decisions. Pending successors cannot be silently replaced or
+broadened.
+
+## Owner withdrawal of a mistaken information-runtime successor
+
+An authenticated primary owner may withdraw a pending, unaccepted managed
+company-information successor of an accepted Decision. The exact proposal body,
+predecessor, preview and its history remain immutable. `decision_withdrawals`
+adds one append-only receipt with the reason, owner, request key and proposal
+revision hash. A fresh password proof binds the exact withdrawal request to the
+human owner's session. An API key or delegated agent cannot withdraw it.
+
+The database locks the predecessor for both withdrawal and new successor
+insertion, so concurrent requests cannot leave two live successors. It fences
+preview and acceptance against withdrawal, and rejects a stale proposal hash,
+changed owner, accepted decision or replay with different input. A withdrawn
+proposal is terminal and excluded from pending attention, risk and delegated
+authority checks; the accepted predecessor remains effective. The owner can
+then propose a corrected successor through the ordinary governance path. No
+withdrawal starts a Worker or authorizes a new attempt.
 
 ## Declared conflict and computed impact
 
@@ -93,6 +112,8 @@ Under `/v1/decisions`:
   impact and current gates. Selected history can be opened outside the queue limit.
 - POST `/governance/proposals`: immutable proposal and initial impact preview.
 - POST `/:id/governance/actions`: `review_impact` or separately `accept`.
+- POST `/:id/governance/withdrawals`: exact, password-confirmed owner withdrawal
+  of a pending managed information successor, with append-only receipt.
 - POST `/deferrals`: typed decision/interview deferral.
 - POST `/reopening-events`: verified, scoped reopening signal.
 
@@ -114,6 +135,15 @@ API suite, relevant UI suites, build/typecheck/lint, a fresh private backup with
 archive verification, retained previous application image and production read-only
 smoke. Additive history must be retained on application rollback; use a forward
 fix for schema problems. Rollback does not reopen or erase accepted decisions.
+
+The later `20261014010000_g24c_decision_withdrawal` migration adds the narrow
+withdrawal ledger and DB concurrency fence without editing prior migrations or
+deleting a Decision. It removes the predecessor `UNIQUE` key only after adding
+the row-lock guard. Changed native authority and Ready functions are recorded
+in immutable bootstrap catalog v4; historical v3 remains readable and pinned.
+This repair requires native concurrent-withdrawal/proposal proof, bootstrap
+catalog verification, an independent Security review and a production backup
+before any release. No migration or deployment may seed or reset company data.
 
 Coverage is the native task/decision path. Company-wide semantic discovery,
 hierarchy/HR authority, external event delivery and agent activation remain outside

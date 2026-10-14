@@ -1,7 +1,7 @@
 import { retryContextRead } from "../agent-runtime/context-read-retry";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { readyTransaction } from "../agent-runtime/task-execution-readiness";
-import { decisionGovernanceView,decisionGovernanceCommand } from "./decision-governance";
+import { decisionGovernanceView,decisionGovernanceCommand,decisionGovernanceWithdrawal } from "./decision-governance";
 import { decisionActionTimeout } from "./decision-governance-contract";
 import { issueMandate, mandateView } from "./decision-authority";
 import { Router } from "express";
@@ -47,9 +47,23 @@ decisionsRouter.get('/governance',asyncHandler(async(req,res)=>governanceRespons
 decisionsRouter.get('/:id/governance',asyncHandler(async(req,res)=>governanceResponse(res,await retryContextRead(()=>readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth,String(req.params.id),{versionOnly:req.query.version==='1'}))))));
 decisionsRouter.post('/governance/proposals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'proposal',req.body)))));
 decisionsRouter.post('/:id/governance/actions',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'action',req.body,String(req.params.id)),{timeoutMs:decisionActionTimeout(req.body)}))));
+decisionsRouter.post('/:id/governance/withdrawals',asyncHandler(async(req,res)=>{
+  if(req.auth?.authType!=="user"||!req.header("X-Owner-Action-Proof")||!req.auth.authenticatedAt
+    ||Math.abs(Date.now()/1000-req.auth.authenticatedAt)>90)return res.status(403).json({error:"owner_reauth_required"});
+  return governanceResponse(res,await readyTransaction(db=>decisionGovernanceWithdrawal(db,req.auth!.workspaceId,req.auth,String(req.params.id),req.body)));
+}));
 decisionsRouter.post('/deferrals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'defer',req.body)))));
 decisionsRouter.post('/reopening-events',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'reopen',req.body)))));
-async function serializeDecisions(workspaceId: string, rows: Array<Record<string, any>>) { const contexts = await organizationalContextsForEntities(workspaceId, "decision", rows.map((row) => row.id)); return rows.map((row) => ({ ...row, organizationalContext: contexts.get(row.id) })); }
+async function serializeDecisions(workspaceId: string, rows: Array<Record<string, any>>) {
+  const [contexts, governed] = await Promise.all([
+    organizationalContextsForEntities(workspaceId, "decision", rows.map((row) => row.id)),
+    prisma.$queryRaw<Array<{ decision_id: string; state: string }>>`SELECT decision_id,decision_state(decision_id) AS state FROM decision_revisions WHERE workspace_id=${workspaceId}::uuid`
+  ]);
+  const states = new Map(governed.map((row) => [row.decision_id, row.state]));
+  return rows.map((row) => ({ ...row, governanceState: states.get(row.id) ?? null,
+    supersededBy: row.supersededBy?.filter((successor: { id: string }) => states.get(successor.id) !== "withdrawn"),
+    organizationalContext: contexts.get(row.id) }));
+}
 
 async function projectIsVisible(workspaceId: string, projectId?: string) {
   if (!projectId) {

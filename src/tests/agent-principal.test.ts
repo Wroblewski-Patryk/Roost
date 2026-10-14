@@ -21,6 +21,7 @@ test("bound credentials admit only known review reads and commands including com
     assert.equal(agentPrincipalRoute("POST", `${prefix}/agent-runtime/releases/${id}/actions/revoke`), false);
     assert.ok(agentPrincipalRoute("GET", `${prefix}/decisions/${id}/governance`));
     assert.ok(agentPrincipalRoute("POST", `${prefix}/decisions/${id}/governance/actions`));
+    assert.equal(agentPrincipalRoute("POST", `${prefix}/decisions/${id}/governance/withdrawals`), false);
     for (const route of ["/decisions/mandates", "/decisions/governance/proposals", "/decisions/deferrals", "/decisions/reopening-events"]) assert.equal(agentPrincipalRoute("POST",prefix+route),false);
     assert.equal(agentPrincipalRoute("GET",prefix+"/decisions/mandates"),false);
     for (const route of ["/api-keys", "/agent-runtime/executions", `/tasks/${id}`, "/workforce", "/mcp", `/agent-runtime/tasks/${id}/actions/submit-for-execution`]) assert.equal(agentPrincipalRoute("POST", prefix + route), false);
@@ -42,6 +43,8 @@ test("proposal creation is limited to a bound credential and owner commands stay
   assert.equal(proofEligibleAction("POST", `/v1/agent-runtime/tasks/${id}/proposal-mandates`), true);
   assert.equal(proofEligibleAction("POST", `/v1/agent-runtime/tasks/${id}/proposal-mandates/${id}/actions/revoke`), true);
   assert.equal(proofEligibleAction("POST", `/v1/agent-runtime/tasks/${id}/proposals`), false);
+  assert.equal(proofEligibleAction("POST", `/v1/decisions/${id}/governance/withdrawals`), true);
+  assert.equal(ordinaryApiKeyReadAllowed("POST", `/v1/decisions/${id}/governance/withdrawals`, true), false);
 });
 test("credential commands reject authority supplied by callers and require explicit expiry/version", () => {
   const input = { requestId: "00000000-0000-4000-8000-000000000001", agentId: "00000000-0000-4000-8000-000000000002", name: "Fixture verifier", expiresAt: "2026-12-01T00:00:00.000Z" };
