@@ -50,7 +50,7 @@ decisionsRouter.post('/:id/governance/actions',asyncHandler(async(req,res)=>gove
 decisionsRouter.post('/:id/governance/withdrawals',asyncHandler(async(req,res)=>{
   if(req.auth?.authType!=="user"||!req.header("X-Owner-Action-Proof")||!req.auth.authenticatedAt
     ||Math.abs(Date.now()/1000-req.auth.authenticatedAt)>90)return res.status(403).json({error:"owner_reauth_required"});
-  return governanceResponse(res,await readyTransaction(db=>decisionGovernanceWithdrawal(db,req.auth!.workspaceId,req.auth,String(req.params.id),req.body)));
+  return governanceResponse(res,await readyTransaction(db=>decisionGovernanceWithdrawal(db,req.auth!.workspaceId,req.auth,String(req.params.id),req.body),{serializationRetries:2}));
 }));
 decisionsRouter.post('/deferrals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'defer',req.body)))));
 decisionsRouter.post('/reopening-events',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'reopen',req.body)))));

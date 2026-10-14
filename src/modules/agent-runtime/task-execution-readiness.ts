@@ -41,8 +41,9 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
   const revision = readyContextRevision({ ...wire(context), executionPacket: { contract: null, sources: [] } }, wire(application ?? {}), {});
   return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness, riskVersion:await riskContextVersion(db,taskId), admissionVersion:await admissionVersion(db,taskId),compositionVersion:await compositionVersion(db,taskId) });
 }
-export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, options: { timeoutMs?: 20000 | 90000 } = {}): Promise<T | { error: string }> {
+export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, options: { timeoutMs?: 20000 | 90000; serializationRetries?: 0 | 1 | 2 } = {}): Promise<T | { error: string }> {
   const startedAt=Date.now(),timeoutMs=options.timeoutMs??20000;
+  for (let attempt = 0; ; attempt++) {
   try { return await prisma.$transaction(async tx => {
     // Complete-impact acceptance repeatedly checks current native dependencies.
     // Compiling each short graph query costs more than executing it. LOCAL keeps
@@ -51,6 +52,15 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     return work(tx);
   }, { isolationLevel: "Serializable", maxWait: 5000, timeout: timeoutMs }); }
   catch (error) {
+    // A 40001 abort rolls the entire transaction back. Only explicitly opted-in
+    // commands may rerun inside the same authenticated HTTP request; never retry
+    // a timeout or a failure with uncertain commit state.
+    if (attempt < (options.serializationRetries ?? 0) && error instanceof Prisma.PrismaClientKnownRequestError
+      && error.code === "P2010" && String(error.meta?.code) === "40001") {
+      console.warn("Ready transaction serialization retry", { attempt: attempt + 1, elapsedMs: Date.now() - startedAt });
+      await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+      continue;
+    }
     if(error instanceof Error && /^finding_[a-z_]+$/.test(error.message))return {error:error.message};
     const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
     const suspensionError = nativeDiagnostic.match(/\bnative_(?:suspension_[a-z_]+|capability_suspended)\b/)?.[0];
@@ -95,6 +105,7 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
       frames
     });
     throw error;
+  }
   }
 }
 

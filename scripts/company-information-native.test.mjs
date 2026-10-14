@@ -1192,9 +1192,39 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         const proof = await request('/v1/auth/reauth', token, { password: 'synthetic-test-password-only',
           method: 'POST', path: withdrawPath, bodyDigest: createHash('sha256').update(JSON.stringify(withdrawBody)).digest('hex') });
         assert.equal(proof.status, 200, JSON.stringify(proof.body));
-        const withdrawn = await request(withdrawPath,
-          { Authorization: `Bearer ${token}`, 'X-Owner-Action-Proof': proof.body.data.proof }, withdrawBody);
+        // Force the real serializable abort seen in production. The withdrawal
+        // must finish within this one authenticated HTTP request after rollback.
+        let withdrawalRequest;
+        let blockedOnFence = false;
+        let retriesObserved = 0;
+        const originalWarn = console.warn;
+        console.warn = (message, ...details) => {
+          if (message === 'Ready transaction serialization retry') retriesObserved++;
+          originalWarn(message, ...details);
+        };
+        let withdrawn;
+        try {
+          await prisma.$transaction(async tx => {
+            await tx.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
+            withdrawalRequest = request(withdrawPath,
+              { Authorization: `Bearer ${token}`, 'X-Owner-Action-Proof': proof.body.data.proof }, withdrawBody);
+            for (let attempt = 0; attempt < 80; attempt++) {
+              const waits = await prisma.$queryRaw`SELECT EXISTS (
+                SELECT 1 FROM pg_stat_activity WHERE datname=current_database()
+                  AND wait_event_type='Lock' AND pid<>pg_backend_pid()
+              ) AS blocked`;
+              if (waits[0].blocked) { blockedOnFence = true; break; }
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }, { timeout: 15000 });
+          withdrawn = await withdrawalRequest;
+        } finally { console.warn = originalWarn; }
+        assert.equal(blockedOnFence, true, 'withdrawal did not contend on the native Ready fence');
+        assert.equal(retriesObserved, 1, 'the aborted serializable withdrawal was not retried exactly once');
         assert.equal(withdrawn.status, 201, JSON.stringify(withdrawn.body));
+        const withdrawalRows = await prisma.$queryRaw`SELECT count(*)::int AS count FROM decision_withdrawals WHERE decision_id=${wrongDecisionId}::uuid`;
+        assert.equal(withdrawalRows[0].count, 1);
+        assert.equal(await prisma.event.count({ where: { workspaceId, type: 'decision_governance_withdrawn', resourceId: wrongDecisionId } }), 1);
         assert.equal((await request(`/v1/decisions/${wrongDecisionId}/governance`, token)).body.data.selected.state, 'withdrawn');
         const list = await request('/v1/decisions', token);
         assert.equal(list.body.data.find(row => row.id === wrongDecisionId).governanceState, 'withdrawn');
