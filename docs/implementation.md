@@ -8,7 +8,13 @@ Current delivery status and evidence.
 
 **Current product priority:** Make the existing Roost company workspace usable for the owner and connected Local Worker: remove confirmed disposable gate/test data, keep real application and business records, separate audit history from active work, and verify the real task/context/result flow. A cleanup candidate is not permission to erase referenced execution, decision or review evidence. Native mobile remains deferred under RF-SCOPE-001 until the shared web/API journey works; it will use the same backend and canonical records.
 
-**Company data audit (2026-10-14):** All 240 public production tables were inventoried. Two isolated synthetic agents and their logs were deleted; confirmed old gate roles/tasks/records and repeated redaction history were moved out of active views while retaining referenced audit evidence. One owner-adopted goal and one record used by active provider-owned tasks remain visible pending their governed closure. The Local Worker remains stopped; this maintenance is not proof of a completed company task.
+**Program plan:** [Delivery sequence and acceptance](#product-delivery-sequence) below is the current planning order. Historical G7-G36 candidates are not a queue. Planning does not restart the stopped G24c or authorize a new implementation gate.
+
+**Status at this checkpoint (2026-10-14, `37f6f219`):** VPS web/API/database are deployed; bounded Codex task and native Ollama `gpt-oss` proofs exist. The Windows Host is stopped; guided install, full-console journeys, multi-role work and native mobile remain unproved or unstarted. G23 local quality passed 1/2 cases, so local is not the default. `codex:status`: 13 narrowly working, 121 partial, 27 absent, 4 need configuration, 57 unassessed accepted requirements; these are evidence classes, not completion percentages. A [signed-in desktop inventory](ux/owner-console-production-audit-2026-10-14.md) covered 52 area views and two settings surfaces, but not functional UX acceptance.
+
+**Company data audit (2026-10-14):** All 240 public tables were inventoried. Two synthetic agents and logs were deleted; some confirmed gate records were removed from active views while audit evidence remained. Many old procedures, repeated Decisions and a technical Goal are still active; one record linked to provider-owned tasks awaits governed closure. Exact provenance review is required before further deletion. The Worker is stopped; cleanup is not company-task proof.
+
+**Later Rdzeń read-only report (2026-10-14 21:42 UTC; not independently rechecked here):** 240 public tables, 138 nonempty; 33 active procedures, 10 proposed Decisions, one technical active Goal, 280 Tasks and 5,231 CompanyRecords. These are review-scope counts, not a deletion list. Importer `--apply` can reactivate hidden/archived records; durable cleanup needs correction and repeat-import proof.
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
@@ -777,77 +783,37 @@ Completed Gate 2–5 execution briefs are retained as
 [historical protocol records](operations/completed-gate-briefs.md); their older
 entry/exit language does not authorize a new gate.
 
-## Proposed sequence to complete Roost
+## Product delivery sequence
 
-Only the owner-to-local-agent loop above has an execution brief. G7 onward are
-ordered **candidate gates**, not authorization or estimates. Codex implements
-Roost and its Worker; the connected agent executes company tasks through Roost,
-never Roost source development. Application repair/readiness is a separate
-agent workload, not a Codex Roost gate. The paused second-application release
-stays paused until the owner separately disposes of it.
-The entry column, not every earlier row, defines prerequisites: application
-control may advance after G11/G17, without waiting for sales or company
-composition. Local-model qualification may run during application work; neither
-requires that application to be finished first.
+The [company workflows](product/company-operating-workflows.md) supply detail. Historical G7-G36 notes are not a queue. G24c is stopped; no gate is active. Each outcome needs separate authorization.
 
-Before each gate, inspect the actual path and matrix evidence; brief one user
-outcome, proof to reuse, affected surfaces/effects, native positive/negative
-checks, owner decision, time/attempt/token/cost limits (unenforced = unknown)
-and stop. One materially changed retry, then diagnose and replan; new providers
-or larger scope need new approval. Run focused checks and final
-`npm run codex:check`; reuse unaffected proof. Include relevant UI, config,
-permissions and agent access. Push, deploy, backup and external writes only
-when the gate actually has those effects.
+The accepted direction is one Windows Host running separate role-scoped Hermes identities with a task-admitted Ollama/gpt-oss or Codex backend. This is only partially proved; a clean owner install, distinct role handoff and ordinary end-to-end company work remain open. G23 local quality passed 1/2 comparison cases and does not qualify the local backend as the default. Codex builds Roost; the Worker performs company work. Hello World is only a disposable first-run check.
 
-| Candidate | One Roost outcome and minimum observable proof | Entry and governing requirements |
+### Claim and ordering rules
+
+- For each outcome, inspect adapters and acceptance clauses; record working path, gap, native proof, deployed proof and blocker in traceability. Routes, tables and mocks are not whole-journey proof.
+- Deliver across records, authority, API/MCP, web and Worker. Diagnose failed attempts before changing architecture or repeating models.
+- Use isolated disposable test records with verified removal. Inventory all production record families before any cleanup; preview exact deletes, protect linked/audit/provider data, and keep archives out of ordinary active lists.
+- Reserve business direction, money, mandates, customer commitments and irreversible data effects for the owner. Codex resolves routine implementation choices. A completed gate does not open the next.
+
+### Dependency-ordered product outcomes
+
+| Order | Working outcome and acceptance boundary | Inspected status |
 | --- | --- | --- |
-| G7 Attention UX | Owner completes task/result/Decision journey in the console with truthful states, PL/EN, narrow and responsive views; inventory routes first. | G6; RF-UX-001/002/007/010, RF-REL-012 |
-| G8 Trusted packet | One Worker task sees only current, approved, scoped records; old/test records stay auditable but absent by default. | G6; RF-CTX-001/003/005/027 |
-| G9 Context API/MCP | The same exclusion holds for ordinary agent search; authorized audit returns history with provenance. | G8; RF-CTX-027, RF-GOV-020, RF-SEC-007 |
-| G10 Owner/agent identity | Ordinary owner session lasts for real work; sensitive action reauth preserves context; agent cannot use owner identity. | G6; RF-SEC-003/009/013, OPEN-AUTH-001 |
-| G11 Task authority | One task passes Ready validation, scoped mandate, accountable role, Decision/review and auditable return without bypass. | G8–G10; RF-CTX-008–018, RF-GOV-001/014 |
-| G12 Progress and budget | Across admitted task types, real no-progress/limit stops are visible; renewed attempt needs changed plan and fresh budget. | G11; RF-HOST-010–012, RF-CTX-006/019 |
-| G13 Agent proposal | Agent proposes a sourced, deduplicated company task; owner reviews; no execution before Ready. | G11; RF-PROD-013, RF-CTX-021/022 |
-| G14 Scheduling | Ready tasks respect dependency, priority, host capacity and one writer; stop/resume preserves work. | G12–G13; RF-HOST-002/003/009, RF-GOV-013 |
-| G15 Delegated work | One bounded specialist handoff returns evidence to its accountable parent without expanding authority or budget. | G14; RF-GOV-010/013, RF-CTX-013–015 |
-| G16a People | Owner invites one person with scoped access; a human and a distinct agent can work on the same company task. | G11; RF-PROD-005/010, RF-SEC-009 |
-| G16b Composition | Owner configures one department/capability; an approved migration preserves records and consistent views. | G16a; RF-PROD-002–009, RF-ORG-001–005, OPEN-ORG-001 |
-| G17 Procedures | Owner versions one human/agent procedure; an active task uses its pinned version and returns a reviewed improvement proposal. | G11; RF-CTX-012/020/026 |
-| G18a ClickUp | One governed task sync reconciles provider, Roost record and actor without duplicate authority. | G11; RF-INT-001–005, RF-PROD-003 |
-| G18b Drive | One governed file/Doc/Sheet journey preserves provider authority, Roost context and provenance. | G18a; RF-INT-001–005, RF-PROD-003 |
-| G19 Company direction | Owner adopts/revises private purpose; one aligned and one conflicting task/decision show evidence or exception. | G11; RF-OUT-003/008 |
-| G20 Goals and economics | Owner sees attributable goals, progress, task effort/cost and unknown usage, with source drill-down; agents act within mandate. | G19; RF-OUT-001–007, RF-HOST-012/018, OPEN-STRATEGY-001 |
-| G21 Application control | Owner sees one configured application's own baseline, blockers, roles and agent task in Roost; no cross-app assumptions or Codex repair. | G11/G17; RF-APP-001/003/009/013/014, RF-ACT-010; reuse Gate 4/5 proof |
-| G22 Local model | One managed Hermes task runs on an explicitly admitted local model (initial candidate: gpt-oss); missing model/resources refuse safely, with no silent fallback. | G12; RF-HOST-016–018/022 |
-| G23 Model policy | Qualified local model is the default proposal for suitable task classes; unsuitable tasks propose Codex before Ready. Owner can override within policy; comparable accepted outcomes prove or reject savings. | G22; RF-HOST-012/017/022, OPEN-MODEL-001 |
-| G24a Site study | Authorized versioned sites yield sourced findings, unknowns and applicability. | G17; RF-CTX-028 |
-| G24b Website checklist | Independent review promotes findings into one versioned checklist with acceptance and rollback. | G24a; RF-CTX-028 |
-| G24c Method proof | One supervised task uses the approved checklist and returns verifiable evidence. | G24b; RF-CTX-028 |
-| G25 Public entry | Roost's pre-login page serves an approved audience with truthful claims and verified navigation/accessibility. | G24c; RF-UX-011, OPEN-UX-001 |
-| G26 Product customers | One offering and canonical customer relationship have correct product/app authority and owner view. | G21; RF-BIZ-001–003/009, RF-APP-015 |
-| G27 Payment test | One sandbox purchase reconciles payment, app access response, invoice, accounting and Roost exceptions. | G26; RF-BIZ-004–007, OPEN-FIN-001 |
-| G28 Live sale | Separately authorized live transaction reconciles the same chain; owner sees revenue and failed-sync attention. | G27; RF-BIZ-005/006/008, RF-SEC-002 |
-| G29 Support | One incident and one customer case route to accountable agents with severity, evidence and owner escalation. | G28; RF-SUP-001–004, OPEN-SVC-003 for public commitments |
-| G30 Prospecting | Agent proposes a sourced qualified lead consistent with company direction; owner can reject weak evidence without contact. | G19/G26; RF-SVC-001–003, OPEN-STRATEGY-001 |
-| G31 Offer/interview | Agent conducts an authorized needs interview and prepares scoped offer; pricing and legal terms need owner-approved authority. | G30; RF-SVC-004–009, OPEN-SVC-001, OPEN-SVC-002 |
-| G32a Service start | Accepted scope, paid milestone and isolated access are visible before delivery starts. | G31; RF-SVC-010–012, OPEN-SVC-004 |
-| G32b Service acceptance | One delivered milestone has evidence, client acceptance and settlement state in Roost. | G32a; RF-SVC-010–012 |
-| G33 Continuing value | Renewal/maintenance work, support and closure show value, ownership and access removal over time. | G32b; RF-SVC-007–012, RF-SUP-001–004 |
-| G34a Environment inventory | Agent reports host/VPS state and ranked maintenance findings without changing either host. | G14; RF-HOST-021, RF-RES-001–008 |
-| G34b Supervised update | One exact update proves compatible drain, health and recovery; wider mandate needs separate decision. | G34a; RF-HOST-021, OPEN-HOST-001 |
-| G35 Data lifecycle | Owner-approved export/retention/removal works across declared sources and preserves recovery/audit rules. | G28/G32; RF-INT-006, OPEN-DATA-001; deferred until activated |
-| G36 Mobile | Defined native app uses the same Roost API/authority for one selected workflow and passes device UX/security checks. | Reliable web journeys; RF-SCOPE-001; deferred until activated |
+| 0. Inventory and cleanup design | Classify business, test, audit and unknown data; prove repeated imports preserve the active/history split. RF-UX-010/012. | **Partial:** 52 area views and two settings surfaces inspected signed-in at desktop; Rdzeń table counts reported. Provenance, safe deletion, complete journeys, responsive/accessibility and importer behavior remain open. [Observed UI](ux/owner-console-production-audit-2026-10-14.md). |
+| 1. Owner work surface | Actionable home; linked tasks, files, blockers and results; history separate. PL/EN, responsive and accessible. RF-OUT-001, RF-UX-012. | **Partial:** signed-in dashboard is dominated by repeated technical decisions and ambiguous health, so a coherent deployed owner journey is unproved. |
+| 2. Questions and goals | Show material questions with recommendation; make goals measurable, owned and linked to work. RF-OUT-003/007/008, RF-CTX-016. | **Partial:** models exist; owner journey unproved. |
+| 3. Procedures that create work | Preview and launch a versioned procedure into one run and linked tasks; track results and improvement. RF-CTX-029. | **Missing:** catalog exists, launch/run unproved. |
+| 4. Application work system | Existing-app audit or new-app definition; one lifecycle from requirements to readiness with visible gaps. RF-APP-003/010/014. | **Partial:** records/G21 path exist; both journeys unproved. |
+| 5. Windows companion | Install, pair, status, stop, update, remove; disposable first-run smoke through admitted model with cleanup. RF-HOST-023. | **Partial:** native proofs exist; clean install unproved. |
+| 6. Agent work and handoff | Ordinary task → scoped execution → independent review when needed → owner result, with recovery. RF-GOV-006/010, RF-CTX-008/013. | **Partial:** reliable everyday loop unproved. |
+| 7. First application workload | Configure an owner-selected real application, establish its evidence-backed baseline and perform one bounded reviewed task through Roost. Codex repairs reusable Roost gaps separately. This validates the work system; app completion is its own continued project, not Roost completion. RF-APP-001/003/011/014. | **Later.** No portfolio work is authorized by this plan. |
+| 8. Customer relationships | One customer and authorized contact connect permitted relationship history and source documents without duplicate identities. Prospect collection and full service-sales flow wait for RF-SCOPE-004. RF-BIZ-002, RF-SVC-001/004. | **Later:** Client and Deal records exist; working relationship journey unproved. |
+| 9. Offer and engagement | Turn qualified need into bounded scope, offer, accepted terms and payment condition; reject free unapproved expansion. RF-SVC-001..005. | **Later:** no accepted service journey; live scope stays deferred by RF-SCOPE-004. |
+| 10. Service delivery | Create the customer project, milestones and tasks from the accepted engagement; control change, evidence, acceptance and handover. RF-SVC-003..012. | **Later:** project/task records exist; linked end-to-end delivery unproved. |
+| 11. Economics and finance | Link actual or unknown effort/cost to work, and revenue, invoice and accounting-provider state to customer/product/service; show exceptions. RF-BIZ-004/005/008/009. | **Partial/unassessed:** profitability cannot be claimed from record presence. |
+| 12. Support and improvement | Link incidents and customer cases to responsibility, repair, evidence and reviewed procedure improvement. RF-SUP-001..004, RF-CTX-020. | **Later:** full care loop unproved. |
+| 13. Native mobile owner client | Reuse reliable web API/auth and canonical records for attention, decisions, task/result and agent status. RF-SCOPE-001. | **Deferred:** no native proof; independent of later service breadth. |
+| 14. Bounded autonomy | Expand mandates only after accepted quality, cost, recovery and review; reserve material human choices. RF-GOV-001/009/013, RF-HOST-010/011/022. | **Later:** no general autonomy proof. |
 
-At each milestone (G12, G21, G29, G33 and G36), independently review complete
-owner/agent journeys and regress the console. G7 inventories **every** current
-view; any view without a later functional gate gets its own bounded UX repair
-before G21, and new views receive the same review when built. Reconcile every
-applicable accepted requirement against the traceability matrix.
-Security, resource, release and activation rules (RF-SEC/RES/REL/ACT) apply
-only to each gate's actual effects. Deferred or rejected RF-SCOPE/DEF items
-are not silently activated. Application readiness clauses in RF-APP and
-RF-PILOT belong to authorized agent company work, not Codex Roost delivery.
-Roost completion needs independent proof of the integrated company journeys
-and evidence or an explicit later decision for every applicable requirement;
-an unmapped or unverified requirement stays open. Report gate evidence and
-remaining gaps, never a percentage of the evolving vision.
+Product sale, service sale, legal/operations and public/data-lifecycle branches have separate proof and owner decisions in [company workflows](product/company-operating-workflows.md#dependent-company-and-release-branches). The practical baseline is outcomes 1-6; outcome 7 tests a real application but does not finish or authorize portfolio work. ClickUp tasks and Drive files are reused. Complete remaining classification in outcome 0 before implementation. The root Roost implementation owner carries each separately authorized gate; the connected Worker handles assigned company work, and application delivery has its own authorized workstream. This plan authorizes no G24c, model call, production cleanup, push, deploy or later outcome.

@@ -93,6 +93,14 @@ Roost is the shared work surface, context system and visible operating record;
 the Local Worker supplies governed agent execution. Deterministic scripts handle
 repeatable data collection and operations, while people or agents perform work
 and judgment within role authority. Roost itself is not described as an actor.
+The accepted direction for the current reference setup is one owner-installed
+Windows companion whose managed Hermes runtime carries distinct agent
+identities and work sessions for different responsibilities. These are logical
+workers with scoped competence and authority, not one physical agent per
+department. A task may select an admitted local Ollama/gpt-oss or Codex backend
+under the same authority and review rules. Clean installation, multi-role
+handoff and ordinary company work are not yet proved end to end; G23's local
+quality comparison passed one of two cases, so local is not the default.
 
 The first stage is complete only when the combined Roost-plus-Worker system can
 accept real work, provide the correct bounded company and application context,
@@ -198,6 +206,10 @@ history.
   mistaken for a separate store, product fork, or duplicate record model.
 
 ## Current Product Surface
+
+The [company operating workflows](company-operating-workflows.md) define how the
+owner and connected agents should use these records together. A current route
+or record family is not proof that its business journey is complete.
 
 - A backend-served React owner console provides the public and authentication
   routes, account and workspace settings, the `00 General` dashboard and
