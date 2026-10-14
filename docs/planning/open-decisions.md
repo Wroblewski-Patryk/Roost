@@ -2,10 +2,10 @@
 
 ## Current delivery
 
-G16b Composition reached its authorized boundary; its proof and limitations
-are in [`docs/implementation.md`](../implementation.md) and the
-[composition contract](../architecture/department-composition.md). No gate is
-active. The earlier stopped second-application release and G17 remain closed.
+The owner stopped G24c on 2026-10-14. No delivery gate is active. The
+accepted Findings and checklist do not prove a supervised Worker result;
+the Host is stopped. Current product priority and the next bounded delivery
+candidate are recorded in [`docs/implementation.md`](../implementation.md).
 
 Accepted product intent is canonical in
 [`docs/product/requirements.md`](../product/requirements.md). Ordinary

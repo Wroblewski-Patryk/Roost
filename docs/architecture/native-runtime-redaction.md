@@ -82,7 +82,8 @@ visible company-wide. Metadata contains policy, category/location, surface,
 verified workspace-scoped task/execution/application references and technical
 record/request correlation. Observation time is the record timestamp. A random
 UUID fingerprint is independent of the detected value. Dedup keys hash only
-classification and technical scope, never a match or its hash. Advisory locking
+classification and technical scope, never a match, its hash or the per-request
+correlation ID. Advisory locking
 and the unique record key deduplicate concurrent requests and restarts. Changed
 values with the same classification/scope share an incident.
 

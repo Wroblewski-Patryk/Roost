@@ -26,7 +26,9 @@ export async function flushRuntimeIncidents(state: RedactionState) {
       scope.correlationId ??= randomUUID();
       const findings = [...new Map(notice.findings.map(f => [f.category + f.location, f])).values()].sort((a, b) => (a.category + a.location).localeCompare(b.category + b.location));
       // Hash only classification and technical correlation, never input values.
-      const key = "runtime-redaction:" + createHash("sha256").update(JSON.stringify({ ...scope, correlationId: scope.executionId || scope.taskId || scope.recordId ? undefined : scope.correlationId, findings })).digest("hex");
+      // Correlation IDs identify requests, not distinct incidents. Excluding
+      // them keeps repeat reads of the same affected surface in one thread.
+      const key = "runtime-redaction:" + createHash("sha256").update(JSON.stringify({ ...scope, correlationId: undefined, findings })).digest("hex");
       const record = await prisma.$transaction(async db => {
         await db.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${scope.workspaceId + key},0))`;
         const prior = await db.companyRecord.findUnique({ where: { workspaceId_recordType_key: { workspaceId: scope.workspaceId, recordType: "technical_incident", key } } });

@@ -515,6 +515,7 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
     assert.equal((await post("/v1/agent-runtime/executions", { taskId: task.id, requestId: leaseToken, leaseToken, prompt: marker })).status, 409);
     const incidents = await prisma.companyRecord.findMany({ where: { workspaceId, source: "runtime_redaction_v1" } });
     assert.ok(incidents.length > count);
+    assert.ok(incidents.every(incident => incident.status === "active"));
     for (const incident of incidents) {
       const metadata = incident.metadata as any;
       assert.match(metadata.fingerprint, /^[a-f0-9-]{36}$/); assert.ok(metadata.findings.length);

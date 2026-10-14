@@ -619,11 +619,11 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
       }
     }),
     Promise.all([
-      prisma.workforceEntity.count({ where: { workspaceId } }),
-      prisma.workforceEntity.count({ where: { workspaceId, type: "human" } }),
-      prisma.workforceEntity.count({ where: { workspaceId, type: "agent" } }),
-      prisma.workforceEntity.count({ where: { workspaceId, synchronizationEnabled: true } }),
-      prisma.workforceEntity.count({ where: { workspaceId, syncStatus: "queued" } })
+      prisma.workforceEntity.count({ where: { workspaceId, status: { not: "archived" } } }),
+      prisma.workforceEntity.count({ where: { workspaceId, type: "human", status: { not: "archived" } } }),
+      prisma.workforceEntity.count({ where: { workspaceId, type: "agent", status: { not: "archived" } } }),
+      prisma.workforceEntity.count({ where: { workspaceId, synchronizationEnabled: true, status: { not: "archived" } } }),
+      prisma.workforceEntity.count({ where: { workspaceId, syncStatus: "queued", status: { not: "archived" } } })
     ])
   ]);
   const [tasks, assignments] = await Promise.all([
