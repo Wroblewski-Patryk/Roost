@@ -4,6 +4,7 @@ import { readyTransaction } from "../agent-runtime/task-execution-readiness";
 import { decisionGovernanceView,decisionGovernanceCommand,decisionGovernanceWithdrawal } from "./decision-governance";
 import { decisionActionTimeout } from "./decision-governance-contract";
 import { issueMandate, mandateView } from "./decision-authority";
+import { decisionHistoryReason } from "./decision-list-scope";
 import { Router } from "express";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -40,6 +41,10 @@ const updateDecisionSchema = createDecisionSchema.partial().omit({
 });
 
 export const decisionsRouter = Router();
+const decisionRelations = (workspaceId: string) => ({
+  supersedes: { select: { id: true, title: true, workspaceId: true } },
+  supersededBy: { where: { workspaceId }, select: { id: true, title: true, status: true } }
+}) as const;
 decisionsRouter.get('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await retryContextRead(()=>readyTransaction(db=>mandateView(db,req.auth!.workspaceId,req.auth,true),{readOnly:true})))));
 decisionsRouter.post('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>issueMandate(db,req.auth!.workspaceId,req.auth,req.body)))));
 function governanceResponse(res:any,result:any){if(result.error)return res.status(result.error.endsWith('not_found')?404:result.error.endsWith('forbidden')?403:409).json(result);return res.status(result.record&&!result.replayed?201:200).json({data:result});}
@@ -60,9 +65,17 @@ async function serializeDecisions(workspaceId: string, rows: Array<Record<string
     prisma.$queryRaw<Array<{ decision_id: string; state: string }>>`SELECT decision_id,decision_state(decision_id) AS state FROM decision_revisions WHERE workspace_id=${workspaceId}::uuid`
   ]);
   const states = new Map(governed.map((row) => [row.decision_id, row.state]));
-  return rows.map((row) => ({ ...row, governanceState: states.get(row.id) ?? null,
-    supersededBy: row.supersededBy?.filter((successor: { id: string }) => states.get(successor.id) !== "withdrawn"),
-    organizationalContext: contexts.get(row.id) }));
+  return rows.map((row) => {
+    const governanceState = states.get(row.id) ?? null;
+    const supersededBy = row.supersededBy?.filter((successor: { id: string }) => states.get(successor.id) !== "withdrawn");
+    const acceptedSuccessor = supersededBy?.some((successor: { id: string; status: string }) =>
+      states.get(successor.id) === "accepted" || (!states.has(successor.id) && ["accepted", "approved", "active"].includes(successor.status)));
+    const historyReason = decisionHistoryReason({ status: row.status, governanceState, acceptedSuccessor: Boolean(acceptedSuccessor) });
+    const { supersedes, supersedesId, ...visibleRow } = row;
+    const visibleSupersedes = supersedes?.workspaceId === workspaceId ? { id: supersedes.id, title: supersedes.title } : null;
+    return { ...visibleRow, supersedesId: visibleSupersedes ? supersedesId : null, supersedes: visibleSupersedes,
+      governanceState, historyReason, supersededBy, organizationalContext: contexts.get(row.id) };
+  });
 }
 
 async function projectIsVisible(workspaceId: string, projectId?: string) {
@@ -78,12 +91,17 @@ async function projectIsVisible(workspaceId: string, projectId?: string) {
 }
 
 decisionsRouter.get("/", asyncHandler(async (req, res) => {
+  const scopeValues = req.query.scope;
+  const scope = scopeValues === undefined ? "current" : scopeValues;
+  if (scope !== "current" && scope !== "history") return res.status(400).json({ error: "invalid_decision_scope" });
+  if (scope === "history" && req.auth?.authType !== "user") return res.status(403).json({ error: "owner_history_required" });
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null; const ids = departmentKey ? await contextualEntityIds(workspaceId, "decision", departmentKey, req.query.includeCompanyWide !== "false") : null;
   const decisions = await prisma.decision.findMany({
-    where: { workspaceId, ...(ids ? { id: { in: ids } } : {}) }, include: { supersedes: { select: { id: true, title: true } }, supersededBy: { select: { id: true, title: true } } },
+    where: { workspaceId, ...(ids ? { id: { in: ids } } : {}) }, include: decisionRelations(workspaceId),
     orderBy: { createdAt: "desc" }
   });
-  res.json({ data: await serializeDecisions(workspaceId, decisions) });
+  const rows = await serializeDecisions(workspaceId, decisions);
+  res.json({ data: rows.filter((row) => scope === "history" ? row.historyReason !== null : row.historyReason === null) });
 }));
 
 decisionsRouter.get("/interview-queue",asyncHandler(async(req,res)=>{
@@ -93,7 +111,7 @@ decisionsRouter.get("/interview-queue",asyncHandler(async(req,res)=>{
 
 decisionsRouter.get("/:id", asyncHandler(async (req, res) => {
   const decision = await prisma.decision.findFirst({
-    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }
+    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }, include: decisionRelations(req.auth!.workspaceId)
   });
 
   if (!decision) {

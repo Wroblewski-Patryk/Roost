@@ -1185,6 +1185,58 @@ test("archived architecture stays out of the current application graph and remai
   assert.equal((await request(`/v1/product-engineering/applications/${application.id}/graph`, {})).status, 401);
 });
 
+test("Decision register defaults to current records and retains workspace-scoped history", async () => {
+  const owner = await registerOwner("decision-history-owner@example.test", "Decision history owner");
+  const foreign = await registerOwner("decision-history-foreign@example.test", "Decision history foreign");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  const foreignHeaders = { Authorization: `Bearer ${foreign.token}` };
+  const create = (title: string, status: string) => prisma.decision.create({ data: { workspaceId: owner.workspace.id, title, status, source: "fixture" } });
+  const current = await create("Current decision", "accepted");
+  const pending = await create("Pending decision", "proposed");
+  const archived = await create("Archived decision", "archived");
+  const rejected = await create("Rejected decision", "rejected");
+  const superseded = await create("Superseded decision", "superseded");
+  const foreignSuccessor = await prisma.decision.create({ data: { workspaceId: foreign.workspace.id, title: "Private foreign successor", status: "accepted", source: "fixture" } });
+  // Model a legacy/imported cross-workspace pointer in this disposable DB. The current command guard correctly forbids creating it.
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe("ALTER TABLE decisions DISABLE TRIGGER decision_register_guard");
+    await tx.$executeRaw`UPDATE decisions SET supersedes_id=${current.id}::uuid WHERE id=${foreignSuccessor.id}::uuid`;
+    await tx.$executeRawUnsafe("ALTER TABLE decisions ENABLE TRIGGER decision_register_guard");
+  });
+  const ids = (response: any) => (response.body as any).data.map((row: any) => row.id).sort();
+
+  const ordinary = await request("/v1/decisions", { headers });
+  assert.equal(ordinary.status, 200);
+  assert.deepEqual(ids(ordinary), [current.id, pending.id].sort());
+  const currentRow = (ordinary.body as any).data.find((row: any) => row.id === current.id);
+  assert.deepEqual(currentRow.supersededBy, [], "foreign successors cannot change history state or leak through relations");
+  assert.equal(JSON.stringify(ordinary.body).includes(foreignSuccessor.id), false);
+  assert.equal(JSON.stringify(ordinary.body).includes(foreignSuccessor.title), false);
+  const history = await request("/v1/decisions?scope=history", { headers });
+  assert.equal(history.status, 200);
+  assert.deepEqual(ids(history), [archived.id, rejected.id, superseded.id].sort());
+  assert.deepEqual((history.body as any).data.map((row: any) => row.historyReason).sort(), ["archived", "rejected", "superseded"]);
+  assert.equal(JSON.stringify(history.body).includes(foreignSuccessor.id), false);
+  const foreignCurrent = await request("/v1/decisions", { headers: foreignHeaders });
+  assert.equal(foreignCurrent.status, 200);
+  const foreignRow = (foreignCurrent.body as any).data.find((row: any) => row.id === foreignSuccessor.id);
+  assert.equal(foreignRow.supersedesId, null, "a foreign predecessor ID is not visible through the relation");
+  assert.equal(foreignRow.supersedes, null);
+  const exact = await request(`/v1/decisions/${archived.id}`, { headers });
+  assert.equal(exact.status, 200);
+  assert.equal((exact.body as any).data.historyReason, "archived");
+  assert.equal((await request(`/v1/decisions/${archived.id}`, { headers: foreignHeaders })).status, 404);
+  assert.deepEqual(ids(await request("/v1/decisions?scope=history", { headers: foreignHeaders })), []);
+  assert.equal((await request("/v1/decisions?scope=history")).status, 401);
+  assert.equal((await request("/v1/decisions?scope=all", { headers })).status, 400);
+  assert.equal((await request("/v1/decisions?scope=history&scope=current", { headers })).status, 400);
+  const apiKey = await request("/v1/api-keys", { method: "POST", headers, body: JSON.stringify({ name: "Decision history denied key", fullAccessConfirmed: true }) });
+  assert.equal(apiKey.status, 201);
+  const keyHeaders = { "X-API-Key": (apiKey.body as any).data.key };
+  assert.equal((await request("/v1/decisions?scope=history", { headers: keyHeaders })).status, 403);
+  assert.equal((await request(`/v1/decisions/${archived.id}`, { headers: keyHeaders })).status, 403);
+});
+
 test("archived strategy and retired agent fixtures stay out of ordinary views", async () => {
   const owner = await registerOwner("strategy-archive-owner@example.test", "Strategy archive scope");
   const headers = { Authorization: `Bearer ${owner.token}` };
@@ -15974,10 +16026,19 @@ test("decision governance preserves nonconflicting history and fences exact impa
  assert.equal(next.response.status,201,JSON.stringify(next.response.body));
  assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:next.id}})).supersedesId,p.id);
  assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:p.id}})).decision,p.body.decision);
+ const currentBefore=((await request("/v1/decisions",{headers:f.auth})).body as any).data;
+ assert.ok(currentBefore.some((row:any)=>row.id===p.id&&row.historyReason===null),"an accepted predecessor remains current while its successor is pending");
+ assert.ok(currentBefore.some((row:any)=>row.id===next.id&&row.governanceState==="pending"));
  const rootNext=`/v1/decisions/${next.id}/governance`;
  await decisionFixtureProof(f);
  const nextView=((await request(rootNext,{headers:f.auth})).body as any).data;
  const acceptedNext=await f.post(rootNext+"/actions",{requestId:randomUUID(),expectedVersion:nextView.expectedVersion,action:"accept",previewId:nextView.previews[0].id});assert.equal(acceptedNext.status,201,JSON.stringify(acceptedNext.body));
+ const currentAfter=((await request("/v1/decisions",{headers:f.auth})).body as any).data;
+ const historyAfter=((await request("/v1/decisions?scope=history",{headers:f.auth})).body as any).data;
+ assert.ok(currentAfter.some((row:any)=>row.id===next.id&&row.governanceState==="accepted"));
+ assert.ok(!currentAfter.some((row:any)=>row.id===p.id));
+ assert.ok(historyAfter.some((row:any)=>row.id===p.id&&row.historyReason==="superseded"));
+ assert.equal(((await request(`/v1/decisions/${p.id}`,{headers:f.auth})).body as any).data.historyReason,"superseded");
  const {loadTaskAgentContext}=await import("../modules/company-intelligence/task-agent-context");
  const effective=await loadTaskAgentContext(f.workspaceId,f.task.id);assert.ok(effective?.decisions.some(d=>d.id===next.id));assert.ok(!effective?.decisions.some(d=>d.id===p.id));
  assert.ok((await get()).supersededBy.some((d:any)=>d.id===next.id));
