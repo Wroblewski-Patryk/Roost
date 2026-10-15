@@ -271,6 +271,7 @@ export const adapterManifest = {
     ],
     companyRecords: [
       { method: "GET", path: "/v1/company-records", capability: "company-records:read" },
+      { method: "GET", path: "/v1/company-records/registry", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id/context-reviews", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id/source-audit", capability: "company-records:read" },

@@ -78,7 +78,7 @@ try {
     process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
     if (proof.status !== 0) throw new Error();
   } else if (process.env.ROOST_G9_SOURCE_READ_ONLY === '1') {
-    const proof = run(process.execPath, ['--test', 'scripts/company-source-read-native.test.mjs'], environment, 180000);
+    const proof = run(process.execPath, ['--test', 'scripts/company-source-read-native.test.mjs'], environment, 300000);
     process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
     if (proof.status !== 0) throw new Error();
   } else if (process.env.ROOST_G7_REVIEW_ONLY === '1') {

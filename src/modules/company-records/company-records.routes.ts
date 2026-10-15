@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { ensureDefaultDepartments } from "../departments/departments.routes";
@@ -66,6 +66,59 @@ companyRecordsRouter.get("/", asyncHandler(async (req, res) => {
     ...(q ? { OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }, { key: { contains: q, mode: "insensitive" } }] } : {})
   }, include: { parent: { select: { id: true, key: true, title: true, recordType: true } }, children: { select: { id: true, key: true, title: true, recordType: true, status: true } } }, orderBy: [{ priority: "asc" }, { updatedAt: "desc" }] });
   res.json({ data: await serialize(workspaceId, records) });
+}));
+// Bounded human register. The legacy array endpoint above remains unchanged for
+// existing clients; this projection never sends record bodies or review content.
+companyRecordsRouter.get("/registry", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId;
+  if (auth.authType !== "user" || !auth.userId)
+    return res.status(403).json({ error: "company_register_human_required" });
+  const input = z.object({
+    recordType: z.string().trim().min(1).max(80), departmentKey: z.string().trim().min(1).max(80),
+    includeCompanyWide: z.enum(["true", "false"]).default("true"),
+    scope: z.enum(["current", "history"]).default("current"),
+    q: z.string().trim().max(120).default(""),
+    page: z.coerce.number().int().min(1).max(10000).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(50)
+  }).strict().parse(req.query);
+  const ids = await contextualEntityIds(workspaceId, "company_record", input.departmentKey, input.includeCompanyWide === "true");
+  if (!ids.length) return res.json({ data: { items: [], total: 0, page: input.page, pageSize: input.pageSize } });
+  const where: Prisma.CompanyRecordWhereInput = {
+    workspaceId, id: { in: ids }, recordType: input.recordType,
+    status: input.scope === "history" ? "archived" : { not: "archived" },
+    ...(input.q ? { OR: [
+      { title: { contains: input.q, mode: "insensitive" } },
+      { key: { contains: input.q, mode: "insensitive" } },
+      { description: { contains: input.q, mode: "insensitive" } }
+    ] } : {})
+  };
+  const [total, records] = await prisma.$transaction([
+    prisma.companyRecord.count({ where }),
+    prisma.companyRecord.findMany({ where,
+      select: { id: true, title: true, key: true, recordType: true, status: true,
+        priority: true, functionalState: true, verificationState: true,
+        source: true, metadata: true, createdAt: true, updatedAt: true },
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      skip: (input.page - 1) * input.pageSize, take: input.pageSize
+    })
+  ], { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  const detailed = await serialize(workspaceId, records);
+  const items = records.map(({ metadata }, index) => {
+    const fields = metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? metadata as Record<string, unknown> : {};
+    const sourceField = (key: string) => {
+      const value = fields[key];
+      if (typeof value !== "string") return null;
+      return value.length > 160 ? `${value.slice(0, 157)}…` : value;
+    };
+    const ownerDepartment = detailed[index].organizationalContext?.ownerDepartment;
+    return { ...detailed[index], organizationalContext: { ownerDepartment: ownerDepartment
+      ? { id: ownerDepartment.id, key: ownerDepartment.key, name: ownerDepartment.name } : null },
+      metadata: { sourceKind: sourceField("sourceKind"),
+      sourceSystem: sourceField("sourceSystem"), sourceId: sourceField("sourceId"),
+      filePath: sourceField("filePath") } };
+  });
+  res.json({ data: { items, total, page: input.page, pageSize: input.pageSize } });
 }));
 companyRecordsRouter.get("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const record = await prisma.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { parent: true, children: true } });

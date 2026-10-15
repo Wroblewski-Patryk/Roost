@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
 
-test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { timeout: 120000 }, async t => {
+test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { timeout: 240000 }, async t => {
   const server = createApp().listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -251,6 +251,118 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       assert.deepEqual(secondPage.body.data.reviews.map(row => row.action), ['approve']);
       assert.equal(secondPage.body.data.nextBeforeOrdinal, null);
       assert.equal((await request(`/v1/company-records/${withdrawn.id}/source-audit`, generalKey)).status, 403);
+    });
+    await t.test('owner register pages and searches a real-size scoped projection without reclassifying current records', async () => {
+      assert.equal((await request('/v1/departments', owner)).status, 200);
+      const stamp = new Date('2026-10-01T12:00:00.000Z');
+      const ids = Array.from({ length: 5231 }, () => randomUUID());
+      for (let offset = 0; offset < ids.length; offset += 400) {
+        const batch = ids.slice(offset, offset + 400);
+        await prisma.companyRecord.createMany({ data: batch.map((id, index) => ({
+          id, workspaceId, recordType: 'requirement', key: `register-${offset + index}`,
+          title: offset + index === 0 ? 'Unverified active source' : `Register fixture ${offset + index}`,
+          description: offset + index === 0 ? 'Searchable private description' : 'Private fixture body',
+          rationale: 'Private fixture rationale', status: offset + index === 1 ? 'archived' : 'active',
+          source: 'owner_fixture', verificationState: 'not_started',
+          metadata: { sourceKind: 'owner_note', sourceSystem: 'disposable_fixture',
+            sourceId: offset + index === 0 ? 'x'.repeat(100000) : 'fixture-id',
+            hiddenBody: 'Never project this body' },
+          createdAt: stamp, updatedAt: stamp
+        })) });
+        await prisma.organizationalScope.createMany({ data: batch.map(id => ({
+          workspaceId, entityType: 'company_record', entityId: id, scopeType: 'company'
+        })) });
+      }
+      const path = '/v1/company-records/registry?recordType=requirement&departmentKey=02-produkt&pageSize=50';
+      const first = await request(`${path}&scope=current&page=1`, owner);
+      assert.equal(first.status, 200, JSON.stringify(first.body));
+      assert.equal(first.body.data.total, 5230);
+      assert.equal(first.body.data.items.length, 50);
+      assert.equal(first.body.data.pageSize, 50);
+      const second = await request(`${path}&scope=current&page=2`, owner);
+      assert.equal(second.status, 200);
+      assert.equal(second.body.data.items.length, 50);
+      const last = await request(`${path}&scope=current&page=105`, owner);
+      assert.equal(last.body.data.items.length, 30);
+      assert.equal(last.body.data.total, 5230);
+      const beyond = await request(`${path}&scope=current&page=106`, owner);
+      assert.deepEqual(beyond.body.data.items, []);
+      assert.equal(beyond.body.data.total, 5230);
+      assert.equal(new Set([...first.body.data.items, ...second.body.data.items].map(item => item.id)).size, 100);
+      const ordered = ids.filter(id => id !== ids[1]).sort().reverse();
+      assert.deepEqual([...first.body.data.items, ...second.body.data.items].map(item => item.id), ordered.slice(0, 100));
+      for (const item of first.body.data.items) {
+        assert.equal(item.metadata.sourceKind, 'owner_note');
+        assert.equal(item.metadata.sourceSystem, 'disposable_fixture');
+        assert.equal('hiddenBody' in item.metadata, false);
+        assert.equal('description' in item, false);
+        assert.equal('rationale' in item, false);
+        assert.equal('children' in item, false);
+        assert.equal('sourceReviews' in item, false);
+        assert.deepEqual(Object.keys(item.organizationalContext), ['ownerDepartment']);
+        assert.equal(item.verificationState, 'not_started');
+      }
+      const history = await request(`${path}&scope=history&page=1`, owner);
+      assert.equal(history.status, 200);
+      assert.deepEqual(history.body.data.items.map(item => item.id), [ids[1]]);
+      assert.equal(history.body.data.total, 1);
+      const unverified = await request(`${path}&scope=current&q=Unverified%20active`, owner);
+      assert.deepEqual(unverified.body.data.items.map(item => item.id), [ids[0]]);
+      const bodySearch = await request(`${path}&scope=current&q=Searchable%20private`, owner);
+      assert.deepEqual(bodySearch.body.data.items.map(item => item.id), [ids[0]]);
+      assert.ok(bodySearch.body.data.items[0].metadata.sourceId.endsWith('…'));
+      assert.equal(bodySearch.body.data.items[0].metadata.sourceId.length, 158);
+      assert.ok(JSON.stringify(bodySearch.body).length < 5000);
+      const keySearch = await request(`${path}&scope=current&q=register-2500`, owner);
+      assert.deepEqual(keySearch.body.data.items.map(item => item.id), [ids[2500]]);
+      const noCompanyScope = await request(`${path}&scope=current&q=Unverified%20active&includeCompanyWide=false`, owner);
+      assert.equal(noCompanyScope.body.data.total, 0);
+      const empty = await request(`${path}&scope=current&q=No%20such%20record`, owner);
+      assert.equal(empty.body.data.total, 0);
+      assert.deepEqual(empty.body.data.items, []);
+      assert.equal((await request(`${path}&pageSize=101`, owner)).status, 400);
+      assert.equal((await request(`${path}&scope=unknown`, owner)).status, 400);
+      assert.equal((await request('/v1/company-records/registry?recordType=requirement', owner)).status, 400);
+      assert.equal((await request(path, agentKey)).status, 403);
+      assert.equal((await request(path, generalKey)).status, 403);
+      assert.equal((await request(path, null)).status, 401);
+      const other = await request('/auth/register', null, { email: 'register-foreign@example.test',
+        password: 'synthetic-test-password-only', name: 'Foreign register owner', workspaceName: 'Foreign register workspace' });
+      assert.equal(other.status, 201);
+      const foreignRead = await request(path, other.body.data.token);
+      assert.equal(foreignRead.status, 200);
+      assert.equal(foreignRead.body.data.total, 0);
+      await prisma.workspaceMembership.create({ data: { workspaceId,
+        userId: other.body.data.user.id, role: 'member' } });
+      const member = await request('/auth/login', null, { email: 'register-foreign@example.test',
+        password: 'synthetic-test-password-only', workspaceId });
+      assert.equal(member.status, 200);
+      const memberRead = await request(path, member.body.data.token);
+      assert.equal(memberRead.status, 200);
+      assert.equal(memberRead.body.data.total, 5230);
+      assert.equal((await request(`/v1/company-records/${ids[0]}/source-audit?projection=summary`, member.body.data.token)).status, 403);
+      const viewerAccount = await request('/auth/register', null, { email: 'register-viewer@example.test',
+        password: 'synthetic-test-password-only', name: 'Viewer', workspaceName: 'Viewer own workspace' });
+      assert.equal(viewerAccount.status, 201);
+      await prisma.workspaceMembership.create({ data: { workspaceId,
+        userId: viewerAccount.body.data.user.id, role: 'viewer' } });
+      const viewer = await request('/auth/login', null, { email: 'register-viewer@example.test',
+        password: 'synthetic-test-password-only', workspaceId });
+      assert.equal(viewer.status, 200);
+      assert.equal((await request(path, viewer.body.data.token)).body.data.total, 5230);
+      const scopedAccount = await request('/auth/register', null, { email: 'register-scoped@example.test',
+        password: 'synthetic-test-password-only', name: 'Scoped member', workspaceName: 'Scoped own workspace' });
+      assert.equal(scopedAccount.status, 201);
+      await prisma.workspaceMembership.create({ data: { workspaceId,
+        userId: scopedAccount.body.data.user.id, role: 'member', taskScopeId: task.id } });
+      const scopedMember = await request('/auth/login', null, { email: 'register-scoped@example.test',
+        password: 'synthetic-test-password-only', workspaceId });
+      assert.equal(scopedMember.status, 200);
+      assert.equal((await request(path, scopedMember.body.data.token)).status, 403);
+      const legacy = await request('/v1/company-records?recordType=requirement&q=Unverified%20active', owner);
+      assert.equal(legacy.status, 200);
+      assert.ok(Array.isArray(legacy.body.data));
+      assert.equal(legacy.body.data[0].description, 'Searchable private description');
     });
     process.stdout.write('G9a native source read: task-bound HTTP and global MCP positive/negative assertions passed\n');
   } finally {
