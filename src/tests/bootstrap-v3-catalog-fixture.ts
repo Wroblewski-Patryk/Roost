@@ -1,9 +1,9 @@
 import {v3UpgradePins} from '../modules/api-keys/bootstrap-v3-backend-pins';
 import {v3HostGuardHash} from '../modules/api-keys/bootstrap-v3-catalog-v3-pins';
-import {v3CatalogV4Manifest} from '../modules/api-keys/bootstrap-v3-catalog-v4-pins';
+import {v3CatalogV5Manifest} from '../modules/api-keys/bootstrap-v3-catalog-v5-pins';
 export function catalogAnswer(sql:string):any[]|undefined {
- if(sql.includes('v3 backend functions'))return structuredClone(v3CatalogV4Manifest.functions).map(f=>({...f,enabled:true}));
- if(sql.includes('v3 backend manifest'))return [{id:true,record:structuredClone(v3CatalogV4Manifest)}];
+ if(sql.includes('v3 backend functions'))return structuredClone(v3CatalogV5Manifest.functions).map(f=>({...f,enabled:true}));
+ if(sql.includes('v3 backend manifest'))return [{id:true,record:structuredClone(v3CatalogV5Manifest)}];
  if(sql.includes('v3 backend catalog'))return [{valid:true,bound:true}];
  return undefined;
 }

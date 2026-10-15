@@ -44,7 +44,9 @@ test("proposal creation is limited to a bound credential and owner commands stay
   assert.equal(proofEligibleAction("POST", `/v1/agent-runtime/tasks/${id}/proposal-mandates/${id}/actions/revoke`), true);
   assert.equal(proofEligibleAction("POST", `/v1/agent-runtime/tasks/${id}/proposals`), false);
   assert.equal(proofEligibleAction("POST", `/v1/decisions/${id}/governance/withdrawals`), true);
+  assert.equal(proofEligibleAction("POST", `/v1/decisions/${id}/governance/expired-credential-withdrawals`), true);
   assert.equal(ordinaryApiKeyReadAllowed("POST", `/v1/decisions/${id}/governance/withdrawals`, true), false);
+  assert.equal(ordinaryApiKeyReadAllowed("POST", `/v1/decisions/${id}/governance/expired-credential-withdrawals`, true), false);
 });
 test("credential commands reject authority supplied by callers and require explicit expiry/version", () => {
   const input = { requestId: "00000000-0000-4000-8000-000000000001", agentId: "00000000-0000-4000-8000-000000000002", name: "Fixture verifier", expiresAt: "2026-12-01T00:00:00.000Z" };

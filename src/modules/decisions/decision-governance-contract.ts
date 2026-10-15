@@ -100,6 +100,8 @@ export const decisionAction=z.object({requestId:uuid,expectedVersion:hash,action
  if(v.procedureEvidence&&v.action!=="accept")c.addIssue({code:"custom",message:"Procedure evidence requires a human acceptance action"});
 });
 export const decisionWithdrawal=z.object({requestId:uuid,expectedVersion:hash,reason:z.string().trim().min(12).max(2000)}).strict();
+export const decisionExpiredCredentialWithdrawal=z.object({requestId:uuid,expectedVersion:hash,expectedPreviewDigest:hash,
+  reason:z.string().trim().min(12).max(2000)}).strict();
 // Full impact admission has a bounded larger transaction budget. Every other
 // action retains the ordinary Ready budget; no caller controls this duration.
 export function decisionActionTimeout(body:unknown):20000|90000 {

@@ -26,6 +26,22 @@ authority checks; the accepted predecessor remains effective. The owner can
 then propose a corrected successor through the ordinary governance path. No
 withdrawal starts a Worker or authorizes a new attempt.
 
+## Expired pending Worker rotation correction
+
+Outcome 0 adds a second, typed use of the same immutable withdrawal ledger for an
+original `workerCredential.action=rotate` proposal. The human owner sees the
+exact Decision, bound handoff, and complete task impact before confirming one
+proposal with a fresh password proof, reason, request ID and dependency digest.
+The route has no batch form and does not change a credential, handoff or task.
+
+The database rechecks that the proposal and requested handoff are expired,
+neither was accepted or spent, no issuance operation or effectively active
+credential exists, no execution is active, and every impacted task is archived.
+An unresolved impact or changed dependency fails closed. The typed receipt is
+terminal for the proposal and remains in authorized history; the existing
+managed-information successor withdrawal retains its original contract.
+[Bounded proof and release status](../ux/owner-expired-worker-rotation-withdrawal-2026-10-15.md).
+
 ## Declared conflict and computed impact
 
 A current workspace owner records the exact old and new provisions and whether

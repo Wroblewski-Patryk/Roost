@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { reviewDigest } from "../agent-runtime/task-review-contract";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { interviewCommand,interviewView } from "../agent-runtime/task-interview";
-import { decisionAction,decisionDeferral,decisionProposal,decisionWithdrawal,reopeningEvent } from "./decision-governance-contract";
+import { decisionAction,decisionDeferral,decisionProposal,decisionWithdrawal,decisionExpiredCredentialWithdrawal,reopeningEvent } from "./decision-governance-contract";
 import { authorityState,decisionAuthority,mandateView } from "./decision-authority";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { admitCapability,recordCapabilityUse,grantState } from "../agent-runtime/task-capability-admission";
@@ -27,7 +27,7 @@ async function state(db:Db,w:string,actor:ReviewActor|null,id?:string,readOnly=f
  const revisions=await db.$queryRaw<any[]>`SELECT r.*,decision_state(r.decision_id) AS state FROM decision_revisions r WHERE workspace_id=${w}::uuid ORDER BY created_at DESC LIMIT 201`;
  const selected=id?(await db.$queryRaw<any[]>`SELECT r.*,decision_state(r.decision_id) AS state FROM decision_revisions r WHERE workspace_id=${w}::uuid AND decision_id=${id}::uuid`)[0]:undefined;
  if(id&&!selected)return {error:"decision_not_found"};
- const withdrawal=selected?(await db.$queryRaw<any[]>`SELECT id,decision_id,predecessor_id,owner_user_id,reason,request_id,withdrawn_at FROM decision_withdrawals WHERE workspace_id=${w}::uuid AND decision_id=${id}::uuid`)[0]??null:null;
+ const withdrawal=selected?(await db.$queryRaw<any[]>`SELECT id,decision_id,predecessor_id,owner_user_id,reason,request_id,withdrawn_at,kind,impact_digest FROM decision_withdrawals WHERE workspace_id=${w}::uuid AND decision_id=${id}::uuid`)[0]??null:null;
  const previews=selected?await db.$queryRaw<any[]>`SELECT * FROM decision_impact_previews WHERE decision_id=${id}::uuid ORDER BY version DESC LIMIT 51`:[];
  const acceptance=selected?(await db.$queryRaw<any[]>`SELECT * FROM decision_acceptances WHERE decision_id=${id}::uuid`)[0]:null;
  const deferrals=await db.$queryRaw<any[]>`SELECT f.*,e.id AS event_id,e.event_type,e.created_at AS reopened_at FROM decision_deferrals f LEFT JOIN decision_reopening_events e ON e.deferral_id=f.id WHERE f.workspace_id=${w}::uuid ORDER BY f.created_at DESC LIMIT 201`;
@@ -91,10 +91,12 @@ export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|nu
  const gates=await Promise.all(taskIds.map(async t=>({taskId:t,...(await db.$queryRaw<any[]>`SELECT task_admission_view(${t}::uuid,'decision_supersede') AS value`)[0].value})));
  const canWrite=s.role==="owner"&&u===s.ownerUserId;
  const canWithdraw=canWrite&&s.selected?.state==="pending"&&!s.acceptance&&!!s.selected?.supersedes_id&&s.selected?.body?.managedRuntimeApproval?.executionClass==="roost-company-information-runtime-v1"&&s.selected?.body?.managedRuntimeApproval?.applicationId===null;
+ const credentialWithdrawal=canWrite&&s.selected?.state==="pending"&&s.selected?.body?.workerCredential?.action==="rotate"?
+  (await db.$queryRaw<Array<{value:any}>>`SELECT decision_expired_worker_rotation_preview(${w}::uuid,${id}::uuid) AS value`)[0]?.value??null:null;
   const data={expectedVersion:s.expectedVersion,authorityCatalog:authorityCatalog?{workforce:authorityCatalog.workforce,departments:authorityCatalog.departments,entityCatalog:authorityCatalog.entityCatalog}:null,canWrite,canWithdraw,authority:s.authority,canAccept:s.selected?.state==="pending"&&!!s.principal&&"principal" in (s.authority??{})&&(s.authority as any).principal?.kind===s.principal.kind&&(s.authority as any).principal?.id===s.principal.id,selected:s.selected?wire(s.selected):null,
   revisions:s.revisions.slice(0,200).map(r=>({id:r.decision_id,title:r.body.title,state:r.state,version:r.version,supersedesId:r.supersedes_id})),
   previews:s.previews.slice(0,50).map(wire),acceptance:s.acceptance?wire(s.acceptance):null,withdrawal:s.withdrawal?wire(s.withdrawal):null,impact:s.impact,ancestors,supersededBy,gates,
-  current:!!s.impact&&!!s.previews[0]&&reviewDigest(s.impact)===reviewDigest(s.previews[0].impact)&&(!s.previews[0].authority||reviewDigest(s.authority)===reviewDigest(s.previews[0].authority)),taskStates,
+  current:!!s.impact&&!!s.previews[0]&&reviewDigest(s.impact)===reviewDigest(s.previews[0].impact)&&(!s.previews[0].authority||reviewDigest(s.authority)===reviewDigest(s.previews[0].authority)),taskStates,credentialWithdrawal,
   deferrals:s.deferrals.slice(0,200).map(f=>({...wire(f),referenceRevision:s.references.find(r=>r.id===f.id)?.sqlRevision})),
   catalog:catalog.slice(0,100).map(t=>({type:"task",...t})),resourceCatalog:resourceCatalog.slice(0,100),configurationCatalog:configurationCatalog.slice(0,100),truncated:s.revisions.length>200||s.previews.length>50||s.deferrals.length>200||catalog.length>100||resourceCatalog.length>100||configurationCatalog.length>100||!!cursor};
  requireRuntimeContent(data,"decision.read",{workspaceId:w});return data;
@@ -237,4 +239,23 @@ export async function decisionGovernanceWithdrawal(db:Db,w:string,actor:ReviewAc
  const result={record:wire(record),replayed:previous.length>0};
  requireRuntimeContent(result,"decision.replay",{workspaceId:w});
  return result;
+}
+
+export async function decisionGovernanceExpiredCredentialWithdrawal(db:Db,w:string,actor:ReviewActor|null,id:string,body:unknown){
+ const input=decisionExpiredCredentialWithdrawal.parse(body);
+ requireRuntimeContent(input,"decision.command",{workspaceId:w});
+ const s=await state(db,w,actor,id);if("error" in s)return s;
+ const u=s.u;
+ if(typeof actor!=="string"&&actor?.authType==="api_key"||!u||s.role!=="owner"||u!==s.ownerUserId||s.principal?.kind!=="user")
+  return {error:"decision_withdrawal_forbidden"};
+ if(!s.selected)return {error:"decision_not_found"};
+ const previous=await db.$queryRaw<Array<{id:string}>>`SELECT id FROM decision_withdrawals WHERE workspace_id=${w}::uuid AND request_id=${input.requestId}::uuid`;
+ if(!previous.length&&input.expectedVersion!==s.expectedVersion)return {error:"decision_withdrawal_stale"};
+ const records=await db.$queryRaw<Array<{id:string;decision_id:string;request_id:string;withdrawn_at:Date}>>`
+   SELECT * FROM decision_withdraw_expired_worker_rotation_v1(${w}::uuid,${id}::uuid,${s.selected.request_hash},${u}::uuid,
+    ${input.requestId}::uuid,${input.reason},${input.expectedPreviewDigest})`;
+ const record=records[0];if(!record)return {error:"decision_withdrawal_stale"};
+ if(!previous.length)await event(db,w,u,"decision_governance_withdrawn",id,{decisionId:id,withdrawalId:record.id,kind:"expired_worker_rotation"});
+ const result={record:wire(record),replayed:previous.length>0};
+ requireRuntimeContent(result,"decision.replay",{workspaceId:w});return result;
 }

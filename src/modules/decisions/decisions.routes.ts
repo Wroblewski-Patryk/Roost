@@ -1,7 +1,7 @@
 import { retryContextRead } from "../agent-runtime/context-read-retry";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { readyTransaction } from "../agent-runtime/task-execution-readiness";
-import { decisionGovernanceView,decisionGovernanceCommand,decisionGovernanceWithdrawal } from "./decision-governance";
+import { decisionGovernanceView,decisionGovernanceCommand,decisionGovernanceWithdrawal,decisionGovernanceExpiredCredentialWithdrawal } from "./decision-governance";
 import { decisionActionTimeout } from "./decision-governance-contract";
 import { issueMandate, mandateView } from "./decision-authority";
 import { decisionHistoryReason } from "./decision-list-scope";
@@ -56,6 +56,11 @@ decisionsRouter.post('/:id/governance/withdrawals',asyncHandler(async(req,res)=>
   if(req.auth?.authType!=="user"||!req.header("X-Owner-Action-Proof")||!req.auth.authenticatedAt
     ||Math.abs(Date.now()/1000-req.auth.authenticatedAt)>90)return res.status(403).json({error:"owner_reauth_required"});
   return governanceResponse(res,await readyTransaction(db=>decisionGovernanceWithdrawal(db,req.auth!.workspaceId,req.auth,String(req.params.id),req.body),{serializationRetries:2}));
+}));
+decisionsRouter.post('/:id/governance/expired-credential-withdrawals',asyncHandler(async(req,res)=>{
+ if(req.auth?.authType!=="user"||!req.header("X-Owner-Action-Proof")||!req.auth.authenticatedAt
+   ||Math.abs(Date.now()/1000-req.auth.authenticatedAt)>90)return res.status(403).json({error:"owner_reauth_required"});
+ return governanceResponse(res,await readyTransaction(db=>decisionGovernanceExpiredCredentialWithdrawal(db,req.auth!.workspaceId,req.auth,String(req.params.id),req.body),{serializationRetries:2}));
 }));
 decisionsRouter.post('/deferrals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'defer',req.body)))));
 decisionsRouter.post('/reopening-events',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'reopen',req.body)))));

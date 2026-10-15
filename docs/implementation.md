@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none. The bounded Decision current/history slice is deployed; G24c remains stopped. No following gate authorized.
+**Active gate:** G0 Outcome 0 expired pending Worker rotation withdrawal. One owner receipt retains the Decision and evidence. Scope: additive SQL/API, PL/EN console, native and Security/UX proof, then one safe release. No production proposal cancellation, Worker/provider action or next gate. G24c remains stopped.
 
 **Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
