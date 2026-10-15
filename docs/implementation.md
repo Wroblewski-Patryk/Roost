@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 signals release prepared; [evidence](ux/owner-department-signals-2026-10-15.md). G24c/G25 stopped.
+**Active gate:** none; G0 signals slice deployed and read back; [evidence](ux/owner-department-signals-2026-10-15.md). G24c/G25 stopped.
 
 **Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
@@ -22,7 +22,7 @@ Current delivery status and evidence.
 
 **Rdzeń inventory (2026-10-14 21:42 UTC, read-only):** 240 public tables, 138 nonempty; 33 active procedures, 10 proposed Decisions, one technical Goal, 280 Tasks and 5,231 CompanyRecords. Counts are not a deletion list. Focused native Today proof shows repeat `--apply` preserves matched inactive CompanyRecords and architecture components. Other provenance/cleanup remains open.
 
-**Release constraint (2026-10-15):** VPS 6.1 GB free (92% used); prior backend image retained, backup from 2026-10-14. G0 release held without storage cleanup authority. [Proof](ux/owner-department-signals-2026-10-15.md).
+**G0 release (2026-10-16):** Approved cache prune recovered 7.998 GB; fresh backup/restore verified. Coolify 6440 deployed `4b4c33d5`; API healthy, old image retained, 11 GB free. [Proof](ux/owner-department-signals-2026-10-15.md).
 
 **G24b:** [release proof](architecture/reference-site-checklist-g24b.md#g24b-release-and-limits).
 
