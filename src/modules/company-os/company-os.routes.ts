@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { randomUUID } from "node:crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma, type AuditLog } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -657,6 +657,13 @@ async function startStageCommand(params: {
     return commandError(404, "pipeline_stage_not_found");
   }
 
+  if (pipelineStage.procedureId) {
+    const boundProcedure = await prisma.procedure.findFirst({
+      where: { id: pipelineStage.procedureId, workspaceId }, select: { status: true }
+    });
+    if (boundProcedure?.status !== "active") return commandError(409, "inactive_procedure");
+  }
+
   if (terminalPipelineStatuses.has(pipelineRun.status)) {
     return commandError(409, "invalid_pipeline_transition");
   }
@@ -685,7 +692,8 @@ async function startStageCommand(params: {
   }
 
   const correlationId = randomUUID();
-  const result = await prisma.$transaction(async (tx) => {
+  let result: { stageRun: unknown; auditLog: AuditLog };
+  try { result = await prisma.$transaction(async (tx) => {
     const stageRun = existingStageRun
       ? await tx.stageRun.update({
         where: { id: existingStageRun.id },
@@ -749,7 +757,11 @@ async function startStageCommand(params: {
     });
 
     return { stageRun, auditLog };
-  });
+  }); } catch (error) {
+    if (error instanceof Error && error.message.includes("procedure_archive_inactive_binding"))
+      return commandError(409, "inactive_procedure");
+    throw error;
+  }
 
   return {
     stageRun: result.stageRun as unknown as Record<string, unknown>,

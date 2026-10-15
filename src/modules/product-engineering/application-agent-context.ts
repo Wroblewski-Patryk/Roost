@@ -230,11 +230,11 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
       }) : genericEvidence,
       entityRelations: taskId && executionProfile ? [] : entityRelations,
       operatingModel: {
-        applicationProcedures: taskId && executionProfile ? application.procedures.filter(link => approved("procedure", [link.procedure]).length)
+        applicationProcedures: taskId && executionProfile ? application.procedures.filter(link => link.procedure.status !== "archived" && approved("procedure", [link.procedure]).length)
           .map(link => { const source = projectTaskSource("procedure", link.procedure, workspaceId);
             return { procedureId: link.procedureId, procedure: { ...source.content,
-              provenance: taskSourceProvenance(source, otherReviews!.get(`procedure:${link.procedureId}`)!) } }; }) : application.procedures,
-        capabilityProcedures: taskId && executionProfile ? [] : capabilities.flatMap((item) => item.capabilityDefinition.procedures.map((link) => ({
+              provenance: taskSourceProvenance(source, otherReviews!.get(`procedure:${link.procedureId}`)!) } }; }) : application.procedures.filter(link => link.procedure.status !== "archived"),
+        capabilityProcedures: taskId && executionProfile ? [] : capabilities.flatMap((item) => item.capabilityDefinition.procedures.filter(link => link.procedure.status !== "archived").map((link) => ({
           capabilityId: item.id,
           capabilityKey: item.capabilityDefinition.key,
           ...link

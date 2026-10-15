@@ -256,6 +256,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/process-core/coverage", capability: "process-core:read" },
       { method: "GET", path: "/v1/process-core/procedures", capability: "process-core:read" },
       { method: "GET", path: "/v1/process-core/procedures/:id", capability: "process-core:read" },
+      { method: "GET", path: "/v1/process-core/procedures/:id/archive-preview", capability: "process-core:read" },
       { method: "POST", path: "/v1/process-core/procedures", capability: "process-core:write" },
       { method: "PATCH", path: "/v1/process-core/procedures/:id", capability: "process-core:write" },
       { method: "GET", path: "/v1/process-core/procedures/:id/contracts", capability: "process-core:read" },

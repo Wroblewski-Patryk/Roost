@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
+import { requireWorkspaceRole } from "../../auth/workspace-access";
+import { archiveProcedure } from "../process-core/procedure-archive";
 
 type RouteActor = {
   actorType: "user" | "agent";
@@ -1484,6 +1486,12 @@ workflowDefinitionRecoveryRouter.post("/:rootObjectType/:rootObjectId/actions/ar
   const workspaceId = req.auth!.workspaceId;
   const rootObjectType = rootObjectTypeSchema.parse(req.params.rootObjectType);
   const rootObjectId = z.string().uuid().parse(req.params.rootObjectId);
+  if (rootObjectType === "procedure") {
+    if (!requireWorkspaceRole(req, res, "owner")) return;
+    const result = await archiveProcedure(workspaceId, req.auth!.userId!, rootObjectId, req.body);
+    if ("error" in result) return res.status(result.error === "procedure_not_found" ? 404 : result.error === "procedure_archive_forbidden" ? 403 : 409).json({ error: result.error });
+    return res.json({ data: result });
+  }
   const body = archiveWorkflowDefinitionVersionSchema.parse(req.body);
   const actor = authActor(req);
   const correlationId = randomUUID();

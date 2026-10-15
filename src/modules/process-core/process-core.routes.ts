@@ -12,6 +12,7 @@ import { createEvent } from "../events/event.service";
 import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
 import { isReferenceSiteChecklist } from "../product-engineering/reference-site-checklist-contract";
+import { archiveProcedure, procedureArchivePreview } from "./procedure-archive";
 
 type CoverageStatus = "covered" | "partial" | "missing" | "deferred";
 
@@ -298,11 +299,12 @@ processCoreRouter.get("/coverage", asyncHandler(async (req, res) => {
 
 processCoreRouter.get("/procedures", asyncHandler(async (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
+  const explicitStatus = status && Object.values(OperatingStatus).includes(status as OperatingStatus) ? status as OperatingStatus : null;
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null; const ids = departmentKey ? await contextualEntityIds(workspaceId, "procedure", departmentKey, req.query.includeCompanyWide !== "false") : null;
   const procedures = await prisma.procedure.findMany({
     where: {
       workspaceId, ...(ids ? { id: { in: ids } } : {}),
-      ...(status && Object.values(OperatingStatus).includes(status as OperatingStatus) ? { status: status as OperatingStatus } : {})
+      ...(explicitStatus ? { status: explicitStatus } : req.query.includeArchived === "true" ? {} : { status: { not: OperatingStatus.archived } })
     },
     include: { process: true, ownerRole: true, qualityStandard: true, steps: { orderBy: { stepOrder: "asc" } }, stages: true },
     orderBy: [{ status: "asc" }, { name: "asc" }, { version: "desc" }]
@@ -468,12 +470,16 @@ processCoreRouter.post("/procedures/:id/actions/activate", asyncHandler(async (r
   res.json({ data: procedure });
 }));
 
+processCoreRouter.get("/procedures/:id/archive-preview", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await procedureArchivePreview(req.auth!.workspaceId, req.auth!.userId!, z.string().uuid().parse(req.params.id));
+  if ("error" in result) return sendApiError(res, 404, String(result.error));
+  res.json({ data: result });
+}));
+
 processCoreRouter.post("/procedures/:id/actions/archive", asyncHandler(async (req, res) => {
-  const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }, include: { steps: true } });
-  if (!existing) return sendApiError(res, 404, "procedure_not_found");
-  if (isReferenceSiteChecklist(existing.scope, existing.steps)) return sendApiError(res, 403, "reference_site_checklist_owner_decision_required");
-  const procedure = await prisma.procedure.update({ where: { id: existing.id }, data: { status: OperatingStatus.archived } });
-  await auditProcedure(req, "procedure.archive", procedure.id, { previousStatus: existing.status });
-  await createEvent({ type: "procedure_archived", workspaceId: req.auth!.workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version } });
-  res.json({ data: procedure });
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await archiveProcedure(req.auth!.workspaceId, req.auth!.userId!, z.string().uuid().parse(req.params.id), req.body);
+  if ("error" in result) return sendApiError(res, result.error === "procedure_not_found" ? 404 : result.error === "procedure_archive_forbidden" ? 403 : 409, String(result.error));
+  res.json({ data: result });
 }));
