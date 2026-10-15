@@ -15,7 +15,7 @@ const current = [
 const historical = [
   { id: archivedId, title: "Archived contract", status: "archived", historyReason: "archived", decision: "Retained exact choice", alternatives: ["Option A", "Option B"], outcome: "Observed outcome", authorType: "human", authorId: "owner-1", supersedes: { id, title: "Current contract" }, supersedesId: id, source: "fixture" },
   { id: "44444444-4444-4444-8444-444444444444", title: "Withdrawn proposal", status: "proposed", governanceState: "withdrawn", historyReason: "withdrawn", source: "fixture" },
-  { id: "55555555-5555-4555-8555-555555555555", title: "Superseded contract", status: "accepted", governanceState: "accepted", historyReason: "superseded", source: "fixture" }
+  { id: "55555555-5555-4555-8555-555555555555", title: "Superseded contract", status: "accepted", governanceState: "accepted", historyReason: "superseded", source: "roost_decision" }
 ];
 const bundle = await build({ stdin: { contents: "import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{DecisionsWorkbench}from'./web/src/features/departments/decisions-workbench';createRoot(document.getElementById('root')).render(<LanguageProvider><DecisionsWorkbench departmentKey='01-strategia' canonical/></LanguageProvider>);", resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", loader: { ".css": "empty" }, define: { "process.env.NODE_ENV": '"test"' } });
 const cssName = (await readdir("public/react/assets")).find((name) => /^index-.*\.css$/.test(name));
@@ -49,6 +49,10 @@ try {
       }
       if (url.pathname === "/v1/decisions/governance") return route.fulfill({ json: { data: { revisions: [] } } });
       if (url.pathname === "/v1/decisions/interview-queue") return route.fulfill({ json: { data: [] } });
+      if (url.pathname.startsWith("/v1/decisions/")) {
+        const record = [...current, ...historical].find((row) => `/v1/decisions/${row.id}` === url.pathname);
+        return record ? route.fulfill({ json: { data: record } }) : route.fulfill({ status: 404, json: { error: "not_found" } });
+      }
       if (url.pathname === "/v1/departments") return route.fulfill({ json: { data: { departments: [{ id, key: "01-strategia", name: "Strategy" }] } } });
       return route.fulfill({ status: 500, json: { error: "unexpected_route" } });
     });
@@ -90,11 +94,76 @@ try {
       assert.equal(await dialog.getByText(`Current contract (ID: ${id})`).isVisible(), true);
       assert.equal(await dialog.getByRole("button", { name: locale === "pl" ? "Zapisz" : "Save" }).count(), 0);
       await dialog.press("Escape");
-      assert.equal(await dialog.count(), 0);
+      await dialog.waitFor({ state: "hidden" });
     }
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${locale}/${width}/${mode}: overflow`);
     assert.deepEqual(writes, [], `${locale}/${width}/${mode}: unexpected writes`);
     assert.deepEqual(errors, [], `${locale}/${width}/${mode}: page errors`);
+    await page.close(); checked++;
+  }
+  for (const locale of ["pl", "en"]) for (const width of [390, 1440]) {
+    const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: "reduce" });
+    const errors = [], writes = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.addInitScript((value) => localStorage.setItem("companycoreLocale", value), locale);
+    await page.route("**/v1/**", (route) => {
+      const request = route.request(), url = new URL(request.url());
+      if (request.method() !== "GET") { writes.push(url.pathname); return route.fulfill({ status: 405, json: { error: "unexpected_write" } }); }
+      if (url.pathname === "/v1/decisions") return route.fulfill({ json: { data: url.searchParams.get("scope") === "history" ? historical : current } });
+      if (url.pathname === "/v1/decisions/governance") return route.fulfill({ json: { data: { revisions: [{ id, title: "Current proposal", state: "pending" }] } } });
+      if (url.pathname === "/v1/decisions/interview-queue") return route.fulfill({ json: { data: [{ id, taskId: id, topic: "Current question", status: "pending" }] } });
+      if (url.pathname.startsWith("/v1/decisions/")) {
+        const record = [...current, ...historical].find((row) => `/v1/decisions/${row.id}` === url.pathname);
+        return record ? route.fulfill({ json: { data: record } }) : route.fulfill({ status: 404, json: { error: "not_found" } });
+      }
+      if (url.pathname === "/v1/departments") return route.fulfill({ json: { data: { departments: [{ id, key: "01-strategia", name: "Strategy" }] } } });
+      return route.fulfill({ status: 500, json: { error: "unexpected_route" } });
+    });
+    const base = `${origin}/areas?area=01-strategia&view=decisions`;
+    const governedHistoryId = historical[2].id;
+    await page.goto(base);
+    await page.getByRole("button", { name: /Current proposal/ }).waitFor();
+    await page.getByRole("button", { name: /Current question/ }).waitFor();
+    await page.getByRole("button", { name: locale === "pl" ? "Historia" : "History" }).press("Enter");
+    assert.equal(new URL(page.url()).searchParams.get("scope"), "history");
+    assert.equal(await page.getByRole("button", { name: /Current proposal/ }).count(), 0);
+    assert.equal(await page.getByRole("button", { name: /Current question/ }).count(), 0);
+    await page.getByRole("button", { name: locale === "pl" ? "Otwórz historię" : "Inspect history" }).filter({ visible: true }).last().click();
+    await page.getByRole("dialog", { name: "Superseded contract" }).waitFor();
+    assert.equal(new URL(page.url()).searchParams.get("decisionId"), governedHistoryId);
+    assert.equal(await page.getByRole("dialog", { name: "Superseded contract" }).getByRole("button", { name: locale === "pl" ? "Zapisz" : "Save" }).count(), 0);
+    await page.reload();
+    await page.getByRole("dialog", { name: "Superseded contract" }).waitFor();
+    await page.getByRole("dialog", { name: "Superseded contract" }).press("Escape");
+    assert.equal(new URL(page.url()).searchParams.get("decisionId"), null);
+    assert.equal(new URL(page.url()).searchParams.get("scope"), "history");
+    await page.goBack();
+    await page.getByRole("dialog", { name: "Superseded contract" }).waitFor();
+    await page.goto(`${base}&decisionId=${governedHistoryId}`);
+    await page.getByRole("dialog", { name: "Superseded contract" }).waitFor();
+    assert.equal(new URL(page.url()).searchParams.get("scope"), "history");
+    await page.goto(`${base}&scope=history&decisionId=${archivedId}`);
+    await page.getByRole("dialog", { name: "Archived contract" }).waitFor();
+    await page.goto(`${base}&decisionId=${id}`);
+    await page.getByRole("dialog", { name: locale === "pl" ? "Edytuj decyzję" : "Edit decision" }).waitFor();
+    await page.goto(`${base}&scope=history&decisionId=${id}`);
+    await page.getByText(locale === "pl" ? "Ta decyzja jest bieżąca, nie należy do Historii." : "This decision is current, not in History.").waitFor();
+    assert.equal(new URL(await page.getByRole("link", { name: locale === "pl" ? "Pokaż bieżące" : "Show Current" }).getAttribute("href"), origin).searchParams.get("scope"), null);
+    await page.goto(`${base}&scope=history&decisionId=66666666-6666-4666-8666-666666666666`);
+    await page.getByText(locale === "pl" ? "Nie można otworzyć wskazanej decyzji w tym workspace." : "The requested decision is unavailable in this workspace.").waitFor();
+    assert.equal(new URL(await page.getByRole("link", { name: locale === "pl" ? "Wróć do Historii" : "Back to History" }).getAttribute("href"), origin).searchParams.get("scope"), "history");
+    await page.goto(`${base}&scope=history&decisionId=invalid`);
+    await page.getByText(locale === "pl" ? "Nie można otworzyć wskazanej decyzji w tym workspace." : "The requested decision is unavailable in this workspace.").waitFor();
+    await page.goto(`${base}&scope=history`);
+    await page.getByRole("button", { name: locale === "pl" ? "Bieżące" : "Current" }).click();
+    await page.getByRole("button", { name: locale === "pl" ? "Archiwizuj" : "Archive" }).first().click();
+    await page.getByText(locale === "pl" ? "Zarchiwizować decyzję?" : "Archive decision?").waitFor();
+    await page.goBack();
+    await page.getByRole("button", { name: locale === "pl" ? "Historia" : "History", exact: true }).waitFor();
+    assert.equal(await page.getByText(locale === "pl" ? "Zarchiwizować decyzję?" : "Archive decision?").count(), 0);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${locale}/${width}/navigation: overflow`);
+    assert.deepEqual(writes, [], `${locale}/${width}/navigation: unexpected writes`);
+    assert.deepEqual(errors, [], `${locale}/${width}/navigation: page errors`);
     await page.close(); checked++;
   }
 } finally {

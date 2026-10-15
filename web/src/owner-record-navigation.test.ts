@@ -10,6 +10,10 @@ const canonical = "/areas?area=11-innowacje&view=overview";
 test("attention links retain only exact record targets after authentication", () => {
   assert.equal(canonicalPostAuthPath(`/areas?area=04-operacje&view=tasks&taskId=${id}&from=attention`), `/areas?area=04-operacje&view=tasks&taskId=${id}&from=attention`);
   assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&decisionId=${id}&from=attention`), `/areas?area=01-strategia&view=decisions&decisionId=${id}&from=attention`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&scope=history&decisionId=${id}`), `/areas?area=01-strategia&view=decisions&scope=history&decisionId=${id}`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&scope=history`), `/areas?area=01-strategia&view=decisions&scope=history`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&scope=history&decisionId=invalid`), `/areas?area=01-strategia&view=decisions&scope=history`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&scope=history&decisionId=${id}&decisionId=${other}`), `/areas?area=01-strategia&view=decisions&scope=history`);
   assert.equal(canonicalPostAuthPath(`/areas?area=09-technologia&view=incidents&recordId=${id}&from=attention`), `/areas?area=09-technologia&view=incidents&recordId=${id}&from=attention`);
   assert.equal(canonicalPostAuthPath(`/areas?area=04-operacje&view=tasks&taskId=${id}&taskId=${other}&from=attention`), "/areas?area=04-operacje&view=tasks");
   assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&decisionId=invalid&from=attention`), "/areas?area=01-strategia&view=decisions");

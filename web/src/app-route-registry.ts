@@ -343,7 +343,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       ? requestedDepartment : null;
     const departmentQuery = department ? `&department=${encodeURIComponent(department)}` : "";
     if (area && view === "decisions" && contextualDecisionAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=decisions${departmentQuery}${decisionId ? `&decisionId=${decisionId}${fromAttention}${fromApplication}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=decisions${departmentQuery}${history ? `&scope=history${decisionId ? `&decisionId=${decisionId}` : ""}` : decisionId ? `&decisionId=${decisionId}${fromAttention}${fromApplication}` : ""}`;
     }
     if (area && view && contextualRecordViews[area]?.includes(view)) {
       return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}${departmentQuery}${recordId ? `&recordId=${recordId}${fromAttention}` : ""}`;
