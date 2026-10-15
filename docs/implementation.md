@@ -2,11 +2,13 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none. The bounded Today and architecture-history slices are deployed; G24c remains stopped. This documentation handoff authorizes no next gate or retry.
+**Active gate:** none in the historical G-series. Outcome 0 Decision current/history slice is in bounded release verification; G24c stopped. No following gate authorized.
 
 **Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
 **Outcome 0 architecture-history slice:** Code `801c1ddc` passed native/API/UI fixtures; build `451d2577` deployed. Signed-in production history and a positive archived-record comparison remain unobserved. Outcome 0 stays open. [Proof and limits](ux/owner-architecture-archive-2026-10-15.md).
+
+**Decision register slice:** Native API/UI and independent review passed. [Proof and limits](ux/owner-decisions-history-2026-10-15.md). Signed-in deployed proof remains pending; Outcome 0 and RF-UX-012 stay open.
 
 **G24c stopped, incomplete:** Its accepted Findings and checklist remain recorded, but there is no verified supervised Worker result, independent review and owner final. The Windows Host is stopped. The spent Decision and failed execution remain audit evidence; no model retry is authorized by this status. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint).
 
