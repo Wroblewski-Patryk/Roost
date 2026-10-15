@@ -15,9 +15,10 @@ A separate Rdzeń read-only report at 2026-10-14 21:42 UTC counted 240 public
 tables, 138 nonempty; 33 active procedures, 10 proposed Decisions, one
 technical active Goal, 280 Tasks and 5,231 CompanyRecords. These are reported
 inventory counts, not this UI audit's own database verification or a list of
-records safe to delete. Its importer review found that `--apply` can reactivate
-hidden or archived records. A durable cleanup claim needs a corrected import
-path and repeat-import read-back.
+records safe to delete. At that time, its importer review found that `--apply`
+could reactivate hidden or archived records. A later focused Today release
+preserves inactive matched CompanyRecords and architecture components on repeat
+import; wider data classification and cleanup remain unproved.
 
 ## Findings that block an owner-usable workspace
 
