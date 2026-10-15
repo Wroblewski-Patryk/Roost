@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Outcome 0 procedure archive correction. Guarded owner preview/command, native and PL/EN UI proof, independent Security/UX review, one safe release and read-only smoke. No production business record is archived. [Evidence](ux/owner-procedure-archive-2026-10-15.md). G24c remains stopped.
+**Active gate:** none. G0 procedure archive correction deployed as `4297fb15`; read-only production smoke passed. No next gate has been briefed; any next one needs bounded authority. [Proof and limits](ux/owner-procedure-archive-2026-10-15.md). G24c remains stopped.
 
 **Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
