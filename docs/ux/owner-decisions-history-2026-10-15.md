@@ -1,6 +1,6 @@
 # Decision register current and history slice, 2026-10-15
 
-This bounded Outcome 0/RF-UX-012 slice makes the ordinary owner Decision register current by default. An explicit owner-only History tab retains archived, rejected and withdrawn records, plus predecessors only after an accepted successor. Pending and deferred questions remain in the current register and their dedicated queues. History keeps the exact record ID, status, content, author, dates and decision lineage; opening a legacy history row is read only. No production Decision or business record is archived, withdrawn, deleted or rewritten by this release.
+This bounded Outcome 0/RF-UX-012 slice makes the ordinary owner Decision register current by default. An explicit History tab for an authenticated user in the same workspace retains archived, rejected and withdrawn records, plus predecessors only after an accepted successor. Pending and deferred questions remain in the current register and their dedicated queues. History keeps the exact record ID, status, content, author, dates and decision lineage; opening a legacy history row is read only. No production Decision or business record is archived, withdrawn, deleted or rewritten by this release.
 
 ## Local proof
 
