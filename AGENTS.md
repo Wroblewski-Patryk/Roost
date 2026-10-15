@@ -49,8 +49,23 @@ execution state outside this repository.
 - Before assigning a gate, inspect the actual target and existing adapters. A
   missing deployment provider or other substantial new capability needs its
   own bounded outcome and estimate; do not hide it inside "complete the gate".
-  The owner approves the outcome, permitted effects and time/token/cost/attempt
-  limits before execution. No budget increases itself.
+  Record the outcome, permitted effects, proof and an effort estimate before
+  execution. The owner authorizes them through a one-off task or an explicit
+  continuing mandate. Enforce stated time, token, cost and attempt limits; no
+  limit increases itself. An estimate is not a hard cap, and no arbitrary cap is
+  required for reversible implementation coding and tests without new external
+  charges. Managed Roost agent tasks still require the per-task limits in
+  `RF-HOST-010`; paid or irreversible effects need their own approved limits.
+  Respect the owner's usage stop: after bonus tokens are exhausted, start no
+  new work at or above 70% weekly usage.
+- A one-off task authorizes one bounded gate. An explicit continuing owner
+  mandate may name a wider objective, permitted effect classes and stop
+  conditions. Within that mandate, the coordinator may select the next bounded
+  canonical outcome after inspecting and verifying the previous gate, then give
+  its execution owner a fresh scoped brief without asking the owner to repeat
+  routine authorization. A generic "continue", an old task or unused account
+  capacity does not create or expand a continuing mandate. A current STOP or
+  narrower owner instruction takes precedence.
 - Scope safety and proof to the task's real effect. Roost owner/agent task flow
   does not inherit application push, deployment, backup or product-readiness
   gates. Preserve Roost's own business-data recovery requirement; use
@@ -67,23 +82,31 @@ execution state outside this repository.
 - Resolve ordinary reversible technical choices from the accepted requirements,
   current architecture, inspected code and test evidence. Do not ask the owner
   to choose implementation details already determined by those sources.
+  Within an authorized gate, routine tests and scoped commits are execution
+  work. A scoped push and standard Roost release may also be included when the
+  owner has permitted ordinary releases, that gate includes those effects, and
+  fresh release preflight and required review/proof pass. Application releases
+  and production business-data changes retain their separate authority.
 - Resolve ordinary defects inside the approved scope. If work exposes an
   unplanned provider, material architecture change, repeated ineffective
   attempt or exhausted budget, stop at a safe checkpoint. Preserve evidence,
   diagnose the actual cause and return a smaller revised proposal for owner
   approval. Do not invent failure scenarios or recheck unaffected evidence.
 - Also stop when progress requires an unavailable login/2FA or secret, an
-  unapproved irreversible real-data action, a contradiction in accepted
-  business intent, or an unavailable service without a safe alternative.
+  unapproved production company-data write or permanent deletion, an
+  unapproved paid model/provider call, purchase or usage reset, an irreversible
+  real-data action, a contradiction in accepted business intent, or an
+  unavailable service without a safe alternative.
   Complete independent safe preparation before asking one concrete question.
 - Report progress at the end-to-end gates defined in `docs/implementation.md`,
   not by counting internal atoms, contracts or files. State verified capability,
   failed or unrun checks, remaining path, and budget used or unavailable.
-- One user task authorizes exactly one delivery gate unless the user explicitly
-  names a wider range. Complete that gate autonomously, record its evidence and
-  stop at its boundary. Never begin the next gate merely because context,
-  time or account usage remains; the owner checks available usage and issues a
-  new task before the next gate starts.
+- Complete and verify one gate before selecting another. Under a one-off task,
+  stop at that boundary and request a new owner instruction. Under an explicit
+  continuing mandate, the coordinator may brief one next bounded gate within
+  its stated objective and effects after verifying the prior result and usage
+  conditions. Do not infer permission from remaining context, time or usage,
+  run dependent gates concurrently, or turn a mandate into an unlimited loop.
 
 ## Codex orchestration
 
@@ -97,6 +120,10 @@ execution state outside this repository.
 - Treat subagent output as unverified input. The root agent inspects every
   resulting diff, reconciles it with accepted requirements and reruns the
   material checks before accepting it.
+- Execution threads route routine technical questions to the coordinator. The
+  coordinator resolves them from canonical sources and evidence, and brings
+  only material owner choices as one concrete, aggregated question. This does
+  not transfer the implementation owner's integration or proof responsibility.
 - Use subagents when parallelism or independent review materially improves the
   result, not to repeat the same investigation or manufacture activity.
 - Before claiming a gate complete, run `npm run codex:check`, the relevant
@@ -105,7 +132,8 @@ execution state outside this repository.
   completion evidence.
 - At a completed gate boundary, leave the repository recoverable and clean when
   the task authorizes commits. Push or deploy only when the current gate and
-  user authority require it. Report the next gate without starting it.
+  user authority require it. Report the next gate; brief it only when an
+  explicit continuing mandate covers that next outcome and its effects.
 - An agent may propose a skill improvement when a repeated, evidenced workflow
   failure shows a reusable gap. One owner changes the skill in a separate
   non-overlapping scope after checking whether the durable fix belongs in code,
@@ -124,7 +152,10 @@ execution state outside this repository.
 - Never store secrets, credentials, tokens, cookies, production data or
   sensitive logs in repository files or generated artifacts.
 - Commits, pushes, deployments, destructive operations and external writes
-  require the authority stated by the user or governing task.
+  require the authority stated by the user or governing task. An explicit
+  continuing mandate can cover routine scoped Git and standard Roost release
+  effects under the preflight rule above; it never implies business-data,
+  purchase, model-cost or application-release authority.
 
 ## Public distribution and deployment data
 
