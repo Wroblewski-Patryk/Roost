@@ -87,6 +87,16 @@ execution state outside this repository.
   owner has permitted ordinary releases, that gate includes those effects, and
   fresh release preflight and required review/proof pass. Application releases
   and production business-data changes retain their separate authority.
+- The owner gives standing authorization for `docker builder prune -f` of unused
+  build cache on the intended Roost VPS when it is needed for a standard Roost
+  release. Do not ask again for this exact maintenance step. First confirm the
+  host, reclaimable cache, no concurrent build/deploy and healthy services;
+  then run it at most once per release preflight and read back reclaimed bytes,
+  free space and service health. This does not authorize `--all`, other prune
+  commands, deletion of images, containers, volumes, backups or company data,
+  or a release that fails its backup, rollback or capacity checks. If the cache
+  cannot be pruned safely or the recovered space is insufficient, stop with the
+  measured reason instead of expanding cleanup or repeating ineffective runs.
 - Resolve ordinary defects inside the approved scope. If work exposes an
   unplanned provider, material architecture change, repeated ineffective
   attempt or exhausted budget, stop at a safe checkpoint. Preserve evidence,

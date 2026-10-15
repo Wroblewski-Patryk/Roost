@@ -97,6 +97,16 @@ Required checks before deploy:
 - relevant endpoint/integration tests once CCV1-006 is implemented
 - `git diff --check` before commit/release handoff
 
+For a standard Roost release, the owner has standing authorization for one
+`docker builder prune -f` of unused build cache per fresh VPS preflight when
+capacity requires it. The operator verifies the intended host, reclaimable
+cache, absence of a concurrent build/deploy and healthy services before the
+command, then measures recovered space and service health afterwards. This is
+not approval for `--all`, `docker system prune`, images, containers, volumes,
+backups, business data or any other cleanup. Insufficient space after this
+bounded step stops the release; backup, rollback and capacity requirements
+still apply. The exact cache step needs no repeated owner question.
+
 Required smoke checks after deploy:
 
 - `GET https://api.roost.example.com/health`
