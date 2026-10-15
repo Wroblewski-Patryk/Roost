@@ -126,7 +126,8 @@ export const adapterManifest = {
   schemaVersion: "2026-05-06",
   routes: {
     connection: [
-      { method: "GET", path: "/v1/connection", capability: "connection:read" }
+      { method: "GET", path: "/v1/connection", capability: "connection:read" },
+      { method: "GET", path: "/v1/connection/integration-status", capability: "connection:read" }
     ],
     companyOs: [
       { method: "GET", path: "/v1/company-os", capability: "company-os:read" },

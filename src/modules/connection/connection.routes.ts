@@ -6,8 +6,18 @@ import { googleDriveSecretStatus } from "../../integrations/integration-settings
 import { asyncHandler } from "../../middleware/async-handler";
 import { createMcpManifest } from "../../mcp/manifest";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
+import { readWorkspaceIntegrationStatus } from "./integration-status";
 
 export const connectionRouter = Router();
+
+// Stored provider configuration, sync evidence and the adapter catalog are
+// independent sources. This human-only projection keeps those layers separate.
+connectionRouter.get("/integration-status", asyncHandler(async (req, res) => {
+  if (req.auth?.authType !== "user" || !req.auth.userId) {
+    return res.status(403).json({ error: "integration_status_human_required" });
+  }
+  res.json({ data: await readWorkspaceIntegrationStatus(req.auth.workspaceId) });
+}));
 
 connectionRouter.get("/", asyncHandler(async (req, res) => {
   const workspace = await prisma.workspace.findUnique({

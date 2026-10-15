@@ -88,54 +88,66 @@ function useIntegrationSetting(provider: "clickup" | "google_drive", enabled: bo
   return state;
 }
 
-function StatusBadge({ ready }: { ready: boolean }) {
+function StatusBadge({ state }: { state: "configured" | "disabled" | "incomplete" | "unconfigured" | "unknown" }) {
   const { t } = useLanguage();
   return (
-    <span className={`badge ${ready ? "badge-success" : "badge-warning"} badge-outline font-black`}>
-      {ready ? t("workspaceSettings.status.configured") : t("workspaceSettings.status.unconfigured")}
+    <span className={`badge ${state === "configured" ? "badge-success" : state === "unknown" ? "badge-ghost" : "badge-warning"} badge-outline font-black`}>
+      {t(`workspaceSettings.status.${state}`)}
     </span>
   );
 }
 
 function IntegrationRow({
+  id,
   title,
   icon,
+  connectionReady,
   connectionStatus,
   settingStatus,
   onConfigure,
+  onRetry,
   onToggle,
   busy,
   requiresRefreshToken = false
 }: {
+  id: string;
   title: string;
   icon: string;
+  connectionReady: boolean;
   connectionStatus?: IntegrationStatus;
   settingStatus: LoadState<IntegrationStatus | null>;
   onConfigure: () => void;
+  onRetry: () => void;
   onToggle: (active: boolean) => void;
   busy: boolean;
   requiresRefreshToken?: boolean;
 }) {
   const { t } = useLanguage();
-  const setting = settingStatus.data ?? undefined;
-  const status = setting ?? connectionStatus;
-  const configured = Boolean(status?.secretConfigured ?? status?.configured);
+  const status = settingStatus.status === "ready" ? settingStatus.data : settingStatus.status === "idle" ? connectionStatus : null;
+  const unknown = !connectionReady || settingStatus.status === "error" || settingStatus.status === "loading";
+  const stored = Boolean(status?.secretConfigured ?? status?.configured);
+  const complete = stored && (!requiresRefreshToken || Boolean(status?.hasRefreshToken));
   const active = Boolean(status?.active);
   const updatedAt = status?.updatedAt ? formatAppDate(status.updatedAt, { dateStyle: "medium", timeStyle: "short" }) : null;
-  const ready = configured && active && (!requiresRefreshToken || Boolean(status?.hasRefreshToken));
+  const state = unknown ? "unknown" : !stored ? "unconfigured" : !complete ? "incomplete" : active ? "configured" : "disabled";
+  const detail = state === "configured" ? t("workspaceSettings.providerReadyDetail")
+    : state === "disabled" ? t("workspaceSettings.providerDisabledDetail")
+    : state === "incomplete" ? t("workspaceSettings.providerIncompleteDetail")
+    : state === "unknown" ? t("workspaceSettings.providerUnknownDetail")
+    : t("workspaceSettings.providerSetupDetail");
 
   return (
-    <article className="roost-integration-row">
+    <article className="roost-integration-row scroll-mt-6" id={id}>
       <span className="roost-integration-row-icon"><i className={`ph-bold ${icon}`} aria-hidden="true"></i></span>
       <div className="roost-integration-row-copy">
-        <div className="flex flex-wrap items-center gap-2"><h3>{title}</h3><StatusBadge ready={ready} /></div>
-        <p>{settingStatus.status === "loading" ? t("workspaceSettings.loadingProvider") : ready ? t("workspaceSettings.providerReadyDetail") : t("workspaceSettings.providerSetupDetail")}</p>
+        <div className="flex flex-wrap items-center gap-2"><h3>{title}</h3><StatusBadge state={state} /></div>
+        <p>{settingStatus.status === "loading" ? t("workspaceSettings.loadingProvider") : detail}</p>
         {updatedAt ? <small>{t("workspaceSettings.lastUpdatedValue", { date: updatedAt })}</small> : null}
       </div>
       <div className="roost-integration-row-actions">
-        {configured ? <label className="label cursor-pointer gap-2 py-0"><span className="label-text text-xs font-bold">{active ? t("workspaceSettings.enabled") : t("workspaceSettings.disabled")}</span><input aria-label={t("workspaceSettings.toggleConnection", { provider: title })} checked={active} className="toggle toggle-primary toggle-sm" disabled={busy} onChange={(event) => onToggle(event.target.checked)} type="checkbox" /></label> : null}
-        <CcButton iconRight="ph-arrow-right" onClick={onConfigure} size="sm" variant={ready ? "outline" : "primary"}>
-          {ready ? t("workspaceSettings.manage") : t("workspaceSettings.configure")}
+        {stored ? <label className="label cursor-pointer gap-2 py-0"><span className="label-text text-xs font-bold">{active ? t("workspaceSettings.enabled") : t("workspaceSettings.disabled")}</span><input aria-label={t("workspaceSettings.toggleConnection", { provider: title })} checked={active} className="toggle toggle-primary toggle-sm" disabled={busy || !complete} onChange={(event) => onToggle(event.target.checked)} type="checkbox" /></label> : null}
+        <CcButton iconRight="ph-arrow-right" onClick={unknown ? onRetry : onConfigure} size="sm" variant={complete ? "outline" : "primary"}>
+          {unknown ? t("workspaceSettings.retryProvider") : stored ? t("workspaceSettings.manage") : t("workspaceSettings.configure")}
         </CcButton>
       </div>
     </article>
@@ -318,14 +330,14 @@ export function WorkspaceSettingsRoute() {
   const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready" && Boolean(clickUpConnectionStatus?.configured), refreshKey);
   const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready" && Boolean(googleDriveConnectionStatus?.configured), refreshKey);
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
-  const clickUpStatus = clickUpSetting.data ?? clickUpConnectionStatus;
+  const clickUpStatus = clickUpSetting.status === "ready" ? clickUpSetting.data : null;
   const clickUpListIds = Array.isArray(clickUpSetting.data?.config?.listIds)
     ? clickUpSetting.data.config.listIds.filter((id): id is string => typeof id === "string" && id.length > 0)
     : [];
   const governedStatusListId = typeof clickUpSetting.data?.config?.governedStatusListId === "string"
     ? clickUpSetting.data.config.governedStatusListId
     : "";
-  const googleDriveStatus = googleDriveSetting.data ?? googleDriveConnectionStatus;
+  const googleDriveStatus = googleDriveSetting.status === "ready" ? googleDriveSetting.data : null;
   const configuredCount = [
     Boolean(clickUpStatus?.active && (clickUpStatus.secretConfigured ?? clickUpStatus.configured)),
     Boolean(googleDriveStatus?.active && (googleDriveStatus.secretConfigured ?? googleDriveStatus.configured) && googleDriveStatus.hasRefreshToken)
@@ -533,22 +545,28 @@ export function WorkspaceSettingsRoute() {
             <span className="roost-settings-panel-icon"><i className="ph-bold ph-plugs-connected" aria-hidden="true"></i></span>
             <div><h2 id="workspace-integrations-heading">{t("workspaceSettings.integrations")}</h2><p>{t("workspaceSettings.integrationsDescription")}</p></div>
           </header>
-          {configuredCount < 2 ? <div className="roost-settings-next-step"><i className="ph-bold ph-warning-circle" aria-hidden="true"></i><div><strong>{t("workspaceSettings.setupRequired")}</strong><span>{t("workspaceSettings.setupRequiredDetail", { count: 2 - configuredCount })}</span></div></div> : null}
+          {connection.status === "ready" && clickUpSetting.status !== "loading" && googleDriveSetting.status !== "loading" && clickUpSetting.status !== "error" && googleDriveSetting.status !== "error" && configuredCount < 2 ? <div className="roost-settings-next-step"><i className="ph-bold ph-warning-circle" aria-hidden="true"></i><div><strong>{t("workspaceSettings.setupRequired")}</strong><span>{t("workspaceSettings.setupRequiredDetail", { count: 2 - configuredCount })}</span></div></div> : null}
           <div className="roost-integration-list">
           <IntegrationRow
+            id="workspace-integrations-clickup"
             busy={saving}
+            connectionReady={connection.status === "ready"}
             connectionStatus={clickUpConnectionStatus}
             icon="ph-kanban"
             onConfigure={() => { setActionError(null); setEditor("clickup"); }}
+            onRetry={() => setRefreshKey((value) => value + 1)}
             onToggle={(active) => void toggleIntegration("clickup", active)}
             settingStatus={clickUpSetting}
             title={t("workspaceSettings.clickup")}
           />
           <IntegrationRow
+            id="workspace-integrations-google-drive"
             busy={saving}
+            connectionReady={connection.status === "ready"}
             connectionStatus={googleDriveConnectionStatus}
             icon="ph-folder-open"
             onConfigure={() => { setActionError(null); setEditor("google_drive"); }}
+            onRetry={() => setRefreshKey((value) => value + 1)}
             onToggle={(active) => void toggleIntegration("google_drive", active)}
             requiresRefreshToken
             settingStatus={googleDriveSetting}
