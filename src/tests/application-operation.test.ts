@@ -8,6 +8,7 @@ test('empty, unaudited application exposes unmet evidence and no product readine
   assert.equal(value.stage.claim, 'unverified'); assert.equal(value.gateState, 'unmet');
   assert.equal(value.productReadiness, 'unverified'); assert.equal(value.saleReadiness, 'unverified');
   assert.equal(value.nearestOutcome, null); assert.equal(value.evidence.length, 0);
+  assert.deepEqual(value.taskHistory, []);
 });
 const task = () => ({ id: id(2), title: 'Bounded outcome', status: 'in_progress', readiness: 'ready',
   accountable: { id: id(3), role: 'manager', label: 'Accountable manager' },
@@ -17,10 +18,37 @@ test('owner pending decision blocks an independently reviewed outcome and links 
   const f = facts(); f.tasks = [task()]; f.decisions = [{ id: id(6), title: 'Actual owner decision', state: 'proposed', taskIds: [id(2)] }];
   const value = applicationOperation(f); assert.equal(value.gateState, 'blocked');
   assert.equal(value.nearestOutcome?.taskId, id(2)); assert.equal(value.accountable?.id, id(3));
+  assert.equal(value.nearestOutcome?.reason, 'owner_decision_pending');
   assert.equal(value.decisions[0].href, `/areas?area=01-strategia&view=decisions&decisionId=${id(6)}`);
   assert.deepEqual(value.blockers.find(blocker => blocker.code === 'owner_decision_pending')?.target,
     { kind: 'decision', title: 'Actual owner decision', href: value.decisions[0].href });
   assert.equal(value.evidence[0].commit, 'a'.repeat(40));
+});
+test('terminal Tasks stay in linked history and cannot become current through a pending Decision', () => {
+  const f = facts(), archived = { ...task(), id: id(30), title: 'Archived delivery', status: 'archived' };
+  const done = { ...task(), id: id(31), title: 'Completed delivery', status: 'done', review: null };
+  const cancelled = { ...task(), id: id(32), title: 'Cancelled delivery', status: 'cancelled', latestExecution: null, review: null };
+  f.tasks = [archived, done, cancelled];
+  f.decisions = [{ id: id(40), title: 'Recorded pending decision', state: 'pending', taskIds: [archived.id] }];
+  const value = applicationOperation(f);
+  assert.equal(value.nearestOutcome, null);
+  assert.equal(value.accountable, null);
+  assert.equal(value.gateState, 'blocked');
+  assert.equal(value.decisions[0].relatedTask?.id, archived.id);
+  assert.deepEqual(value.taskHistory.map(row => [row.taskId, row.status, row.executionStatus, row.reviewDecision]), [
+    [archived.id, 'archived', 'completed', 'approve'],
+    [done.id, 'done', 'completed', null],
+    [cancelled.id, 'cancelled', null, null]
+  ]);
+});
+test('a pending Decision on terminal history never displaces a real open Task', () => {
+  const f = facts(), archived = { ...task(), id: id(30), status: 'archived' }, open = { ...task(), id: id(31), status: 'todo', review: null, latestExecution: null };
+  f.tasks = [archived, open];
+  f.decisions = [{ id: id(40), title: 'Still recorded pending', state: 'pending', taskIds: [archived.id] }];
+  const value = applicationOperation(f);
+  assert.equal(value.nearestOutcome?.taskId, open.id);
+  assert.equal(value.nearestOutcome?.reason, 'task_to_do');
+  assert.equal(value.decisions[0].relatedTask?.id, archived.id);
 });
 test('a decision links its own scoped application task even when another task is the nearest outcome', () => {
   const f = facts();
@@ -93,6 +121,10 @@ test('completed exact review helper exposes its accepted outcome but actual owne
   f.decisions = []; target.review.current = false;
   assert.equal(applicationOperation(f).nearestOutcome?.taskId, helper.id);
   assert.notEqual(applicationOperation(f).gateState, 'met');
+  target.review.current = true; target.status = 'archived';
+  const terminalTarget = applicationOperation(f);
+  assert.equal(terminalTarget.nearestOutcome?.taskId, helper.id);
+  assert.equal(terminalTarget.taskHistory[0].taskId, target.id);
 });
 
 test('a newly incomplete submission preserves a visible context blocker over its older completed result', () => {

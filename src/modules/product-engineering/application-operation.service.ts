@@ -76,15 +76,18 @@ export async function loadApplicationOperation(db: Db, workspaceId: string, appl
     FROM (SELECT DISTINCT ON (task_id) task_id,application_id,created_at,id
       FROM task_risk_scopes WHERE workspace_id=${workspaceId}::uuid
       ORDER BY task_id,version DESC) current_scope
+    JOIN tasks scoped_task ON scoped_task.id=current_scope.task_id AND scoped_task.workspace_id=${workspaceId}::uuid
     WHERE current_scope.application_id=${applicationId}::uuid
-    ORDER BY current_scope.created_at DESC,current_scope.id DESC LIMIT 101`;
+    ORDER BY CASE WHEN scoped_task.status IN ('todo','in_progress','blocked') THEN 0 ELSE 1 END,
+      current_scope.created_at DESC,current_scope.id DESC LIMIT 101`;
   const taskIds = scopes.slice(0, 100).map(scope => scope.taskId);
   const tasks = await db.task.findMany({ where: { workspaceId, id: { in: taskIds } }, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }], take: 101,
     include: { assignedWorkforceEntity: { select: { id: true, name: true, role: true } },
       agentExecutions: { where: { applicationId }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 1,
         include: { reviewDecisions: { orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 1, include: { action: true } } } } } });
   const decisions = await db.$queryRaw<any[]>`SELECT d.id,d.title,r.body,decision_state(d.id) AS state,a.created_at AS accepted_at
-    FROM decisions d JOIN decision_revisions r ON r.decision_id=d.id
+    FROM decisions d JOIN LATERAL (SELECT body,created_at FROM decision_revisions
+      WHERE decision_id=d.id AND workspace_id=d.workspace_id ORDER BY version DESC LIMIT 1) r ON true
     LEFT JOIN decision_acceptances a ON a.decision_id=d.id
     WHERE d.workspace_id=${workspaceId}::uuid AND NOT EXISTS(SELECT 1 FROM decisions s JOIN decision_acceptances sa ON sa.decision_id=s.id WHERE s.supersedes_id=d.id)
     AND (r.body->'applicationBaseline'->>'applicationId'=${applicationId}

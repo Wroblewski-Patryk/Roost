@@ -32,6 +32,7 @@ export function decisionLinksExactApplicationTask(body: unknown, applicationId: 
 
 type ApplicationNavigation = { id?: string; operation?: {
   nearestOutcome?: { taskId: string } | null;
+  taskHistory?: Array<{ taskId: string }>;
   blockers?: Array<{ target?: { kind: string; href: string } | null }>;
   decisions?: Array<{ id: string; relatedTask?: { id: string } | null }>;
   stage?: { decisionId?: string | null; relatedTask?: { id: string } | null };
@@ -44,6 +45,7 @@ export async function validateApplicationReturn(applicationId: string, recordId:
   if (application?.id !== applicationId) throw new Error("application_return_unavailable");
   const operation = application.operation;
   const linked = kind === "task" ? operation?.nearestOutcome?.taskId === recordId
+    || operation?.taskHistory?.some(task => task.taskId === recordId)
     || operation?.stage?.relatedTask?.id === recordId
     || operation?.decisions?.some(decision => decision.relatedTask?.id === recordId)
     || operation?.blockers?.some(blocker => blocker.target?.kind === "task" && blocker.target.href.endsWith(`&taskId=${recordId}`))

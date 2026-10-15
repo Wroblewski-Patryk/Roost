@@ -5,8 +5,10 @@ export type ApplicationOperation = {
   stage: { key: ApplicationBaselineStage | 'unverified'; claim: 'unverified' | 'owner_accepted_baseline' | 'bounded_release_proof';
     scope: string | null; decisionId: string | null; relatedTask: { id: string; title: string } | null; asOf: string | null };
   gateState: 'unmet' | 'in_progress' | 'met' | 'blocked' | 'explicitly_deferred';
-  nearestOutcome: { taskId: string; title: string; status: string } | null;
+  nearestOutcome: { taskId: string; title: string; status: string; reason: string } | null;
   accountable: { id: string | null; role: string; label: string } | null;
+  taskHistory: Array<{ taskId: string; title: string; status: string; executionStatus: string | null;
+    reviewDecision: string | null }>;
   blockers: Array<{ code: string; reference: string | null; target: { kind: 'decision' | 'task'; title: string; href: string } | null }>;
   decisions: Array<{ id: string; title: string; state: string; href: string;
     relatedTask: { id: string; title: string } | null }>;
@@ -37,16 +39,24 @@ export function applicationOperation(facts: OperationFacts): ApplicationOperatio
   const pendingTasks = new Set(decisions.flatMap(decision => decision.taskIds));
   // A completed helper review must not obscure the exact outcome it accepted.
   // The service qualifies this link against the persisted current decision.
-  const outcomes = facts.tasks.filter(helper => !helper.completedReviewOfTaskId
-    || !facts.tasks.some(target => target.id === helper.completedReviewOfTaskId && currentApprovedOutcome(target)));
-  const task = facts.tasks.find(task => pendingTasks.has(task.id))
-    ?? outcomes.find(task => !['done', 'cancelled', 'archived'].includes(task.status)) ?? outcomes[0];
+  const openTasks = facts.tasks.filter(task => ['todo', 'in_progress', 'blocked'].includes(task.status));
+  const outcomes = openTasks.filter(helper => !helper.completedReviewOfTaskId
+    || !openTasks.some(target => target.id === helper.completedReviewOfTaskId && currentApprovedOutcome(target)));
+  const task = openTasks.find(task => pendingTasks.has(task.id)) ?? outcomes[0] ?? null;
   const approved = task && currentApprovedOutcome(task);
   const invalidatedAt = Date.parse(task?.readinessInvalidatedAt ?? ''), reviewedAt = Date.parse(task?.review?.at ?? '');
   // A current acceptance after the group-risk change resolves the result, not
   // the launch gate. A later or unknown risk invalidation still blocks.
   const reviewedRiskChange = approved && task?.readiness === 'needs_revalidation' && task.readinessReason === 'risk_context_changed'
     && Number.isFinite(invalidatedAt) && Number.isFinite(reviewedAt) && invalidatedAt <= reviewedAt;
+  const taskDecision = task ? decisions.find(decision => decision.taskIds.includes(task.id)) : null;
+  const reason = taskDecision ? taskDecision.state === 'deferred' ? 'owner_decision_deferred' : 'owner_decision_pending'
+    : task?.status === 'blocked' ? 'task_blocked'
+    : task && ['needs_revalidation', 'needs_decision'].includes(task.readiness) && !reviewedRiskChange ? 'task_needs_revalidation'
+    : task?.readiness === 'needs_context' ? 'task_needs_context'
+    : task?.latestExecution?.status === 'failed' ? 'native_execution_failed'
+    : task?.review?.current && task.review.decision === 'reject' ? 'independent_review_rejected'
+    : approved ? 'task_open_after_review' : task?.status === 'in_progress' ? 'task_in_progress' : 'task_to_do';
   const blockers: ApplicationOperation['blockers'] = [];
   const taskTarget = task ? { kind: 'task' as const, title: task.title,
     href: `/areas?area=04-operacje&view=tasks&taskId=${task.id}` } : null;
@@ -79,8 +89,12 @@ export function applicationOperation(facts: OperationFacts): ApplicationOperatio
       relatedTask: baselineTask ? { id: baselineTask.id, title: baselineTask.title } : null, asOf: baseline.acceptedAt }
       : certified ? { key: 'operation_improvement', claim: 'bounded_release_proof', scope: 'Exact bounded release only; whole application readiness remains unverified.', decisionId: null, relatedTask: null, asOf: certified.at }
       : { key: 'unverified', claim: 'unverified', scope: null, decisionId: null, relatedTask: null, asOf: null },
-    gateState, nearestOutcome: task ? { taskId: task.id, title: task.title, status: approved ? 'accepted' : task.status } : null,
+    gateState, nearestOutcome: task ? { taskId: task.id, title: task.title, status: approved ? 'accepted' : task.status, reason } : null,
     accountable: task?.accountable ?? null, blockers,
+    taskHistory: facts.tasks.filter(row => ['done', 'cancelled', 'archived'].includes(row.status)).map(row => ({
+      taskId: row.id, title: row.title, status: row.status, executionStatus: row.latestExecution?.status ?? null,
+      reviewDecision: row.review?.current ? row.review.decision : null
+    })),
     decisions: decisions.map(({ id, title, state, taskIds }) => {
       const scopedTask = taskIds.map(taskId => facts.tasks.find(row => row.id === taskId)).find(Boolean);
       return { id, title, state, href: `/areas?area=01-strategia&view=decisions&decisionId=${id}`,

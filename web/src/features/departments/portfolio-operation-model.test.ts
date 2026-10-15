@@ -12,12 +12,13 @@ import { operationLabel, operationLabels, portfolioOperation, portfolioRecordHre
 const id = "00000000-0000-4000-8000-000000000001";
 const operation: ApplicationOperation = {
   schemaVersion: "roost-application-operation-v1",
-  stage: { key: "verification", claim: "bounded_release_proof", scope: "A bounded parser repair", decisionId: null, asOf: "2026-10-04T10:00:00Z" },
-  gateState: "blocked", nearestOutcome: { taskId: id, title: "Repair parser", status: "blocked" },
+  stage: { key: "verification", claim: "bounded_release_proof", scope: "A bounded parser repair", decisionId: null, relatedTask: null, asOf: "2026-10-04T10:00:00Z" },
+  gateState: "blocked", nearestOutcome: { taskId: id, title: "Repair parser", status: "blocked", reason: "task_blocked" },
   accountable: { id, role: "accountable_manager", label: "Delivery manager" },
+  taskHistory: [{ taskId: "00000000-0000-4000-8000-000000000002", title: "Archived parser proof", status: "archived", executionStatus: "completed", reviewDecision: "approve" }],
   blockers: [{ code: "owner_decision_pending", reference: id,
     target: { kind: "decision", title: "Accept bounded scope", href: `/areas?area=01-strategia&view=decisions&decisionId=${id}` } }],
-  decisions: [{ id, title: "Accept bounded scope", state: "pending", href: `/areas?area=01-strategia&view=decisions&decisionId=${id}` }],
+  decisions: [{ id, title: "Accept bounded scope", state: "pending", href: `/areas?area=01-strategia&view=decisions&decisionId=${id}`, relatedTask: null }],
   evidence: [{ kind: "release", id, commit: "a".repeat(40), at: "2026-10-04T10:00:00Z", href: `/areas?area=11-innowacje&view=overview&applicationId=${id}&cockpit=evidence` }],
   productReadiness: "unverified", saleReadiness: "unverified", limitations: ["Only the parser repair has been proven"]
 };
@@ -41,7 +42,7 @@ test("missing or incompatible operation projection cannot promote a declared app
 });
 
 test("all five gates and emitted blocker reasons have Polish and English labels", () => {
-  const keys = ["unmet", "in_progress", "met", "blocked", "explicitly_deferred", "takeover_baseline_missing", "takeover_baseline_stale", "owner_decision_pending", "owner_decision_deferred", "task_blocked", "task_needs_revalidation", "task_needs_context", "native_execution_failed", "independent_review_rejected", "evidence_unavailable", "outcome_not_defined"];
+  const keys = ["unmet", "in_progress", "met", "blocked", "explicitly_deferred", "takeover_baseline_missing", "takeover_baseline_stale", "owner_decision_pending", "owner_decision_deferred", "task_blocked", "task_needs_revalidation", "task_needs_context", "native_execution_failed", "independent_review_rejected", "evidence_unavailable", "outcome_not_defined", "task_to_do", "task_in_progress", "task_open_after_review", "archived", "completed", "failed", "approve", "reject"];
   for (const key of keys) for (const locale of ["pl", "en"] as const) {
     assert.ok(operationLabels[key]);
     assert.notEqual(operationLabel(key, locale), key);
@@ -71,6 +72,9 @@ test("portfolio operation renders bounded scope, actual links and safe unknowns 
     assert.ok(html.includes(operation.stage.scope!));
     assert.ok(html.includes(operation.accountable!.label));
     assert.ok(html.includes(operation.nearestOutcome!.title));
+    assert.ok(html.includes(operationLabel("task_blocked", locale)));
+    assert.ok(html.includes("Archived parser proof"));
+    assert.ok(html.includes("taskId=00000000-0000-4000-8000-000000000002"));
     assert.ok(html.includes(operation.decisions[0].title));
     assert.ok(html.includes(operationLabel("owner_decision_pending", locale)));
     assert.ok(html.includes(operation.evidence[0].commit!));
@@ -80,7 +84,7 @@ test("portfolio operation renders bounded scope, actual links and safe unknowns 
     assert.ok(html.includes(`fromApplicationId=${id}`));
     assert.ok(!html.includes(`<span class="block text-xs text-company-muted">${id}</span>`));
     assert.ok(html.includes(locale === "pl" ? "Gotowość produktu: niezweryfikowana" : "Product readiness: unverified"));
-    assert.ok(html.includes(locale === "pl" ? "dotyczy wyłącznie najbliższego wyniku" : "applies only to the nearest outcome"));
+    assert.ok(html.includes(locale === "pl" ? "nie potwierdza gotowości produktu" : "does not prove product"));
     assert.ok(!html.includes("100%"));
     for (const gateState of ["unmet", "in_progress", "met", "blocked", "explicitly_deferred"] as const) {
       const gateHtml = renderToStaticMarkup(React.createElement(component, { operation: { ...operation, gateState }, locale }));
@@ -89,6 +93,13 @@ test("portfolio operation renders bounded scope, actual links and safe unknowns 
     const unknown = renderToStaticMarkup(React.createElement(component, { locale }));
     assert.ok(unknown.includes(locale === "pl" ? "Stan blokad nie został zweryfikowany" : "Blocker state is unverified"));
     assert.ok(!unknown.includes("href="));
+    const noCurrent = renderToStaticMarkup(React.createElement(component, { operation: { ...operation, nearestOutcome: null, accountable: null }, locale, applicationId: id }));
+    assert.ok(noCurrent.includes(locale === "pl" ? "Brak bieżącego zadania" : "No current task"));
+    assert.ok(noCurrent.includes("Archived parser proof"));
+    const limited = renderToStaticMarkup(React.createElement(component, { operation: { ...operation, nearestOutcome: null, taskHistory: [], blockers: [{ code: "evidence_unavailable", reference: null, target: null }], limitations: ["History limit reached; inspect the canonical ledger before declaring completion."] }, locale, applicationId: id }));
+    assert.ok(limited.includes(locale === "pl" ? "Historia może być niepełna" : "History may be incomplete"));
+    assert.ok(limited.includes(locale === "pl" ? "Osiągnięto limit historii" : "History limit reached"));
+    assert.ok(!limited.includes(locale === "pl" ? "Brak zakończonych lub archiwalnych zadań" : "No completed or archived tasks"));
     const unsafe = renderToStaticMarkup(React.createElement(component, { operation: { ...operation, decisions: [{ ...operation.decisions[0], href: "javascript:alert(1)" }], evidence: [{ ...operation.evidence[0], href: "//other.example" }] }, locale }));
     assert.ok(!unsafe.includes("javascript:"));
     assert.ok(!unsafe.includes("other.example"));

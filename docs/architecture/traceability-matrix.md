@@ -1310,6 +1310,8 @@ stays disabled and the canonical host stays observe.
 
 ### <a id="e-app-operation"></a>E-APP-OP — reusable application operation
 
+The 2026-10-15 [bounded current-operation repair](../ux/owner-application-current-operation-2026-10-15.md) separates nonterminal Tasks from linked terminal history, keeps pending/deferred Decisions in canonical state, adds exact return navigation and explains capability-score limits. Focused 41/41 model/navigation/render and 1/1 disposable native API/PL-EN browser tests passed; independent UX/Security source reviews found no remaining concrete P0/P1. This is local slice proof only until an exact build and signed-in production application read-back. Whole-product RF-UX-012 and application readiness remain open.
+
 Gate 5 is met at native/deployed-console evidence level on 2026-10-04, within
 the bounded second-application outcome. The chronological evidence below retains
 earlier failed attempts and incomplete milestones. Source and test evidence adds strict

@@ -85,6 +85,13 @@ test("accepted baseline Decision and its audit Task return to the same applicati
   assert.equal(decisionLinksExactApplicationTask({ scope: [{ type: "task", id }] }, id, other), false);
 });
 
+test("archived Task history returns only to its exact owning application", async () => {
+  const read = async () => ({ data: { id, operation: { nearestOutcome: null, taskHistory: [{ taskId: other }] } } });
+  assert.equal(await validateApplicationReturn(id, other, "task", read), applicationReturnPath(id));
+  await assert.rejects(validateApplicationReturn(id, id, "task", read), /application_return_unavailable/);
+  await assert.rejects(validateApplicationReturn(other, other, "task", read), /application_return_unavailable/);
+});
+
 test("ambiguous or malformed record targets cannot be preserved", () => {
   for (const query of [
     `?applicationId=${id}&applicationId=${other}&cockpit=evidence`,

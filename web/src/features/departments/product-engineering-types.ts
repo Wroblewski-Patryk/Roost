@@ -24,8 +24,10 @@ export type ApplicationOperation = {
     asOf: string | null;
   };
   gateState: "unmet" | "in_progress" | "met" | "blocked" | "explicitly_deferred";
-  nearestOutcome: { taskId: string; title: string; status: string } | null;
+  nearestOutcome: { taskId: string; title: string; status: string; reason: string } | null;
   accountable: { id: string | null; role: string; label: string } | null;
+  taskHistory: Array<{ taskId: string; title: string; status: string; executionStatus: string | null;
+    reviewDecision: string | null }>;
   blockers: Array<{ code: string; reference: string | null; target: { kind: "decision" | "task"; title: string; href: string } | null }>;
   decisions: Array<{ id: string; title: string; state: string; href: string;
     relatedTask: { id: string; title: string } | null }>;

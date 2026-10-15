@@ -603,6 +603,101 @@ test("G21 owner operation retains an older current task after 101 newer scope re
   assert.equal(operation.blockers.some(blocker => blocker.code === "evidence_unavailable"), false);
 });
 
+test("application current operation separates terminal Task history and prioritizes open work across applications", { timeout: 180000 }, async () => {
+  const owner = await registerOwner(`application-current-${randomUUID()}@example.test`, "Application current fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId!;
+  const first = await prisma.application.create({ data: { workspaceId, name: "Current fixture app", slug: `current-${randomUUID()}` } });
+  const second = await prisma.application.create({ data: { workspaceId, name: "Foreign fixture app", slug: `foreign-${randomUUID()}` } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Current fixture project" } });
+  const foreignProject = await prisma.project.create({ data: { workspaceId, name: "Foreign fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: first.id, projectId: project.id } });
+  await prisma.applicationProject.create({ data: { applicationId: second.id, projectId: foreignProject.id } });
+  const firstComponent = await prisma.applicationArchitectureComponent.create({ data: { applicationId: first.id, name: "Current component", type: "backend" } });
+  const secondComponent = await prisma.applicationArchitectureComponent.create({ data: { applicationId: second.id, name: "Foreign component", type: "backend" } });
+  const createScoped = async (title: string, status: "todo" | "done" | "archived", applicationId = first.id) => {
+    const task = await prisma.task.create({ data: { workspaceId, projectId: applicationId === first.id ? project.id : foreignProject.id, title, status } });
+    await prisma.taskRiskScope.create({ data: { id: randomUUID(), workspaceId, taskId: task.id, version: 1,
+      applicationId, componentId: applicationId === first.id ? firstComponent.id : secondComponent.id,
+      input: {}, inputHash: randomUUID(), actorUserId: ownerUserId, requestId: randomUUID(), requestHash: randomUUID() } });
+    return task;
+  };
+  const current = await createScoped("Current actual task", "todo");
+  const done = await createScoped("Completed historical task", "done");
+  const archived = await createScoped("Archived historical task", "archived");
+  const foreign = await createScoped("Other application task", "todo", second.id);
+  const route = `/v1/product-engineering/applications/${first.id}`;
+  const firstRead = await request(route, { headers: auth });
+  assert.equal(firstRead.status, 200, JSON.stringify(firstRead.body));
+  const operation = (firstRead.body as any).data.operation;
+  assert.equal(operation.nearestOutcome.taskId, current.id);
+  assert.equal(operation.nearestOutcome.reason, "task_to_do");
+  assert.deepEqual(new Set(operation.taskHistory.map((row: any) => row.taskId)), new Set([done.id, archived.id]));
+  assert.equal(operation.taskHistory.some((row: any) => row.taskId === foreign.id), false);
+  assert.equal(operation.taskHistory.every((row: any) => row.executionStatus === null && row.reviewDecision === null), true);
+  const { chromium } = await import("playwright");
+  const screenshotDir = path.join((await import("node:os")).tmpdir(), "roost-application-current-ux");
+  await (await import("node:fs/promises")).mkdir(screenshotDir, { recursive: true });
+  const browser = await chromium.launch({ headless: true });
+  try {
+    for (const locale of ["pl", "en"] as const) for (const width of [390, 834, 1280]) {
+      const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 900 } });
+      await context.addInitScript(({ token, language }) => {
+        window.sessionStorage.setItem("companycoreOwnerToken", token);
+        window.localStorage.setItem("companycoreLocale", language);
+      }, { token: owner.token, language: locale });
+      const page = await context.newPage();
+      const errors: string[] = [];
+      page.on("pageerror", error => errors.push(error.message));
+      try {
+        await page.goto(`${baseUrl}/areas?area=11-innowacje&view=overview&applicationId=${first.id}&cockpit=overview`);
+        await page.getByRole("heading", { name: first.name }).waitFor({ timeout: 15000 });
+        const operationView = page.getByRole("region", { name: locale === "pl" ? "Stan operacyjny aplikacji" : "Application operation status" }).last();
+        await operationView.getByRole("link", { name: current.title }).waitFor({ timeout: 15000 });
+        await page.screenshot({ path: path.join(screenshotDir, `${locale}-${width}-current.png`), fullPage: true });
+        assert.ok((await operationView.innerText()).includes(locale === "pl" ? "Powód:" : "Reason:"));
+        assert.ok((await operationView.innerText()).includes(locale === "pl" ? "Nie wskazano odpowiedzialnego" : "Accountable person not recorded"));
+        await operationView.getByText(locale === "pl" ? "Historia zadań i wyników (2)" : "Task and result history (2)").click();
+        await page.screenshot({ path: path.join(screenshotDir, `${locale}-${width}-history.png`), fullPage: true });
+        const archivedLink = operationView.getByRole("link", { name: archived.title });
+        await archivedLink.focus();
+        await page.keyboard.press("Enter");
+        await page.waitForURL(url => url.searchParams.get("taskId") === archived.id, { timeout: 15000 });
+        await page.getByRole("heading", { name: archived.title }).waitFor({ timeout: 15000 });
+        const returnButton = page.getByRole("button", { name: locale === "pl" ? "Wróć do aplikacji" : "Back to application" });
+        await returnButton.focus();
+        await page.keyboard.press("Enter");
+        await page.waitForURL(url => url.searchParams.get("applicationId") === first.id && url.searchParams.get("cockpit") === "overview", { timeout: 15000 });
+        assert.deepEqual(errors, [], `${locale}/${width} browser errors`);
+      } finally { await context.close(); }
+    }
+    await prisma.task.update({ where: { id: current.id }, data: { status: "done" } });
+    const completedRead = await request(route, { headers: auth });
+    assert.equal(completedRead.status, 200, JSON.stringify(completedRead.body));
+    assert.equal((completedRead.body as any).data.operation.nearestOutcome, null);
+    assert.equal((completedRead.body as any).data.operation.taskHistory.some((row: any) => row.taskId === current.id), true);
+    const emptyContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await emptyContext.addInitScript(token => { window.sessionStorage.setItem("companycoreOwnerToken", token); window.localStorage.setItem("companycoreLocale", "pl"); }, owner.token);
+    const emptyPage = await emptyContext.newPage();
+    try {
+      await emptyPage.goto(`${baseUrl}/areas?area=11-innowacje&view=overview&applicationId=${first.id}&cockpit=overview`);
+      await emptyPage.getByRole("heading", { name: first.name }).waitFor({ timeout: 15000 });
+      await emptyPage.getByText("Brak bieżącego zadania").first().waitFor({ timeout: 15000 });
+      assert.equal(await emptyPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+    } finally { await emptyContext.close(); }
+    const errorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await errorContext.addInitScript(token => { window.sessionStorage.setItem("companycoreOwnerToken", token); window.localStorage.setItem("companycoreLocale", "pl"); }, owner.token);
+    const errorPage = await errorContext.newPage();
+    try {
+      await errorPage.route(`**/v1/product-engineering/applications/${first.id}`, route => route.abort());
+      await errorPage.goto(`${baseUrl}/areas?area=11-innowacje&view=overview&applicationId=${first.id}&cockpit=overview`);
+      await errorPage.getByText("Wskazana aplikacja jest niedostępna w tym workspace.").waitFor({ timeout: 15000 });
+    } finally { await errorContext.close(); }
+  } finally { await browser.close(); }
+  const otherRead = await request(`/v1/product-engineering/applications/${second.id}`, { headers: auth });
+  assert.equal((otherRead.body as any).data.operation.nearestOutcome.taskId, foreign.id);
+});
+
 test("G21 native Worker context and owner operation reject a task moved to another application", { timeout: 180000 }, async () => {
   const owner = await registerOwner(`g21-${randomUUID()}@example.test`, "G21 two-application fixture");
   const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };

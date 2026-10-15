@@ -19,7 +19,10 @@ export const operationLabels: Record<string, [string, string]> = {
   pending: ["Oczekuje", "Pending"], proposed: ["Propozycja", "Proposed"],
   accepted: ["Zaakceptowana", "Accepted"], deferred: ["Odroczona", "Deferred"],
   todo: ["Do wykonania", "To do"], done: ["Zakończone", "Done"],
-  cancelled: ["Anulowane", "Cancelled"], needs_decision: ["Wymaga decyzji", "Decision required"],
+  cancelled: ["Anulowane", "Cancelled"], archived: ["Archiwalne", "Archived"],
+  completed: ["Zakończone", "Completed"], failed: ["Nieudane", "Failed"],
+  approve: ["Zatwierdzona", "Approved"], reject: ["Odrzucona", "Rejected"],
+  needs_decision: ["Wymaga decyzji", "Decision required"],
   accountable_manager: ["Odpowiedzialny manager", "Accountable manager"],
   accountableManager: ["Odpowiedzialny manager", "Accountable manager"],
   executor: ["Wykonawca", "Executor"], manager: ["Manager", "Manager"],
@@ -35,6 +38,9 @@ export const operationLabels: Record<string, [string, string]> = {
   independent_review_rejected: ["Niezależna ocena odrzuciła wynik", "Independent review rejected the result"],
   evidence_unavailable: ["Dowody są niedostępne", "Evidence unavailable"],
   outcome_not_defined: ["Nie określono najbliższego wyniku", "Nearest outcome not defined"],
+  task_to_do: ["Otwarte zadanie czeka na rozpoczęcie", "Open task awaits work"],
+  task_in_progress: ["Otwarte zadanie jest w toku", "Open task is in progress"],
+  task_open_after_review: ["Zadanie pozostaje otwarte po ocenie wyniku", "Task remains open after result review"],
 };
 
 export function operationLabel(key: string, locale: "pl" | "en") {
