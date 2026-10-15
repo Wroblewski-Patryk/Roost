@@ -6,6 +6,8 @@ Current delivery status and evidence.
 
 **Outcome 1 local checkpoint (2026-10-15):** Today and repeat-import changes passed focused and native local proof. The known disposable Task is archived; wider provenance and signed-in deployed proof remain open. Decision GET now has a tested observational path; final preflight and deployment remain. The owner authorized the earlier reviewed documentation commit in this release. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
+**Outcome 0 archive slice:** [Proof and limits](ux/owner-architecture-archive-2026-10-15.md).
+
 **G24c stopped, incomplete:** Its accepted Findings and checklist remain recorded, but there is no verified supervised Worker result, independent review and owner final. The Windows Host is stopped. The spent Decision and failed execution remain audit evidence; no model retry is authorized by this status. [Evidence](architecture/reference-site-method-proof-g24c.md#g24c-recovery-architecture-checkpoint).
 
 **Current product priority:** Make the existing Roost company workspace usable for the owner and connected Local Worker: remove confirmed disposable gate/test data, keep real application and business records, separate audit history from active work, and verify the real task/context/result flow. A cleanup candidate is not permission to erase referenced execution, decision or review evidence. Native mobile remains deferred under RF-SCOPE-001 until the shared web/API journey works; it will use the same backend and canonical records.
