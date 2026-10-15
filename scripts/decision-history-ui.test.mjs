@@ -17,7 +17,7 @@ const historical = [
   { id: "44444444-4444-4444-8444-444444444444", title: "Withdrawn proposal", status: "proposed", governanceState: "withdrawn", historyReason: "withdrawn", source: "fixture" },
   { id: "55555555-5555-4555-8555-555555555555", title: "Superseded contract", status: "accepted", governanceState: "accepted", historyReason: "superseded", source: "roost_decision" }
 ];
-const bundle = await build({ stdin: { contents: "import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{DecisionsWorkbench}from'./web/src/features/departments/decisions-workbench';createRoot(document.getElementById('root')).render(<LanguageProvider><DecisionsWorkbench departmentKey='01-strategia' canonical/></LanguageProvider>);", resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", loader: { ".css": "empty" }, define: { "process.env.NODE_ENV": '"test"' } });
+const bundle = await build({ stdin: { contents: "import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider,useLanguage}from'./web/src/i18n/i18n';import{DecisionsWorkbench}from'./web/src/features/departments/decisions-workbench';function SwitchLocale(){const{locale,setLocale}=useLanguage();return <button onClick={()=>setLocale(locale==='pl'?'en':'pl')} type='button'>Switch fixture locale</button>}createRoot(document.getElementById('root')).render(<LanguageProvider><SwitchLocale/><DecisionsWorkbench departmentKey='01-strategia' canonical/></LanguageProvider>);", resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", loader: { ".css": "empty" }, define: { "process.env.NODE_ENV": '"test"' } });
 const cssName = (await readdir("public/react/assets")).find((name) => /^index-.*\.css$/.test(name));
 assert.ok(cssName, "build:web output required");
 const css = await readFile(path.join("public/react/assets", cssName));
@@ -84,9 +84,28 @@ try {
         await page.getByText("Withdrawn").filter({ visible: true }).first().waitFor();
         await page.getByText("Superseded").filter({ visible: true }).first().waitFor();
       }
+      const statusOptions = await page.getByRole("combobox", { name: "Status" }).locator("option").allTextContents();
+      assert.ok(statusOptions.includes(locale === "pl" ? "Wycofana" : "Withdrawn"));
+      assert.ok(statusOptions.includes(locale === "pl" ? "Zastąpiona" : "Superseded"));
+      assert.equal(statusOptions.includes(locale === "pl" ? "Withdrawn" : "Wycofana"), false);
+      const statusFilter = page.getByRole("combobox", { name: "Status" });
+      await statusFilter.selectOption("withdrawn");
+      assert.equal(await statusFilter.inputValue(), "withdrawn");
+      await page.getByText("Withdrawn proposal").filter({ visible: true }).first().waitFor();
+      assert.equal(await page.getByText("Archived contract").count(), 0);
+      assert.equal(await page.getByText("Superseded contract").count(), 0);
+      await page.getByRole("button", { name: "Switch fixture locale" }).click();
+      assert.equal(await statusFilter.inputValue(), "withdrawn");
+      assert.equal(await statusFilter.locator("option:checked").textContent(), locale === "pl" ? "Withdrawn" : "Wycofana");
+      await page.getByText("Withdrawn proposal").filter({ visible: true }).first().waitFor();
+      assert.equal(await page.getByText("Archived contract").count(), 0);
+      await page.getByRole("button", { name: "Switch fixture locale" }).click();
+      await statusFilter.selectOption("all");
+      await page.getByText("Archived contract").filter({ visible: true }).first().waitFor();
       await page.getByRole("button", { name: locale === "pl" ? "Otwórz historię" : "Inspect history" }).filter({ visible: true }).first().click();
       const dialog = page.getByRole("dialog", { name: "Archived contract" });
       await dialog.waitFor();
+      assert.equal(await dialog.getByRole("button", { name: locale === "pl" ? "Zamknij" : "Close", exact: true }).isVisible(), true);
       assert.equal(await dialog.getByText(`ID: ${archivedId}`).isVisible(), true);
       assert.equal(await dialog.getByText("Retained exact choice").isVisible(), true);
       assert.equal(await dialog.getByText("Option A; Option B").isVisible(), true);
