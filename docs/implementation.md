@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 signals candidate held at recovery preflight; [evidence](ux/owner-department-signals-2026-10-15.md). G24c/G25 stopped.
+**Active gate:** G0 signals release prepared; [evidence](ux/owner-department-signals-2026-10-15.md). G24c/G25 stopped.
 
 **Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
