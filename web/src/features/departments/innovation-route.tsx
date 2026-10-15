@@ -1117,6 +1117,7 @@ export function InnovationRoute() {
   const [procedures, setProcedures] = useState<ProcedureSummary[]>([]);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [view, setView] = useState<CockpitView>("overview");
+  const [architectureHistory, setArchitectureHistory] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
@@ -1178,8 +1179,8 @@ export function InnovationRoute() {
     const search=new URL(appLocation,window.location.origin).search;
     const query=new URLSearchParams(search),applicationId=recordIdFromQuery(search,"applicationId");
     const cockpit=query.get("cockpit");
-    if(applicationId&&(cockpit==="overview"||cockpit==="evidence")){
-      setView(cockpit);void loadCockpit(applicationId).then(()=>setNavigationError(false)).catch(()=>{setSelected(null);setNavigationError(true);});
+    if(applicationId&&(cockpit==="overview"||cockpit==="evidence"||cockpit==="architecture")){
+      setView(cockpit);setArchitectureHistory(cockpit==="architecture"&&query.get("architecture")==="history");void loadCockpit(applicationId).then(()=>setNavigationError(false)).catch(()=>{setSelected(null);setNavigationError(true);});
     } else {
       setSelected(null);
       setNavigationError(false);
@@ -1277,7 +1278,7 @@ export function InnovationRoute() {
       {status === "error" ? (
         <CcNotice tone="error" title={error || "Innovation could not load"} />
       ) : null}
-      {navigationError ? <CcNotice tone="error" title={locale === "pl" ? "Wskazana aplikacja jest niedostępna w tym workspace." : "The requested application is unavailable in this workspace."} /> : null}
+      {navigationError ? <CcNotice action={<CcButton href="/areas?area=11-innowacje&view=overview" size="sm" variant="outline">{locale === "pl" ? "Wróć do portfolio" : "Back to portfolio"}</CcButton>} tone="error" title={locale === "pl" ? "Wskazana aplikacja jest niedostępna w tym workspace." : "The requested application is unavailable in this workspace."} /> : null}
       {selected && cockpitIncomplete ? <CcNotice tone="warning" title={locale === "pl" ? "Część danych aplikacji nie została wczytana." : "Some application details could not be loaded."} /> : null}
       {catalogOpen ? (
         <CatalogView catalog={catalog} onRefresh={loadBase} />
@@ -1335,7 +1336,7 @@ export function InnovationRoute() {
                   key={item}
                   onClick={() => setView(item)}
                 >
-                  {humanize(item)}
+                  {item === "architecture" && locale === "pl" ? "Architektura" : humanize(item)}
                 </button>
               ))}
             </div>
@@ -1471,12 +1472,18 @@ export function InnovationRoute() {
           ) : null}
           {view === "architecture" ? (
             <section className="rounded-company border border-base-300 bg-base-100 p-5">
-              <h3 className="text-xl font-black">Architecture map</h3>
+              <h3 className="text-xl font-black">{locale === "pl" ? "Mapa architektury" : "Architecture map"}</h3>
+              <p className="mt-2 text-sm text-company-muted">{locale === "pl" ? "Bieżące komponenty są widoczne na grafie aplikacji. Zarchiwizowane zachowują swój identyfikator i status w historii." : "Current components appear in the Application Graph. Archived components retain their ID and status in history."}</p>
+              <div aria-label={locale === "pl" ? "Zakres komponentów architektury" : "Architecture component scope"} className="mt-4 flex flex-wrap gap-2" role="group">
+                <button aria-pressed={!architectureHistory} className={`btn btn-sm ${!architectureHistory ? "btn-primary" : "btn-outline"}`} onClick={() => setArchitectureHistory(false)} type="button">{locale === "pl" ? "Bieżące" : "Current"} ({selected.architecture?.filter((item) => item.status !== "archived").length ?? 0})</button>
+                <button aria-pressed={architectureHistory} className={`btn btn-sm ${architectureHistory ? "btn-primary" : "btn-outline"}`} onClick={() => setArchitectureHistory(true)} type="button">{locale === "pl" ? "Historia" : "History"} ({selected.architecture?.filter((item) => item.status === "archived").length ?? 0})</button>
+              </div>
+              {!architectureHistory ? (
               <form
                 className="mt-4 grid gap-3 md:grid-cols-[auto_1fr_2fr_auto]"
                 onSubmit={addArchitecture}
               >
-                <select className="select select-bordered" name="type">
+                <select aria-label={locale === "pl" ? "Typ komponentu" : "Component type"} className="select select-bordered" name="type">
                   {architectureTypes.map((type) => (
                     <option key={type} value={type}>
                       {humanize(type)}
@@ -1485,33 +1492,39 @@ export function InnovationRoute() {
                 </select>
                 <input
                   className="input input-bordered"
+                  aria-label={locale === "pl" ? "Nazwa komponentu" : "Component name"}
                   name="name"
-                  placeholder="Component name"
+                  placeholder={locale === "pl" ? "Nazwa komponentu" : "Component name"}
                   required
                 />
                 <input
                   className="input input-bordered"
+                  aria-label={locale === "pl" ? "Odpowiedzialność i granica" : "Responsibility and boundary"}
                   name="description"
-                  placeholder="Responsibility and boundary"
+                  placeholder={locale === "pl" ? "Odpowiedzialność i granica" : "Responsibility and boundary"}
                 />
-                <CcButton type="submit">Add</CcButton>
+                <CcButton type="submit">{locale === "pl" ? "Dodaj" : "Add"}</CcButton>
               </form>
+              ) : null}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {selected.architecture?.map((item) => (
+                {selected.architecture?.filter((item) => architectureHistory ? item.status === "archived" : item.status !== "archived").map((item) => (
                   <article
-                    className="rounded-company border border-base-300 p-4"
+                    className="min-w-0 rounded-company border border-base-300 p-4"
                     key={item.id}
                   >
                     <span className="badge badge-outline">
                       {humanize(item.type)}
                     </span>
-                    <h4 className="mt-2 font-black">{item.name}</h4>
-                    <p className="text-sm text-company-muted">
-                      {item.description || "No responsibility description."}
+                    {architectureHistory ? <span className="badge badge-warning ml-2">{locale === "pl" ? "Zarchiwizowany" : "Archived"}</span> : null}
+                    <h4 className="mt-2 break-words font-black">{item.name}</h4>
+                    {architectureHistory ? <p className="mt-1 break-all font-mono text-xs text-company-muted">ID: {item.id}</p> : null}
+                    <p className="break-words text-sm text-company-muted">
+                      {item.description || (locale === "pl" ? "Brak opisu odpowiedzialności." : "No responsibility description.")}
                     </p>
                   </article>
                 ))}
               </div>
+              {selected.architecture?.some((item) => architectureHistory ? item.status === "archived" : item.status !== "archived") ? null : <CcNotice tone="empty" title={architectureHistory ? (locale === "pl" ? "Brak zarchiwizowanych komponentów" : "No archived components") : (locale === "pl" ? "Brak bieżących komponentów" : "No current components")} />}
             </section>
           ) : null}
           {view === "interfaces" ? (

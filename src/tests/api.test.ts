@@ -1151,6 +1151,40 @@ test("archived application, project and record stay out of ordinary company list
   }
 });
 
+test("archived architecture stays out of the current application graph and remains in owner history", async () => {
+  const owner = await registerOwner("architecture-history-owner@example.test", "Architecture history scope");
+  const foreign = await registerOwner("architecture-history-foreign@example.test", "Foreign architecture scope");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  const foreignHeaders = { Authorization: `Bearer ${foreign.token}` };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Architecture fixture", slug: "architecture-fixture" } });
+  const graphRoute = `/v1/product-engineering/applications/${application.id}/graph`;
+  const detailRoute = `/v1/product-engineering/applications/${application.id}`;
+
+  const emptyGraph = await request(graphRoute, { headers });
+  assert.equal(emptyGraph.status, 200);
+  assert.equal((emptyGraph.body as any).data.nodes.some((node: any) => node.type === "implementation"), false);
+
+  const current = await prisma.applicationArchitectureComponent.create({ data: { applicationId: application.id, type: "backend", name: "Current API", status: "active" } });
+  const archived = await prisma.applicationArchitectureComponent.create({ data: { applicationId: application.id, type: "frontend", name: "Old console", status: "archived" } });
+  const graph = await request(graphRoute, { headers });
+  assert.equal(graph.status, 200);
+  const graphNodes = (graph.body as any).data.nodes as Array<{ entityId: string }>;
+  assert.ok(graphNodes.some((node) => node.entityId === current.id));
+  assert.equal(graphNodes.some((node) => node.entityId === archived.id), false);
+  assert.equal(JSON.stringify(graph.body).includes(archived.id), false);
+
+  const detail = await request(detailRoute, { headers });
+  assert.equal(detail.status, 200);
+  const architecture = (detail.body as any).data.architecture as Array<{ id: string; status: string }>;
+  assert.ok(architecture.some((item) => item.id === current.id && item.status === "active"));
+  assert.ok(architecture.some((item) => item.id === archived.id && item.status === "archived"));
+  assert.equal((await prisma.applicationArchitectureComponent.findUniqueOrThrow({ where: { id: archived.id } })).status, "archived", "reads must not rewrite archived history");
+
+  assert.equal((await request(graphRoute, { headers: foreignHeaders })).status, 404);
+  assert.equal((await request(detailRoute, { headers: foreignHeaders })).status, 404);
+  assert.equal((await request(`/v1/product-engineering/applications/${application.id}/graph`, {})).status, 401);
+});
+
 test("archived strategy and retired agent fixtures stay out of ordinary views", async () => {
   const owner = await registerOwner("strategy-archive-owner@example.test", "Strategy archive scope");
   const headers = { Authorization: `Bearer ${owner.token}` };

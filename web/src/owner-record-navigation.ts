@@ -9,7 +9,11 @@ export function innovationRecordPath(search: string, canonicalPath: string) {
   const query = new URLSearchParams(search);
   const applicationId = recordIdFromQuery(search, "applicationId");
   const cockpits = query.getAll("cockpit");
-  if (!applicationId || cockpits.length !== 1 || !["overview", "evidence"].includes(cockpits[0])) return canonicalPath;
+  if (!applicationId || cockpits.length !== 1) return canonicalPath;
+  if (cockpits[0] === "architecture") return query.getAll("architecture").length === 1 && query.get("architecture") === "history"
+    ? `${canonicalPath}&applicationId=${encodeURIComponent(applicationId)}&cockpit=architecture&architecture=history`
+    : canonicalPath;
+  if (!["overview", "evidence"].includes(cockpits[0])) return canonicalPath;
   return `${canonicalPath}&applicationId=${encodeURIComponent(applicationId)}&cockpit=${cockpits[0]}`;
 }
 

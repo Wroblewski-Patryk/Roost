@@ -41,6 +41,9 @@ test("the canonical task route validates the actual HTTP data envelope", async (
 test("application evidence navigation retains only the exact record and supported cockpit", () => {
   assert.equal(innovationRecordPath(`?area=11-innowacje&view=overview&applicationId=${id}&cockpit=evidence&redirect=https://other.example&write=1`, canonical), `${canonical}&applicationId=${id}&cockpit=evidence`);
   assert.equal(innovationRecordPath(`?area=11-innowacje&view=overview&applicationId=${id}&cockpit=overview`, canonical), applicationReturnPath(id));
+  assert.equal(innovationRecordPath(`?applicationId=${id}&cockpit=architecture&architecture=history&write=1`, canonical), `${canonical}&applicationId=${id}&cockpit=architecture&architecture=history`);
+  assert.equal(innovationRecordPath(`?applicationId=${id}&cockpit=architecture&architecture=history&architecture=history`, canonical), canonical);
+  assert.equal(innovationRecordPath(`?applicationId=${id}&cockpit=architecture&architecture=current`, canonical), canonical);
   assert.equal(innovationRecordPath(`?applicationId=${id}&cockpit=execution`, canonical), canonical);
   assert.equal(innovationRecordPath(`?applicationId=${id}`, canonical), canonical);
 });
@@ -54,6 +57,7 @@ test("application links survive sign-in only with one exact record and return hi
   assert.equal(canonicalPostAuthPath(`${decision}&fromApplicationId=../other`), `/areas?area=01-strategia&view=decisions&decisionId=${id}`);
   assert.equal(canonicalPostAuthPath(applicationReturnPath(id)), applicationReturnPath(id));
   assert.equal(canonicalPostAuthPath(`${canonical}&applicationId=${id}&cockpit=evidence`), `${canonical}&applicationId=${id}&cockpit=evidence`);
+  assert.equal(canonicalPostAuthPath(`${canonical}&applicationId=${id}&cockpit=architecture&architecture=history`), `${canonical}&applicationId=${id}&cockpit=architecture&architecture=history`);
   assert.equal(canonicalPostAuthPath(`${canonical}&applicationId=${id}&cockpit=write`), canonical);
 });
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
+import { useLanguage } from "../../i18n/i18n";
 import { UnifiedGraph3D, type UnifiedGraphEdge, type UnifiedGraphNode } from "../../components/graph/unified-graph-3d";
 import { humanizeBusinessValue } from "./shared";
 import type {
@@ -234,6 +235,7 @@ function GraphInspector({ node, onClose }: { node: ApplicationGraphNode; onClose
 }
 
 function ApplicationGraphCanvas() {
+  const { locale } = useLanguage();
   const searchRef = useRef<HTMLInputElement>(null);
   const focusTransitionTimerRef = useRef<number | null>(null);
   const [portfolio, setPortfolio] = useState<ApplicationGraphPacket | null>(null);
@@ -349,6 +351,7 @@ function ApplicationGraphCanvas() {
   }, [graph.nodes, query]);
 
   const activeApplicationNodeId = focus?.type === "application" ? focus.id : focus?.path.find((id) => id.startsWith("application:"));
+  const activeApplication = activeApplicationNodeId ? byId.get(activeApplicationNodeId) : null;
   const domainOptions = useMemo(() => activeApplicationNodeId
     ? graph.nodes.filter((node) => node.type === "domain" && node.path.includes(activeApplicationNodeId)).sort((a, b) => a.label.localeCompare(b.label))
     : [], [activeApplicationNodeId, graph.nodes]);
@@ -450,7 +453,8 @@ function ApplicationGraphCanvas() {
               <button className="btn btn-ghost btn-sm mt-3 w-full" onClick={() => setFilters(initialFilters)} type="button">Clear filters</button>
             </div>
           </details>
-          <CcButton iconLeft="ph-books" href="/areas?area=11-innowacje&view=overview" size="sm" variant="outline">Open Product Engineering</CcButton>
+          {activeApplication ? <CcButton iconLeft="ph-archive" href={`/areas?area=11-innowacje&view=overview&applicationId=${encodeURIComponent(activeApplication.entityId)}&cockpit=architecture&architecture=history`} size="sm" variant="outline">{locale === "pl" ? "Historia komponentów" : "Component history"}</CcButton> : null}
+          <CcButton iconLeft="ph-books" href="/areas?area=11-innowacje&view=overview" size="sm" variant="outline">{locale === "pl" ? "Otwórz inżynierię produktu" : "Open Product Engineering"}</CcButton>
         </div>
       </header>
 

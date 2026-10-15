@@ -1,4 +1,4 @@
-import { ApplicationStatus, type Prisma } from "@prisma/client";
+import { ApplicationStatus, OperatingStatus, type Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { buildApplicationGraph } from "./application-graph";
 import { calculateApplicationReadiness } from "./readiness";
@@ -96,7 +96,7 @@ export async function loadApplicationGraphPacket(workspaceId: string, applicatio
   const [workspace, application, architecture, procedures, projects, records] = await Promise.all([
     prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
     prisma.application.findFirst({ where: { id: applicationId, workspaceId, status: { not: ApplicationStatus.archived } } }),
-    prisma.applicationArchitectureComponent.findMany({ where: { application: { id: applicationId, workspaceId } }, orderBy: [{ name: "asc" }, { id: "asc" }] }),
+    prisma.applicationArchitectureComponent.findMany({ where: { application: { id: applicationId, workspaceId }, status: { not: OperatingStatus.archived } }, orderBy: [{ name: "asc" }, { id: "asc" }] }),
     prisma.applicationProcedure.findMany({ where: { application: { id: applicationId, workspaceId } }, include: { procedure: { include: procedureInclude } }, orderBy: { createdAt: "asc" } }),
     prisma.applicationProject.findMany({ where: { application: { id: applicationId, workspaceId } }, include: { project: { include: projectInclude } }, orderBy: { createdAt: "asc" } }),
     prisma.companyRecord.findMany({ where: { workspaceId, applicationId, status: { not: "archived" } }, orderBy: [{ recordType: "asc" }, { priority: "asc" }, { updatedAt: "desc" }] })
