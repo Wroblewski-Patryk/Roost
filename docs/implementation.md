@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 CompanyRecord source panel; [local proof and limits](ux/owner-company-source-provenance-2026-10-15.md). Release/read-back pending. Procedure archive `4297fb15` deployed. G24c remains stopped.
+**Active gate:** none. G0 CompanyRecord source panel deployed as `c7f375dd`; native/UI and read-only source proof passed. Signed-in production UI is unobserved. [Proof and limits](ux/owner-company-source-provenance-2026-10-15.md). G24c remains stopped
 
 **Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
 
