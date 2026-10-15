@@ -1188,6 +1188,13 @@ test("task archives stay out of current work and remain explicitly accessible", 
   const active = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Current invoice sales strategy operation", status: "todo" } });
   const archived = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Archived invoice sales strategy operation", status: "archived", source: "clickup", externalId: "deleted-archive-test" } });
   const foreign = await prisma.task.create({ data: { workspaceId: other.workspace.id, title: "Foreign archive", status: "archived" } });
+  const { ensureDefaultDepartments } = await import("../modules/departments/departments.routes");
+  const { replaceOrganizationalContext } = await import("../modules/organizational-context/organizational-context.service");
+  await ensureDefaultDepartments(owner.workspace.id);
+  await prisma.$transaction(async (tx) => {
+    await replaceOrganizationalContext(tx, owner.workspace.id, "task", active.id, { ownerDepartmentKey: "01-strategia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] });
+    await replaceOrganizationalContext(tx, owner.workspace.id, "task", archived.id, { ownerDepartmentKey: "04-operacje", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] });
+  });
   for (const [query, expected] of [["", [active.id]], ["?archive=exclude", [active.id]], ["?archive=only", [archived.id]], ["?archive=all", [active.id, archived.id]]] as const) {
     const result = await request(`/v1/tasks${query}`, { headers });
     assert.equal(result.status, 200);
@@ -1195,7 +1202,13 @@ test("task archives stay out of current work and remain explicitly accessible", 
     assert.equal(JSON.stringify(result.body).includes(foreign.id), false);
   }
   assert.equal((await request("/v1/tasks?archive=invalid", { headers })).status, 400);
+  const historicalOperations = await request("/v1/tasks?archive=only&departmentKey=04-operacje&includeCompanyWide=false", { headers });
+  assert.deepEqual((historicalOperations.body as any).data.map((row: any) => row.id), [archived.id]);
+  assert.deepEqual((await request("/v1/tasks?archive=only&departmentKey=01-strategia&includeCompanyWide=false", { headers })).body, { data: [] });
+  assert.deepEqual((await request("/v1/tasks?departmentKey=04-operacje&includeCompanyWide=false", { headers })).body, { data: [] });
+  const archivedUpdatedAt = (await prisma.task.findUniqueOrThrow({ where: { id: archived.id } })).updatedAt.getTime();
   assert.equal((await request(`/v1/tasks/${archived.id}`, { headers })).status, 200);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: archived.id } })).updatedAt.getTime(), archivedUpdatedAt);
   assert.equal((await request(`/v1/tasks/${foreign.id}`, { headers })).status, 404);
   for (const route of ["/v1/operations/work-items", "/v1/operations/context", "/v1/strategy/context", "/v1/finance/context", "/v1/sales/context", "/v1/relationships/context", "/v1/intake"]) {
     const result = await request(route, { headers });

@@ -333,6 +333,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     const fromApplication = !fromAttention && fromApplicationId ? `&fromApplicationId=${fromApplicationId}` : "";
     const recordId = recordIdFromQuery(rawQuery, "recordId");
     const taskId = recordIdFromQuery(rawQuery, "taskId");
+    const history = params.getAll("scope").length === 1 && params.get("scope") === "history";
+    const historicalTaskId = history ? recordIdFromQuery(rawQuery, "historicalTaskId") : null;
+    const taskHistoryQuery = history ? `&scope=history${historicalTaskId ? `&historicalTaskId=${historicalTaskId}` : ""}` : "";
     const decisionId = recordIdFromQuery(rawQuery, "decisionId");
     const riskId = recordIdFromQuery(rawQuery, "riskId");
     const requestedDepartment = params.get("department");
@@ -346,7 +349,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}${departmentQuery}${recordId ? `&recordId=${recordId}${fromAttention}` : ""}`;
     }
     if (area && view === "tasks" && contextualTaskAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=tasks${departmentQuery}${taskId ? `&taskId=${taskId}${fromAttention}${fromApplication}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=tasks${departmentQuery}${taskHistoryQuery}${!history && taskId ? `&taskId=${taskId}${fromAttention}${fromApplication}` : ""}`;
     }
     if (area && view === "procedures" && contextualProcedureAreas.has(area)) {
       return `/areas?area=${encodeURIComponent(area)}&view=procedures`;
@@ -369,6 +372,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     if (area === "04-operacje") {
       const view = params.get("view");
       const base = view === "calendar" ? "/areas?area=04-operacje&view=calendar" : view === "procedures" ? "/areas?area=04-operacje&view=procedures" : canonicalOperationsPath;
+      if (view === "tasks" && history) return `${canonicalOperationsPath}${departmentQuery}${taskHistoryQuery}`;
       if (view === "tasks" && taskId) return `${canonicalOperationsPath}${departmentQuery}&taskId=${taskId}${fromAttention}${fromApplication}`;
       return `${base}${departmentQuery}`;
     }

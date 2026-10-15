@@ -22,6 +22,7 @@ import { ReferenceSiteStudy } from "./reference-site-study";
 import { navigateApp } from "../../app-navigation";
 import { TaskReviewModal } from "./task-review";
 import { reviewMessages } from "./task-review-messages";
+import { TaskHistoryWorkbench, TaskScopeSwitch, taskScopeHref } from "./task-history-workbench";
 
 type OperationsView = "tasks" | "calendar" | "procedures";
 type CalendarMode = "day" | "week" | "month";
@@ -1490,8 +1491,8 @@ export function OperationsRoute() {
   const { t, locale } = useLanguage();
   const fromAttention = new URLSearchParams(window.location.search).get("from") === "attention";
   const fromApplicationId = recordIdFromQuery(window.location.search, "fromApplicationId");
-  const [archive, setArchive] = useState("exclude");
   const activeView = currentOperationsView();
+  const history = activeView === "tasks" && new URLSearchParams(window.location.search).get("scope") === "history";
   const departmentScope = new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null;
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
@@ -1503,11 +1504,19 @@ export function OperationsRoute() {
   const [navigationError, setNavigationError] = useState(false);
   const [applicationReturn, setApplicationReturn] = useState<string | null>(null);
   useEffect(() => {
+    if (history) return;
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
     if (new URLSearchParams(window.location.search).has('taskId') && !taskId) { setNavigationError(true); return; }
     if (!taskId) return;
     let active = true;
-    validateTaskPacketNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(async id => {
+    validateTaskPacketNavigation(taskId, async id => {
+      const response = await api<{ data: { id: string; status: string } }>(`/v1/tasks/${id}`);
+      if (response.data.status === "archived") {
+        window.location.assign(taskScopeHref("history", window.location.search, id));
+        throw new Error("archived_task_redirect");
+      }
+      return response;
+    }).then(async id => {
       if (fromApplicationId && !fromAttention) {
         try {
           const path = await validateApplicationReturn(fromApplicationId, id, "task",
@@ -1516,9 +1525,9 @@ export function OperationsRoute() {
         } catch { if (active) setApplicationReturn(null); }
       }
       if (active) setReadinessTask(id);
-    }).catch(() => { if (active) setNavigationError(true); });
+    }).catch((error) => { if (active && !(error instanceof Error && error.message === "archived_task_redirect")) setNavigationError(true); });
     return () => { active = false; };
-  }, []);
+  }, [history]);
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
   const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
@@ -1529,7 +1538,7 @@ export function OperationsRoute() {
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
   // A direct record does not need the entire board behind its modal. Read the
   // exact task first; load the board when the owner returns to that surface.
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=${activeView === "calendar" ? "exclude" : archive}${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures" && !holdBoardForRecord, t);
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=exclude${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures" && !history && !holdBoardForRecord, t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
@@ -1576,13 +1585,15 @@ export function OperationsRoute() {
     return <ProceduresWorkbench canonical={!departmentScope} departmentKey={departmentScope || "04-operacje"} />;
   }
 
+  if (history) return <TaskHistoryWorkbench departmentScope={departmentScope} />;
+
   return (
     <>
       {navigationError ? <CcNotice tone="error" title={locale === 'pl' ? 'Wskazane zadanie jest niedostępne w tym workspace.' : 'The requested task is unavailable in this workspace.'}
         action={<CcButton variant="outline" href="/areas?area=04-operacje&view=tasks">{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
       <CcPageHeader
-        actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView !== "calendar" ? <CcSelect aria-label={locale === "pl" ? "Widok zadań" : "Task view"} value={archive} onChange={event => { setArchive(event.target.value); setListSelectionInitialized(false); clearTaskFilters(); }}><option value="exclude">{locale === "pl" ? "Bieżące" : "Current"}</option><option value="only">{locale === "pl" ? "Archiwum" : "Archive"}</option><option value="all">{locale === "pl" ? "Wszystkie" : "All"}</option></CcSelect> : null}</>}
-        description={departmentScope ? `Filtered to work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
+        actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView === "tasks" ? <TaskScopeSwitch history={false} /> : null}</>}
+        description={departmentScope ? locale === "pl" ? `Praca przypisana do działu ${departmentLabel(departmentScope, t)}.` : `Work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
         eyebrow={departmentScope ? `${t("areas.04.label")} · ${departmentLabel(departmentScope, t)}` : t("areas.04.label")}
         title={departmentScope ? `${t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")} · ${departmentLabel(departmentScope, t)}` : t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")}
       />
@@ -1618,7 +1629,7 @@ export function OperationsRoute() {
           ) : (
             <OperationsBoard
               rows={taskFilteredRows}
-              statuses={statuses.filter(status => archive === "all" || (archive === "only" ? status.key === "archived" : status.key !== "archived"))}
+              statuses={statuses.filter(status => status.key !== "archived")}
               selectedListIds={selectedListIds}
               hasSelectableLists={selectableListIds.length > 0}
               setSelectedTask={setSelectedTask}

@@ -15,6 +15,16 @@ test("attention links retain only exact record targets after authentication", ()
   assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&decisionId=invalid&from=attention`), "/areas?area=01-strategia&view=decisions");
 });
 
+test("Task history links retain only validated scope and exact record after authentication", () => {
+  const canonicalHistory = `/areas?area=04-operacje&view=tasks&department=04-operacje&scope=history`;
+  assert.equal(canonicalPostAuthPath(`${canonicalHistory}&historicalTaskId=${id}`), `${canonicalHistory}&historicalTaskId=${id}`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=tasks&department=01-strategia&scope=history&historicalTaskId=${id}`), `/areas?area=01-strategia&view=tasks&department=01-strategia&scope=history&historicalTaskId=${id}`);
+  assert.equal(canonicalPostAuthPath(`${canonicalHistory}&historicalTaskId=${id}&historicalTaskId=${other}`), canonicalHistory);
+  assert.equal(canonicalPostAuthPath(`${canonicalHistory}&historicalTaskId=../bad`), canonicalHistory);
+  assert.equal(canonicalPostAuthPath(`/areas?area=04-operacje&view=tasks&scope=unknown&historicalTaskId=${id}`), "/areas?area=04-operacje&view=tasks");
+  assert.equal(canonicalPostAuthPath(`${canonicalHistory}&taskId=${other}&historicalTaskId=${id}`), `${canonicalHistory}&historicalTaskId=${id}`);
+});
+
 test("department signal links retain exact records and validated scope after authentication", () => {
   const department = "09-technologia";
   const task = `/areas?area=04-operacje&view=tasks&department=${department}&taskId=${id}`;
