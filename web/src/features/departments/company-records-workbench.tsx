@@ -12,12 +12,13 @@ import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-
 import { CcSelect } from "../../components/cc-select";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
-import type { CoreAreaKey } from "../../types";
+import type { AuthMe, CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import { RuntimeRedactionNotice, type RedactionIncident } from "./runtime-redaction-notice";
 import { recordIdFromQuery } from "../../owner-record-navigation";
 import { navigateApp } from "../../app-navigation";
+import { CompanySourcePanel } from "./company-source-panel";
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
 type CompanyRecord = {
@@ -106,23 +107,34 @@ function RecordEditor({ record, recordType, departmentKey, departments, onClose,
 }
 
 export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { departmentKey: CoreAreaKey; recordType: string; title?: string }) {
-  const { locale, t } = useLanguage(); const polish = locale === "pl"; const recordName = localizedRecordType(recordType, polish); const [refreshKey, setRefreshKey] = useState(0); const [editing, setEditing] = useState<CompanyRecord | null | undefined>(undefined); const [archiveRecord, setArchiveRecord] = useState<CompanyRecord | null>(null); const [archiveBusy, setArchiveBusy] = useState(false);
+  const { locale, t } = useLanguage(); const polish = locale === "pl"; const recordName = localizedRecordType(recordType, polish); const [refreshKey, setRefreshKey] = useState(0); const [editing, setEditing] = useState<CompanyRecord | null | undefined>(undefined); const [auditRecord, setAuditRecord] = useState<CompanyRecord | null>(null); const [archiveRecord, setArchiveRecord] = useState<CompanyRecord | null>(null); const [archiveBusy, setArchiveBusy] = useState(false); const [ownerRole, setOwnerRole] = useState<boolean | null>(null); const [ownerCheckError, setOwnerCheckError] = useState(false); const [authRefreshKey, setAuthRefreshKey] = useState(0);
   const requestedRecordId = recordIdFromQuery(window.location.search, "recordId");
+  const sourceAuditRequested = new URLSearchParams(window.location.search).get("sourceAudit") === "1";
   const registerPath = `/areas?area=${departmentKey}&view=${encodeURIComponent(new URLSearchParams(window.location.search).get("view") || "overview")}`;
   const hasInvalidRecordId = new URLSearchParams(window.location.search).has("recordId") && !requestedRecordId;
   const fromAttention = new URLSearchParams(window.location.search).get("from") === "attention";
   const [navigationError, setNavigationError] = useState(hasInvalidRecordId);
   useEffect(() => {
-    if (!requestedRecordId) { setNavigationError(hasInvalidRecordId); return; }
+    let active = true;
+    setOwnerRole(null); setOwnerCheckError(false);
+    void api<{ data: AuthMe }>("/v1/auth/me").then(({ data }) => {
+      if (active) setOwnerRole(data.authType === "user" && data.workspaces?.some(workspace => workspace.active && workspace.role === "owner") === true);
+    }).catch(() => { if (active) setOwnerCheckError(true); });
+    return () => { active = false; };
+  }, [authRefreshKey]);
+  useEffect(() => {
+    if (!requestedRecordId) { setNavigationError(hasInvalidRecordId); setAuditRecord(null); return; }
+    if (sourceAuditRequested && ownerRole !== true) { setAuditRecord(null); return; }
     setNavigationError(false);
     let current = true;
     void api<{ data: CompanyRecord }>(`/v1/company-records/${requestedRecordId}`).then(response => {
       if (!current) return;
       if (response.data?.id !== requestedRecordId || response.data.recordType !== recordType) throw new Error("record_navigation_mismatch");
-      setEditing(response.data);
+      if (sourceAuditRequested) { setEditing(undefined); setAuditRecord(response.data); }
+      else { setAuditRecord(null); setEditing(response.data); }
     }).catch(() => { if (current) setNavigationError(true); });
     return () => { current = false; };
-  }, [requestedRecordId, recordType, hasInvalidRecordId]);
+  }, [requestedRecordId, recordType, hasInvalidRecordId, sourceAuditRequested, ownerRole]);
   const packet = useOwnerPacket<CompanyRecord[]>(`/v1/company-records?recordType=${encodeURIComponent(recordType)}&departmentKey=${departmentKey}&includeCompanyWide=true&refresh=${refreshKey}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t); const rows = packet.data || []; const tableLabels = useTranslatedTableLabels();
   const columns = useMemo<Array<CcTableColumn<CompanyRecord>>>(() => [
@@ -132,15 +144,18 @@ export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { 
     { key: "coverage", header: polish ? "Pokrycie" : "Coverage", sortValue: (row) => row.implementationCoverage ?? -1, cell: (row) => <span className="text-sm text-company-muted">{row.implementationCoverage == null ? "—" : `${row.implementationCoverage}%`}</span> },
     { key: "evidence", header: polish ? "Dowody" : "Evidence", sortValue: (row) => row.evidenceCount, cell: (row) => <span className="text-sm text-company-muted">{row.evidenceCount}</span> },
     { key: "status", header: t("table.status"), filterable: true, filterValue: (row) => row.status, cell: (row) => <span className="badge badge-outline">{row.activeSuspensionCount?(polish?"Uprawnienie zablokowane":"Capability blocked"):label(row.status)}</span> },
-    { key: "actions", header: t("table.actions"), cell: (row) => <div className="flex justify-end gap-1"><CcButton ariaLabel="Edit" iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">Edit</span></CcButton>{row.status !== "archived" ? <CcButton ariaLabel="Archive" iconLeft="ph-archive" onClick={() => setArchiveRecord(row)} size="xs" variant="ghost"><span className="sr-only">Archive</span></CcButton> : null}</div> }
-  ], [locale, polish, recordName, t]);
+    { key: "actions", header: t("table.actions"), cell: (row) => <div className="flex flex-wrap justify-end gap-1">{ownerRole ? <CcButton ariaLabel={polish ? `Pochodzenie i dopuszczenie: ${row.title}` : `Source provenance and eligibility: ${row.title}`} iconLeft="ph-shield-check" onClick={() => { setEditing(undefined); setAuditRecord(row); navigateApp(`${registerPath}&recordId=${encodeURIComponent(row.id)}&sourceAudit=1`); }} size="xs" variant="outline">{polish ? "Źródło" : "Source"}</CcButton> : null}<CcButton ariaLabel="Edit" iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">Edit</span></CcButton>{row.status !== "archived" ? <CcButton ariaLabel="Archive" iconLeft="ph-archive" onClick={() => setArchiveRecord(row)} size="xs" variant="ghost"><span className="sr-only">Archive</span></CcButton> : null}</div> }
+  ], [locale, polish, recordName, t, ownerRole, registerPath]);
   function refresh() { setEditing(undefined); setRefreshKey((value) => value + 1); }
   async function confirmArchive() { if (!archiveRecord) return; setArchiveBusy(true); try { await api(`/v1/company-records/${archiveRecord.id}`, { method: "DELETE" }); const wasDeepLink = requestedRecordId === archiveRecord.id; setArchiveRecord(null); if (wasDeepLink) navigateApp(registerPath); else refresh(); } finally { setArchiveBusy(false); } }
   return <><CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{polish ? "Utwórz" : "Create"}</CcButton>} description={polish ? `Wspólne rekordy „${recordName.toLowerCase()}” widoczne w tym dziale przez kontekst organizacyjny. Rekord kanoniczny nigdy nie jest kopiowany.` : `Shared ${label(recordType).toLowerCase()} records visible here through organizational context. The canonical object is never copied.`} eyebrow={departmentLabel(departmentKey, t)} title={polish ? recordName : title || recordName} />
     {navigationError ? <CcNotice live tone="error" title={polish ? "Wskazany rekord jest niedostępny w tym workspace." : "The requested record is unavailable in this workspace."} action={<CcButton href={registerPath} variant="outline">{polish ? "Otwórz rejestr" : "Open register"}</CcButton>} /> : null}
+    {sourceAuditRequested && ownerRole === false ? <CcNotice live tone="warning" title={polish ? "Audyt źródła jest dostępny tylko właścicielowi workspace." : "Source audit is available only to the workspace owner."} action={<CcButton href={registerPath} variant="outline">{polish ? "Otwórz rejestr" : "Open register"}</CcButton>} /> : null}
+    {sourceAuditRequested && ownerCheckError ? <CcNotice live tone="error" title={polish ? "Nie udało się sprawdzić uprawnień do audytu źródła." : "Source audit permissions could not be checked."} action={<CcButton onClick={() => setAuthRefreshKey(value => value + 1)} variant="outline">{polish ? "Ponów" : "Retry"}</CcButton>} /> : null}
     {fromAttention ? <CcButton href="/areas?area=00-ogolny&view=overview" variant="ghost">{polish ? "Wróć do uwag" : "Back to attention"}</CcButton> : null}
     {packet.status === "error" ? <CcNotice live tone="error" title={packet.error || "Records could not load."} /> : null}
     <CcDataTable columns={columns} rows={rows} emptyDetail={polish ? "Utwórz pierwszy rekord i przypisz jego zakres organizacyjny." : `Create the first ${label(recordType).toLowerCase()} record and assign its scope.`} emptyTitle={polish ? `Brak rekordów: ${recordName.toLowerCase()}` : `No ${label(recordType).toLowerCase()} records`} error={packet.status === "error" ? packet.error || "Records could not load." : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
     {editing !== undefined ? <RecordEditor departmentKey={departmentKey} departments={departmentPacket.data?.departments || []} onArchive={(record) => { setEditing(undefined); setArchiveRecord(record); }} onClose={() => fromAttention ? navigateApp("/areas?area=00-ogolny&view=overview") : setEditing(undefined)} onSaved={refresh} record={editing} recordType={recordType} /> : null}
+    {auditRecord ? <CompanySourcePanel onClose={() => { setAuditRecord(null); if (sourceAuditRequested) navigateApp(registerPath); }} recordId={auditRecord.id} recordTitle={auditRecord.title} /> : null}
     {archiveRecord ? <CcConfirmDialog busy={archiveBusy} confirmIcon="ph-archive" confirmLabel="Archive" confirmTone="warning" description="The record remains auditable and can be queried with archived status." detail={<strong>{archiveRecord.title}</strong>} eyebrow={label(recordType)} onCancel={() => setArchiveRecord(null)} onConfirm={confirmArchive} title="Archive record?" /> : null}</>;
 }

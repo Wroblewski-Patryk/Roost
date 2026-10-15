@@ -274,6 +274,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/company-records/:id", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id/context-reviews", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id/source-audit", capability: "company-records:read" },
+      { method: "GET", path: "/v1/company-records/:id/source-audit/task-options", capability: "company-records:read" },
       { method: "POST", path: "/v1/company-records", capability: "company-records:write" },
       { method: "POST", path: "/v1/company-records/:id/context-reviews", capability: "company-records:write" },
       { method: "PATCH", path: "/v1/company-records/:id", capability: "company-records:write" },

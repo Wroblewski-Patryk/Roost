@@ -27,17 +27,33 @@ export function companySourceDigest(record: CompanyRecord) {
 
 const forbiddenOrigin = /(?:^|[\s_-])(bootstrap|certification|synthetic|fixture|test|superseded|unverified|legacy_assumption|runtime_redaction)(?:$|[\s_-])/i;
 export function companySourceEligible(record: CompanyRecord, review: CompanySourceReview | undefined, taskId: string, applicationId: string | null, now = new Date()) {
+  return companySourceEligibility(record, review, taskId, applicationId, now).eligible;
+}
+
+// The owner audit and runtime read use the same decision, with reason codes
+// retained for a task-bound explanation. No review means missing proof.
+export function companySourceEligibility(record: CompanyRecord, review: CompanySourceReview | undefined, taskId: string, applicationId: string | null, now = new Date()) {
   const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
-  if (["sourceKind", "sourceSystem", "sourceId", "filePath"].some(key => metadata[key] != null && typeof metadata[key] !== "string")) return false;
-  if (record.recordType === "reference_site" && !referenceSiteMetadataDigest(record.metadata)) return false;
-  if (!review || review.action !== "approve" || review.taskId !== taskId || review.recordId !== record.id || review.workspaceId !== record.workspaceId
-    || review.environment !== (process.env.NODE_ENV === "test" ? "isolated_test" : "production")
-    || !["active", "approved", "accepted"].includes(record.status) || ["failed", "waived"].includes(record.verificationState)
-    || record.applicationId !== applicationId && record.applicationId !== null
-    || forbiddenOrigin.test(record.source) || forbiddenOrigin.test(String(metadata.sourceKind ?? ""))
-    || record.updatedAt.getTime() !== review.recordRevision.getTime() || companySourceDigest(record) !== review.contentDigest
-    || review.validFrom > now || review.validUntil <= now) return false;
-  return true;
+  const reasons: string[] = [];
+  if (["sourceKind", "sourceSystem", "sourceId", "filePath"].some(key => metadata[key] != null && typeof metadata[key] !== "string")) reasons.push("invalid_source_metadata");
+  if (record.recordType === "reference_site" && !referenceSiteMetadataDigest(record.metadata)) reasons.push("invalid_reference_package");
+  if (!review) reasons.push("missing_review");
+  else {
+    if (review.action !== "approve") reasons.push(review.action === "withdraw" ? "withdrawn" : "not_approved");
+    if (review.taskId !== taskId) reasons.push("wrong_task");
+    if (review.recordId !== record.id) reasons.push("wrong_record");
+    if (review.workspaceId !== record.workspaceId) reasons.push("wrong_workspace");
+    if (review.environment !== (process.env.NODE_ENV === "test" ? "isolated_test" : "production")) reasons.push("wrong_environment");
+    if (record.updatedAt.getTime() !== review.recordRevision.getTime()) reasons.push("changed_revision");
+    if (companySourceDigest(record) !== review.contentDigest) reasons.push("changed_content");
+    if (review.validFrom > now) reasons.push("not_yet_valid");
+    if (review.validUntil <= now) reasons.push("expired");
+  }
+  if (!["active", "approved", "accepted"].includes(record.status)) reasons.push("record_inactive");
+  if (["failed", "waived"].includes(record.verificationState)) reasons.push("verification_failed");
+  if (record.applicationId !== applicationId && record.applicationId !== null) reasons.push("application_scope");
+  if (forbiddenOrigin.test(record.source) || forbiddenOrigin.test(String(metadata.sourceKind ?? ""))) reasons.push("forbidden_provenance");
+  return { eligible: reasons.length === 0, reasons };
 }
 
 export async function companySourceReviews(db: Prisma.TransactionClient, workspaceId: string, taskId: string, recordIds?: string[]) {

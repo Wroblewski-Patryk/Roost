@@ -7,7 +7,7 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { createEvent } from "../events/event.service";
 import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
-import { companySourceDigest, companySourceEligible } from "../agent-runtime/company-source-trust";
+import { companySourceDigest, companySourceEligible, companySourceEligibility } from "../agent-runtime/company-source-trust";
 import { configuredReferenceSiteUrl, referenceSiteMetadata } from "../product-engineering/reference-site-contract";
 
 const contextSchema = z.object({
@@ -92,6 +92,23 @@ companyRecordsRouter.get("/:id/context-reviews", asyncHandler(async (req, res) =
   res.json({ data: reviews });
 }));
 
+companyRecordsRouter.get("/:id/source-audit/task-options", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId, recordId = z.string().uuid().parse(req.params.id);
+  if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner") return res.status(403).json({ error: "source_audit_owner_required" });
+  const [owner, record] = await Promise.all([
+    prisma.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId }, select: { id: true } }),
+    prisma.companyRecord.findFirst({ where: { id: recordId, workspaceId }, select: { id: true } })
+  ]);
+  if (!owner) return res.status(403).json({ error: "source_audit_owner_required" });
+  if (!record) return res.status(404).json({ error: "source_audit_scope_invalid" });
+  const q = z.string().trim().max(120).optional().parse(req.query.q) ?? "";
+  const isId = z.string().uuid().safeParse(q).success;
+  const tasks = await prisma.task.findMany({ where: { workspaceId, ...(q ? { OR: [
+    { title: { contains: q, mode: "insensitive" } }, ...(isId ? [{ id: q }] : [])
+  ] } : {}) }, select: { id: true, title: true, status: true }, orderBy: { createdAt: "desc" }, take: 31 });
+  res.json({ data: { items: tasks.slice(0, 30), hasMore: tasks.length > 30 } });
+}));
+
 companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
   const auth = req.auth!, workspaceId = auth.workspaceId, recordId = z.string().uuid().parse(req.params.id);
   if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner") return res.status(403).json({ error: "source_audit_owner_required" });
@@ -100,23 +117,47 @@ companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
     prisma.companyRecord.findFirst({ where: { id: recordId, workspaceId } })
   ]);
   if (!owner) return res.status(403).json({ error: "source_audit_owner_required" });
-  const page = z.object({ limit: z.coerce.number().int().min(1).max(100).default(100),
+  const page = z.object({ projection: z.enum(["full", "summary"]).default("full"), taskId: z.string().uuid().optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(100),
     beforeOrdinal: z.coerce.number().int().positive().optional(),
     beforeHistoryOrdinal: z.coerce.bigint().positive().optional() }).parse(req.query);
-  const [reviews, history, priorBody] = await Promise.all([
+  const [reviews, history, priorBody, task, selectedReview] = await Promise.all([
     prisma.companySourceReview.findMany({ where: { workspaceId, recordId,
       ...(page.beforeOrdinal ? { ordinal: { lt: page.beforeOrdinal } } : {}) }, orderBy: { ordinal: "desc" }, take: page.limit + 1 }),
     prisma.sourceBodyHistory.findMany({ where: { workspaceId, sourceTable: "company_records", sourceId: recordId,
       ...(page.beforeHistoryOrdinal ? { ordinal: { lt: page.beforeHistoryOrdinal } } : {}) },
-      orderBy: { ordinal: "desc" }, take: page.limit + 1 }),
+      orderBy: { ordinal: "desc" }, take: page.limit + 1,
+      ...(page.projection === "summary" ? { select: { ordinal: true, sourceTable: true, sourceId: true,
+        workspaceId: true, operation: true, recordedAt: true } } : {}) }),
     prisma.sourceBodyHistory.findFirst({ where: { workspaceId, sourceTable: "company_records", sourceId: recordId,
-      operation: { in: ["before_update", "delete"] } }, select: { ordinal: true } })
+      operation: { in: ["before_update", "delete"] } }, select: { ordinal: true } }),
+    page.taskId ? prisma.task.findFirst({ where: { id: page.taskId, workspaceId }, select: { id: true, title: true, status: true, projectId: true } }) : Promise.resolve(null),
+    page.taskId ? prisma.companySourceReview.findFirst({ where: { workspaceId, recordId, taskId: page.taskId }, orderBy: { ordinal: "desc" } }) : Promise.resolve(null)
   ]);
+  if (page.taskId && !task) return res.status(404).json({ error: "source_audit_task_scope_invalid" });
   if (!record && !reviews.length && !history.length) return res.status(404).json({ error: "source_audit_scope_invalid" });
+  const linkedApplication = record?.applicationId && task?.projectId ? await prisma.applicationProject.findFirst({
+    where: { projectId: task.projectId, applicationId: record.applicationId, application: { workspaceId } }, select: { applicationId: true }
+  }) : null;
+  const decision = record && task ? companySourceEligibility(record, selectedReview ?? undefined, task.id,
+    linkedApplication?.applicationId ?? null) : null;
+  const eligibility = !task ? { status: "task_required", reasons: ["task_required"], task: null, review: null }
+    : { status: decision?.eligible && task.status !== "archived" && (!record?.applicationId || Boolean(linkedApplication)) ? "eligible" : "ineligible",
+      reasons: [...(decision?.reasons ?? ["record_missing"]), ...(task.status === "archived" ? ["task_archived"] : [])],
+      task: { id: task.id, title: task.title, status: task.status }, review: selectedReview };
   const currentPage = reviews.slice(0, page.limit);
   const hasMore = reviews.length > page.limit;
   const bodyPage = history.slice(0, page.limit);
-  res.json({ data: { currentRecord: record, currentRevision: record?.updatedAt.toISOString() ?? null, reviews: currentPage,
+  const metadata = record?.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata)
+    ? record.metadata as Record<string, unknown> : {};
+  const sourceField = (key: string) => typeof metadata[key] === "string" ? metadata[key] : null;
+  const summary = record ? { id: record.id, title: record.title, recordType: record.recordType,
+    status: record.status, verificationState: record.verificationState, source: record.source,
+    metadata: { sourceKind: sourceField("sourceKind"), sourceSystem: sourceField("sourceSystem"),
+      sourceId: sourceField("sourceId"), filePath: sourceField("filePath") },
+    applicationId: record.applicationId, createdAt: record.createdAt, updatedAt: record.updatedAt } : null;
+  res.json({ data: { currentRecord: page.projection === "summary" ? summary : record,
+    currentRevision: record?.updatedAt.toISOString() ?? null, eligibility, reviews: currentPage,
     reviewHistoryTruncated: hasMore, nextBeforeOrdinal: hasMore ? currentPage.at(-1)?.ordinal : null,
     history: bodyPage.map(row => ({ ...row, ordinal: row.ordinal.toString() })),
     nextBeforeHistoryOrdinal: history.length > page.limit ? bodyPage.at(-1)?.ordinal.toString() : null,
