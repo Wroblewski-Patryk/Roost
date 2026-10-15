@@ -15,6 +15,20 @@ test("attention links retain only exact record targets after authentication", ()
   assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&decisionId=invalid&from=attention`), "/areas?area=01-strategia&view=decisions");
 });
 
+test("department signal links retain exact records and validated scope after authentication", () => {
+  const department = "09-technologia";
+  const task = `/areas?area=04-operacje&view=tasks&department=${department}&taskId=${id}`;
+  const decision = `/areas?area=01-strategia&view=decisions&department=${department}&decisionId=${id}`;
+  const risk = `/areas?area=12-zarzadzanie&view=risks&department=${department}&riskId=${id}`;
+  const incident = `/areas?area=09-technologia&view=incidents&department=${department}&recordId=${id}`;
+  for (const path of [task, decision, risk, incident]) assert.equal(canonicalPostAuthPath(path), path);
+  assert.equal(canonicalPostAuthPath(`/areas?area=12-zarzadzanie&view=risks&department=${department}&riskId=invalid`), `/areas?area=12-zarzadzanie&view=risks&department=${department}`);
+  assert.equal(canonicalPostAuthPath(`${risk}&riskId=${other}`), `/areas?area=12-zarzadzanie&view=risks&department=${department}`);
+  assert.equal(canonicalPostAuthPath(`${risk}&department=01-strategia`), `/areas?area=12-zarzadzanie&view=risks&riskId=${id}`);
+  assert.equal(canonicalPostAuthPath(`${task}&department=../invalid`), `/areas?area=04-operacje&view=tasks&taskId=${id}`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&department=../invalid&decisionId=${id}`), `/areas?area=01-strategia&view=decisions&decisionId=${id}`);
+});
+
 test("governed Decision navigation checks the exact canonical record before loading its current impact", async () => {
   assert.equal(await validateGovernedDecisionPacketNavigation(id, async () => ({ data: { id, source: "roost_decision" } })), id);
   for (const packet of [{}, { data: { id: other, source: "roost_decision" } }, { data: { id, source: "legacy" } }, { data: { id } }]) {

@@ -14,7 +14,7 @@ import { CcSelect } from "../../components/cc-select";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import type { CoreAreaKey } from "../../types";
-import { recordIdFromQuery, validateApplicationReturn, validateGovernedDecisionPacketNavigation } from "../../owner-record-navigation";
+import { recordIdFromQuery, validateApplicationReturn } from "../../owner-record-navigation";
 import { navigateApp } from "../../app-navigation";
 import { portfolioTaskHref } from "./portfolio-operation-model";
 import { departmentLabel } from "./department-labels";
@@ -108,12 +108,16 @@ export function DecisionsWorkbench({ departmentKey, canonical = false }: { depar
     let current = true;
     setNavigationError(hasInvalidDecisionId);
     setGovernance(null);
+    setEditing(undefined);
     setApplicationReturn(null);
     setRelatedApplicationTask(null);
     if (requestedDecisionId) {
-      void validateGovernedDecisionPacketNavigation(requestedDecisionId, id => api(`/v1/decisions/${id}`))
-        .then(async id => {
+      void api<{ data: Decision }>(`/v1/decisions/${requestedDecisionId}`)
+        .then(async ({ data: record }) => {
           if (!current) return;
+          if (record?.id !== requestedDecisionId) throw new Error("decision_navigation_mismatch");
+          const id = record.id;
+          if (record.source !== "roost_decision") { setEditing(record); return; }
           if (!fromApplicationId || fromAttention) { setGovernance({ decisionId: id }); return; }
           try {
             const application = await api<{ data: { id: string; operation?: { decisions?: Array<{ id: string; relatedTask: { id: string; title: string } | null }>;

@@ -19,7 +19,7 @@ type EntityPacket = {
 };
 
 function text(record: Record<string, unknown>, ...keys: string[]) { for (const key of keys) if (typeof record[key] === "string" && record[key]) return String(record[key]); return ""; }
-function entityTitle(record: Record<string, unknown>) { return text(record, "title", "name", "key") || "Company object"; }
+function entityTitle(record: Record<string, unknown>) { return text(record, "title", "name", "key", "reference") || "Company object"; }
 function entityHref(type: string, id: string) { return `/areas?area=00-ogolny&view=entity&type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`; }
 function visibleFields(record: Record<string, unknown>) {
   const excluded = new Set(["id", "workspaceId", "createdAt", "updatedAt", "metadata", "steps", "children", "parent"]);

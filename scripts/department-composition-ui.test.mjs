@@ -62,7 +62,7 @@ function fixture() {
       const method = route.request().method();
       if (url.pathname === "/v1/auth/me") return route.fulfill({ json: { data: { authType: "user", workspaceId: "00000000-0000-4000-8000-999999999999", user: { email: "owner@example.test", name: "Synthetic Owner" }, workspaces: [{ id: "00000000-0000-4000-8000-999999999999", name: "Fixture", role: "owner", active: true }] } } });
       if (url.pathname === "/v1/departments" && method === "GET") { catalogReads++; return route.fulfill({ json: { data: packet() } }); }
-      if (url.pathname === "/v1/company-intelligence/health") return route.fulfill({ json: { data: { score: 100, status: "clear", signals: {} } } });
+      if (url.pathname === "/v1/company-intelligence/health") return route.fulfill({ json: { data: { interpretation: "tracked_signals_only", signals: {} } } });
       if (url.pathname === `/v1/departments/${id}/preview` && method === "POST") {
         previewCount++;
         const body = JSON.parse(route.request().postData() || "{}");

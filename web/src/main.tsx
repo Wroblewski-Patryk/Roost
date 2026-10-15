@@ -153,8 +153,8 @@ function PrivateAppRoute({ activeArea, children }: { activeArea?: string; childr
   }
   const dashboardView = ["overview", "directory", "departments"].includes(currentAreaView()) || (activeArea === "04-operacje" && currentAreaView() === "tasks");
   const showToolPreview = Boolean(activeArea && activeArea !== "00-ogolny" && currentAreaView() === "overview");
-  // The General page counts actionable owner items. Department health uses a
-  // different denominator, so display it only on contextual area surfaces.
+  // Department signals describe assigned or mapped records in the current area.
+  // The General page has its own owner attention journey.
   return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && activeArea !== "00-ogolny" && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}{showToolPreview ? <DepartmentToolsPreview departmentKey={activeArea as CoreAreaKey} /> : null}</LazyRoute></Shell></PrivateRoute>;
 }
 

@@ -306,6 +306,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/company-intelligence/search", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/graph", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/health", capability: "company-graph:read" },
+      { method: "GET", path: "/v1/company-intelligence/health/signal-records", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/entities/:entityType/:id", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/tasks/:id/agent-context", capability: "company-graph:read" }
     ],

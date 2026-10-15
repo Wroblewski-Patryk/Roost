@@ -5,14 +5,28 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operating-model/department-registry";
-import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
+import { contextualEntityIds, organizationalContextsForEntities, organizationalEntityTypes } from "../organizational-context/organizational-context.service";
 import { loadApplicationGraphPacket } from "../product-engineering/application-graph-projection.service";
 import { projectApplicationPacketsIntoCompanyGraph } from "./company-graph-application-projection";
 import { analyzeCompanyGraphConnectivity } from "./company-graph-connectivity";
 import { loadTaskAgentContext } from "./task-agent-context";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
+import { requireWorkspaceRole } from "../../auth/workspace-access";
 
 export const companyIntelligenceRouter = Router();
+
+const evidenceParentTypes = organizationalEntityTypes.filter((type) => type !== "requirement");
+async function scopedEvidenceWhere(workspaceId: string, departmentKey: string): Promise<Prisma.EvidenceRecordWhereInput> {
+  const scoped = await Promise.all(evidenceParentTypes.map(async (type) => ({ type, ids: await contextualEntityIds(workspaceId, type, departmentKey, false) })));
+  const matches: Prisma.EvidenceRecordWhereInput[] = [];
+  for (const { type, ids } of scoped) {
+    if (!ids.length) continue;
+    if (type === "evidence") matches.push({ id: { in: ids } });
+    matches.push({ entityType: type, entityId: { in: ids } });
+    if (type === "company_record") matches.push({ entityType: "requirement", entityId: { in: ids } });
+  }
+  return matches.length ? { OR: matches } : { id: { in: [] } };
+}
 
 async function resolveEntity(workspaceId: string, entityType: string, entityId: string) {
   if (entityType === "goal") return prisma.goal.findFirst({ where: { id: entityId, workspaceId } });
@@ -46,6 +60,7 @@ async function resolveEntity(workspaceId: string, entityType: string, entityId: 
   if (entityType === "workforce") return prisma.workforceEntity.findFirst({ where: { id: entityId, workspaceId } });
   if (entityType === "agent") return prisma.agent.findFirst({ where: { id: entityId, workspaceId } });
   if (entityType === "role") return prisma.companyRole.findFirst({ where: { id: entityId, workspaceId } });
+  if (entityType === "evidence") return prisma.evidenceRecord.findFirst({ where: { id: entityId, workspaceId }, select: { id: true, reference: true, description: true, entityType: true, entityId: true, verificationStatus: true, observedAt: true, source: true } });
   if (entityType === "company_record" || entityType === "requirement") return prisma.companyRecord.findFirst({ where: { id: entityId, workspaceId, ...(entityType === "requirement" ? { recordType: "requirement" } : {}) }, include: { parent: true, children: true } });
   return null;
 }
@@ -304,6 +319,7 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
 }));
 
 companyIntelligenceRouter.get("/entities/:entityType/:id", asyncHandler(async (req, res) => {
+  if (req.params.entityType === "evidence" && !requireWorkspaceRole(req, res, "viewer")) return;
   const workspaceId = req.auth!.workspaceId; const requestedType = String(req.params.entityType); const entityType = requestedType === "requirement" ? "company_record" : requestedType;
   const record = await resolveEntity(workspaceId, requestedType, String(req.params.id)); if (!record) return res.status(404).json({ error: "entity_not_found" });
   const [contexts, relations, evidence] = await Promise.all([
@@ -318,33 +334,73 @@ companyIntelligenceRouter.get("/entities/:entityType/:id", asyncHandler(async (r
   res.json({ data: { entityType: requestedType, record, organizationalContext: contexts.get(record.id), relations, related, evidence } });
 }));
 
+companyIntelligenceRouter.get("/health/signal-records", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "viewer")) return;
+  const workspaceId = req.auth!.workspaceId;
+  const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
+  if (departmentKey && !isCanonicalDepartmentKey(departmentKey)) return res.status(400).json({ error: "invalid_department_key" });
+  const signal = req.query.signal;
+  if (!["blockedTasks", "overdueTasks", "openTasks", "decisionsRequiringReview", "activeRisks", "technicalIncidents", "operationalIssues", "brokenRecords", "missingRecords", "staleOrRejectedEvidence"].includes(String(signal))) return res.status(400).json({ error: "invalid_signal" });
+  const page = Number(req.query.page ?? 1); const maxPage = 1_000_000;
+  if (!Number.isSafeInteger(page) || page < 1 || page > maxPage) return res.status(400).json({ error: "invalid_page" });
+  const take = 25; const skip = (page - 1) * take;
+  const recordIds = departmentKey ? await contextualEntityIds(workspaceId, "company_record", departmentKey, false) : null;
+  if (signal === "blockedTasks" || signal === "overdueTasks" || signal === "openTasks") {
+    const taskIds = departmentKey ? await contextualEntityIds(workspaceId, "task", departmentKey, false) : null;
+    const rows = await prisma.task.findMany({ where: { workspaceId, ...(taskIds ? { id: { in: taskIds } } : {}), ...(signal === "blockedTasks" ? { status: "blocked" } : { status: { notIn: ["done", "archived"] } }), ...(signal === "overdueTasks" ? { dueDate: { lt: new Date() } } : {}) }, select: { id: true, title: true, status: true }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], skip, take: take + 1 });
+    return res.json({ data: { signal, page, hasMore: rows.length > take && page < maxPage, items: rows.slice(0, take).map((row) => ({ id: row.id, title: row.title, state: row.status, entityType: "task" })) } });
+  }
+  if (signal === "decisionsRequiringReview") {
+    const decisionIds = departmentKey ? await contextualEntityIds(workspaceId, "decision", departmentKey, false) : null;
+    const rows = decisionIds?.length === 0 ? [] : await prisma.$queryRaw<Array<{ id: string; title: string; status: string }>>(Prisma.sql`
+      SELECT d.id, d.title, d.status FROM decisions d WHERE d.workspace_id=${workspaceId}::uuid
+      AND d.status IN ('proposed','review_required','pending')
+      AND (d.source IS DISTINCT FROM 'roost_decision' OR decision_state(d.id) IN ('pending','deferred'))
+      ${decisionIds ? Prisma.sql`AND d.id IN (${Prisma.join(decisionIds.map(id=>Prisma.sql`${id}::uuid`))})` : Prisma.empty}
+      ORDER BY d.updated_at DESC, d.id DESC LIMIT ${take + 1} OFFSET ${skip}`);
+    return res.json({ data: { signal, page, hasMore: rows.length > take && page < maxPage, items: rows.slice(0, take).map((row) => ({ id: row.id, title: row.title, state: row.status, entityType: "decision" })) } });
+  }
+  if (signal === "activeRisks") {
+    const riskIds = departmentKey ? await contextualEntityIds(workspaceId, "risk", departmentKey, false) : null;
+    const rows = await prisma.risk.findMany({ where: { workspaceId, status: "active", ...(riskIds ? { id: { in: riskIds } } : {}) }, select: { id: true, name: true, status: true }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], skip, take: take + 1 });
+    return res.json({ data: { signal, page, hasMore: rows.length > take && page < maxPage, items: rows.slice(0, take).map((row) => ({ id: row.id, title: row.name, state: row.status, entityType: "risk" })) } });
+  }
+  if (signal === "technicalIncidents" || signal === "operationalIssues" || signal === "brokenRecords" || signal === "missingRecords") {
+    const rows = await prisma.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, ...(signal === "technicalIncidents" || signal === "operationalIssues" ? { recordType: signal === "technicalIncidents" ? "technical_incident" : "operational_issue" } : { functionalState: signal === "brokenRecords" ? "broken" : "missing" }), ...(recordIds ? { id: { in: recordIds } } : {}) }, select: { id: true, title: true, functionalState: true }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], skip, take: take + 1 });
+    return res.json({ data: { signal, page, hasMore: rows.length > take && page < maxPage, items: rows.slice(0, take).map((row) => ({ id: row.id, title: row.title, state: row.functionalState, entityType: "company_record" })) } });
+  }
+  const evidenceScope = departmentKey ? await scopedEvidenceWhere(workspaceId, departmentKey) : {};
+  const rows = await prisma.evidenceRecord.findMany({ where: { workspaceId, ...evidenceScope, verificationStatus: { in: ["stale", "rejected"] } }, select: { id: true, reference: true, verificationStatus: true }, orderBy: [{ observedAt: "desc" }, { id: "desc" }], skip, take: take + 1 });
+  return res.json({ data: { signal, page, hasMore: rows.length > take && page < maxPage, items: rows.slice(0, take).map((row) => ({ id: row.id, title: row.reference, state: row.verificationStatus, entityType: "evidence" })) } });
+}));
+
 companyIntelligenceRouter.get("/health", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
   if (departmentKey && !isCanonicalDepartmentKey(departmentKey)) return res.status(400).json({ error: "invalid_department_key" });
   const [recordIds, taskIds, riskIds, goalIds, projectIds, procedureIds, workforceIds, resourceIds, decisionIds, metricIds] = departmentKey ? await Promise.all([
-    contextualEntityIds(workspaceId, "company_record", departmentKey), contextualEntityIds(workspaceId, "task", departmentKey), contextualEntityIds(workspaceId, "risk", departmentKey), contextualEntityIds(workspaceId, "goal", departmentKey), contextualEntityIds(workspaceId, "project", departmentKey), contextualEntityIds(workspaceId, "procedure", departmentKey), contextualEntityIds(workspaceId, "workforce", departmentKey), contextualEntityIds(workspaceId, "resource", departmentKey), contextualEntityIds(workspaceId, "decision", departmentKey), contextualEntityIds(workspaceId, "metric", departmentKey)
+    contextualEntityIds(workspaceId, "company_record", departmentKey, false), contextualEntityIds(workspaceId, "task", departmentKey, false), contextualEntityIds(workspaceId, "risk", departmentKey, false), contextualEntityIds(workspaceId, "goal", departmentKey, false), contextualEntityIds(workspaceId, "project", departmentKey, false), contextualEntityIds(workspaceId, "procedure", departmentKey, false), contextualEntityIds(workspaceId, "workforce", departmentKey, false), contextualEntityIds(workspaceId, "resource", departmentKey, false), contextualEntityIds(workspaceId, "decision", departmentKey, false), contextualEntityIds(workspaceId, "metric", departmentKey, false)
   ]) : [null, null, null, null, null, null, null, null, null, null];
-  const scopedEntityIds = departmentKey ? [...(recordIds ?? []), ...(taskIds ?? []), ...(riskIds ?? []), ...(goalIds ?? []), ...(projectIds ?? []), ...(procedureIds ?? []), ...(resourceIds ?? []), ...(decisionIds ?? []), ...(metricIds ?? [])] : null;
-  const [records, overdueTasks, blockedTasks, openTasks, staleEvidence, risks, goals, projects, procedures, people, resources, incidents, decisions, metrics] = await Promise.all([
+  const evidenceScope = departmentKey ? await scopedEvidenceWhere(workspaceId, departmentKey) : {};
+  const [records, overdueTasks, blockedTasks, openTasks, staleEvidence, risks, goals, projects, procedures, people, resources, incidents, issues, decisions, metrics] = await Promise.all([
     prisma.companyRecord.groupBy({ by: ["functionalState"], where: { workspaceId, status: { not: "archived" }, ...(recordIds ? { id: { in: recordIds } } : {}) }, _count: true }),
     prisma.task.count({ where: { workspaceId, ...(taskIds ? { id: { in: taskIds } } : {}), dueDate: { lt: new Date() }, status: { notIn: ["done", "archived"] } } }), prisma.task.count({ where: { workspaceId, ...(taskIds ? { id: { in: taskIds } } : {}), status: "blocked" } }),
     prisma.task.count({ where: { workspaceId, ...(taskIds ? { id: { in: taskIds } } : {}), status: { notIn: ["done", "archived"] } } }),
-    prisma.evidenceRecord.count({ where: { workspaceId, ...(scopedEntityIds ? { entityId: { in: scopedEntityIds } } : {}), verificationStatus: { in: ["stale", "rejected"] } } }), prisma.risk.count({ where: { workspaceId, ...(riskIds ? { id: { in: riskIds } } : {}), status: { not: "archived" } } }),
+    prisma.evidenceRecord.count({ where: { workspaceId, ...evidenceScope, verificationStatus: { in: ["stale", "rejected"] } } }), prisma.risk.count({ where: { workspaceId, ...(riskIds ? { id: { in: riskIds } } : {}), status: "active" } }),
     prisma.goal.count({ where: { workspaceId, ...(goalIds ? { id: { in: goalIds } } : {}), status: { notIn: ["completed", "archived"] } } }),
     prisma.project.count({ where: { workspaceId, ...(projectIds ? { id: { in: projectIds } } : {}), status: { not: "archived" } } }),
     prisma.procedure.count({ where: { workspaceId, ...(procedureIds ? { id: { in: procedureIds } } : {}), status: { not: "archived" } } }),
     prisma.workforceEntity.count({ where: { workspaceId, ...(workforceIds ? { OR: [{ id: { in: workforceIds } }, ...(departmentKey ? [{ department: departmentKey }] : [])] } : {}), status: { not: "archived" } } }),
     prisma.resource.count({ where: { workspaceId, ...(resourceIds ? { id: { in: resourceIds } } : {}) } }),
-    prisma.companyRecord.count({ where: { workspaceId, ...(recordIds ? { id: { in: recordIds } } : {}), recordType: { in: ["technical_incident", "operational_issue"] }, status: { not: "archived" } } }),
+    prisma.companyRecord.count({ where: { workspaceId, ...(recordIds ? { id: { in: recordIds } } : {}), recordType: "technical_incident", status: { not: "archived" } } }),
+    prisma.companyRecord.count({ where: { workspaceId, ...(recordIds ? { id: { in: recordIds } } : {}), recordType: "operational_issue", status: { not: "archived" } } }),
     decisionIds?.length===0 ? Promise.resolve([{ count: 0 }]) : prisma.$queryRaw<Array<{count:number}>>(Prisma.sql`
       SELECT count(*)::int AS count FROM decisions d WHERE d.workspace_id=${workspaceId}::uuid
-      AND d.status IN ('draft','proposed','review_required','pending')
+      AND d.status IN ('proposed','review_required','pending')
       AND (d.source IS DISTINCT FROM 'roost_decision' OR decision_state(d.id) IN ('pending','deferred'))
       ${decisionIds ? Prisma.sql`AND d.id IN (${Prisma.join(decisionIds.map(id=>Prisma.sql`${id}::uuid`))})` : Prisma.empty}`),
     prisma.metric.count({ where: { workspaceId, ...(metricIds ? { id: { in: metricIds } } : {}), status: { not: "archived" } } })
   ]); const stateCounts = Object.fromEntries(records.map((x) => [x.functionalState, x._count]));
-  const issueLoad = overdueTasks + blockedTasks + staleEvidence + (stateCounts.broken ?? 0) + (stateCounts.missing ?? 0); const score = Math.max(0, Math.round(100 - Math.min(100, issueLoad * 4)));
-  res.json({ data: { scope: departmentKey ? { type: "department", departmentKey } : { type: "company" }, score, status: score >= 80 ? "healthy" : score >= 55 ? "attention" : "critical", signals: { activeProjects: projects, openTasks, overdueTasks, blockedTasks, applicableProcedures: procedures, assignedPeopleAndAgents: people, resources, incidentsAndIssues: incidents, decisionsRequiringReview: decisions[0]?.count??0, activeRisks: risks, activeGoals: goals, trackedMetrics: metrics, staleOrRejectedEvidence: staleEvidence, functionalStates: stateCounts } } });
+  res.json({ data: { scope: departmentKey ? { type: "department", departmentKey } : { type: "company" }, interpretation: "tracked_signals_only", signals: { activeProjects: projects, openTasks, overdueTasks, blockedTasks, applicableProcedures: procedures, assignedPeopleAndAgents: people, resources, technicalIncidents: incidents, operationalIssues: issues, incidentsAndIssues: incidents + issues, decisionsRequiringReview: decisions[0]?.count??0, activeRisks: risks, activeGoals: goals, trackedMetrics: metrics, staleOrRejectedEvidence: staleEvidence, functionalStates: stateCounts } } });
 }));
 
 companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (req, res) => {

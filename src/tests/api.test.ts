@@ -1615,7 +1615,74 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   assert.ok(graphBody.data.nodes.every((node) => reachableGraphNodeIds.has(node.id)), "every whole-company graph node must be reachable from the workspace root");
   const health = await request("/v1/company-intelligence/health", { headers });
   assert.equal(health.status, 200);
-  assert.ok(Number((health.body as { data: { score: number } }).data.score) >= 0);
+  assert.equal((health.body as { data: { interpretation: string } }).data.interpretation, "tracked_signals_only");
+  assert.equal("score" in (health.body as { data: object }).data, false);
+  assert.equal("status" in (health.body as { data: object }).data, false);
+});
+
+test("department signals remain visible when the former score would be 100", async () => {
+  const owner = await registerOwner("department-signals-owner@example.test", "Department Signals Workspace");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  const risk = await prisma.risk.create({ data: { workspaceId: owner.workspace.id, name: "Active scoped risk", status: "active" } });
+  const decision = await prisma.decision.create({ data: { workspaceId: owner.workspace.id, title: "Pending scoped decision", status: "pending", source: "fixture" } });
+  const draft = await prisma.decision.create({ data: { workspaceId: owner.workspace.id, title: "Draft must not warn", status: "draft", source: "fixture" } });
+  for (const [type, id] of [["risk", risk.id], ["decision", decision.id], ["decision", draft.id]]) {
+    const context = await request(`/v1/organizational-context/${type}/${id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] }) });
+    assert.equal(context.status, 200, JSON.stringify(context.body));
+  }
+  const response = await request("/v1/company-intelligence/health?departmentKey=09-technologia", { headers });
+  assert.equal(response.status, 200, JSON.stringify(response.body));
+  const data = (response.body as { data: { interpretation: string; signals: { activeRisks: number; decisionsRequiringReview: number; blockedTasks: number; overdueTasks: number } } }).data;
+  assert.equal(data.interpretation, "tracked_signals_only");
+  assert.equal(data.signals.activeRisks, 1);
+  assert.equal(data.signals.decisionsRequiringReview, 1);
+  assert.equal(data.signals.blockedTasks, 0);
+  assert.equal(data.signals.overdueTasks, 0);
+  assert.equal("score" in data, false);
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Blocked scoped task", status: "blocked", dueDate: new Date(Date.now() - 86400000) } });
+  const taskContext = await request(`/v1/organizational-context/task/${task.id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] }) });
+  assert.equal(taskContext.status, 200, JSON.stringify(taskContext.body));
+  for (const [signal, expectedId] of [["blockedTasks", task.id], ["overdueTasks", task.id], ["openTasks", task.id], ["decisionsRequiringReview", decision.id], ["activeRisks", risk.id]]) {
+    const listed = await request(`/v1/company-intelligence/health/signal-records?departmentKey=09-technologia&signal=${signal}&page=1`, { headers });
+    assert.equal(listed.status, 200, JSON.stringify(listed.body));
+    assert.deepEqual((listed.body as { data: { items: Array<{ id: string }> } }).data.items.map((item) => item.id), [expectedId]);
+  }
+  const record = await prisma.companyRecord.create({ data: { workspaceId: owner.workspace.id, recordType: "technical_incident", key: "signal-broken-record", title: "Broken scoped incident", status: "active", functionalState: "broken" } });
+  const recordContext = await request(`/v1/organizational-context/company_record/${record.id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] }) });
+  assert.equal(recordContext.status, 200, JSON.stringify(recordContext.body));
+  const evidence = await prisma.evidenceRecord.create({ data: { workspaceId: owner.workspace.id, entityType: "company_record", entityId: record.id, type: "test", reference: "Stale scoped evidence", verificationStatus: "stale" } });
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Scoped application", slug: "department-signal-application" } });
+  const applicationContext = await request(`/v1/organizational-context/application/${application.id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] }) });
+  assert.equal(applicationContext.status, 200, JSON.stringify(applicationContext.body));
+  const applicationEvidence = await prisma.evidenceRecord.create({ data: { workspaceId: owner.workspace.id, entityType: "application", entityId: application.id, type: "test", reference: "Application rejected evidence", verificationStatus: "rejected" } });
+  const directEvidence = await prisma.evidenceRecord.create({ data: { workspaceId: owner.workspace.id, entityType: "policy", entityId: risk.id, type: "test", reference: "Directly assigned evidence", verificationStatus: "stale" } });
+  const directEvidenceContext = await request(`/v1/organizational-context/evidence/${directEvidence.id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] }) });
+  assert.equal(directEvidenceContext.status, 200, JSON.stringify(directEvidenceContext.body));
+  const sameIdPolicy = await prisma.policy.create({ data: { id: application.id, workspaceId: owner.workspace.id, name: "Unscoped same-ID policy", appliesTo: "fixture", ruleType: "fixture" } });
+  const unrelatedEvidence = await prisma.evidenceRecord.create({ data: { workspaceId: owner.workspace.id, entityType: "policy", entityId: sameIdPolicy.id, type: "test", reference: "Unscoped same-ID evidence", verificationStatus: "stale" } });
+  const quality = await request("/v1/company-intelligence/health?departmentKey=09-technologia", { headers });
+  const qualitySignals = (quality.body as { data: { signals: { technicalIncidents: number; staleOrRejectedEvidence: number; functionalStates: { broken: number } } } }).data.signals;
+  assert.equal(qualitySignals.technicalIncidents, 1);
+  assert.equal(qualitySignals.staleOrRejectedEvidence, 3);
+  assert.equal(qualitySignals.functionalStates.broken, 1);
+  for (const [signal, expectedId] of [["technicalIncidents", record.id], ["brokenRecords", record.id]]) {
+    const issues = await request(`/v1/company-intelligence/health/signal-records?departmentKey=09-technologia&signal=${signal}&page=1`, { headers });
+    assert.equal(issues.status, 200, JSON.stringify(issues.body));
+    assert.equal((issues.body as { data: { items: Array<{ id: string }> } }).data.items[0]?.id, expectedId);
+  }
+  const evidenceList = await request("/v1/company-intelligence/health/signal-records?departmentKey=09-technologia&signal=staleOrRejectedEvidence&page=1", { headers });
+  assert.equal(evidenceList.status, 200, JSON.stringify(evidenceList.body));
+  assert.deepEqual(new Set((evidenceList.body as { data: { items: Array<{ id: string }> } }).data.items.map((item) => item.id)), new Set([evidence.id, applicationEvidence.id, directEvidence.id]));
+  assert.equal((evidenceList.body as { data: { items: Array<{ id: string }> } }).data.items.some((item) => item.id === unrelatedEvidence.id), false);
+  const exactEvidence = await request(`/v1/company-intelligence/entities/evidence/${evidence.id}`, { headers });
+  assert.equal(exactEvidence.status, 200, JSON.stringify(exactEvidence.body));
+  const invalidSignal = await request("/v1/company-intelligence/health/signal-records?departmentKey=09-technologia&signal=all", { headers });
+  assert.equal(invalidSignal.status, 400);
+  const other = await request("/v1/company-intelligence/health?departmentKey=07-finanse", { headers });
+  assert.equal((other.body as { data: { signals: { activeRisks: number; decisionsRequiringReview: number } } }).data.signals.activeRisks, 0);
+  assert.equal((other.body as { data: { signals: { activeRisks: number; decisionsRequiringReview: number } } }).data.signals.decisionsRequiringReview, 0);
+  const otherIssues = await request("/v1/company-intelligence/health/signal-records?departmentKey=07-finanse&signal=brokenRecords", { headers });
+  assert.deepEqual((otherIssues.body as { data: { items: unknown[] } }).data.items, []);
 });
 
 test("owner can update account identity and password with current-password verification", async () => {

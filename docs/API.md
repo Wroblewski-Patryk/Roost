@@ -2464,6 +2464,7 @@ GET /v1/company-intelligence/search?q=...&departmentKey=09-technologia
 GET /v1/company-intelligence/graph
 GET /v1/company-intelligence/health
 GET /v1/company-intelligence/health?departmentKey=09-technologia
+GET /v1/company-intelligence/health/signal-records?departmentKey=09-technologia&signal=brokenRecords&page=1
 GET /v1/company-intelligence/entities/:entityType/:id
 GET /v1/company-intelligence/tasks/:id/agent-context
 
@@ -2477,6 +2478,23 @@ POST   /v1/decisions
 PATCH  /v1/decisions/:id
 DELETE /v1/decisions/:id
 ```
+
+`GET /v1/company-intelligence/health` is a legacy path name for a read-only
+signal packet. It returns `interpretation: "tracked_signals_only"`, `scope`
+and named `signals`, without a whole-department `score` or `status`. With
+`departmentKey`, counts use only records assigned or mapped to that department;
+company-wide-only records are excluded to match scoped owner worklists. The
+packet distinguishes blocked/overdue/open Tasks, proposed/review-required/pending
+Decisions (with a pending/deferred governance state required for governed Decisions),
+active Risks, non-archived technical incidents and operational issues,
+stale/rejected evidence, and non-archived CompanyRecord functional states.
+Counts can overlap and are not a readiness assessment.
+`GET /v1/company-intelligence/health/signal-records` accepts a canonical
+`departmentKey`, one of the ten displayed signal keys and a bounded `page`.
+It returns up to 25 exact record references plus `hasMore` for human workspace
+viewers, using the same count predicates and department scope as the signal
+packet. Exact evidence entity inspection returns a safe read-only summary to
+the same human role. Both reads stay workspace-scoped.
 
 `company-records` is the reusable canonical registry for object families that
 do not already have a stronger native model, including requirements,

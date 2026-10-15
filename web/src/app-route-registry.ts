@@ -334,14 +334,19 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     const recordId = recordIdFromQuery(rawQuery, "recordId");
     const taskId = recordIdFromQuery(rawQuery, "taskId");
     const decisionId = recordIdFromQuery(rawQuery, "decisionId");
+    const riskId = recordIdFromQuery(rawQuery, "riskId");
+    const requestedDepartment = params.get("department");
+    const department = requestedDepartment && params.getAll("department").length === 1 && Object.prototype.hasOwnProperty.call(contextualRecordViews, requestedDepartment)
+      ? requestedDepartment : null;
+    const departmentQuery = department ? `&department=${encodeURIComponent(department)}` : "";
     if (area && view === "decisions" && contextualDecisionAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=decisions${decisionId ? `&decisionId=${decisionId}${fromAttention}${fromApplication}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=decisions${departmentQuery}${decisionId ? `&decisionId=${decisionId}${fromAttention}${fromApplication}` : ""}`;
     }
     if (area && view && contextualRecordViews[area]?.includes(view)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}${recordId ? `&recordId=${recordId}${fromAttention}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}${departmentQuery}${recordId ? `&recordId=${recordId}${fromAttention}` : ""}`;
     }
     if (area && view === "tasks" && contextualTaskAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=tasks${taskId ? `&taskId=${taskId}${fromAttention}${fromApplication}` : ""}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=tasks${departmentQuery}${taskId ? `&taskId=${taskId}${fromAttention}${fromApplication}` : ""}`;
     }
     if (area && view === "procedures" && contextualProcedureAreas.has(area)) {
       return `/areas?area=${encodeURIComponent(area)}&view=procedures`;
@@ -363,10 +368,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     }
     if (area === "04-operacje") {
       const view = params.get("view");
-      const department = params.get("department");
       const base = view === "calendar" ? "/areas?area=04-operacje&view=calendar" : view === "procedures" ? "/areas?area=04-operacje&view=procedures" : canonicalOperationsPath;
-      if (view === "tasks" && taskId) return `${canonicalOperationsPath}&taskId=${taskId}${fromAttention}${fromApplication}`;
-      return department ? `${base}&department=${encodeURIComponent(department)}` : base;
+      if (view === "tasks" && taskId) return `${canonicalOperationsPath}${departmentQuery}&taskId=${taskId}${fromAttention}${fromApplication}`;
+      return `${base}${departmentQuery}`;
     }
     if (area === "05-relacje") {
       return canonicalRelationshipsPath;
@@ -379,9 +383,8 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     }
     if (area === "08-zasoby") {
       const view = params.get("view");
-      const department = params.get("department");
       const base = view === "files" ? "/areas?area=08-zasoby&view=files" : canonicalAssetsPath;
-      return department && view === "files" ? `${base}&department=${encodeURIComponent(department)}` : base;
+      return view === "files" ? `${base}${departmentQuery}` : base;
     }
     if (area === "09-technologia") {
       const view = params.get("view");
@@ -397,6 +400,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       return view === "application-graph" ? canonicalApplicationGraphPath : innovationRecordPath(`?${rawQuery}`, canonicalInnovationPath);
     }
     if (area === "12-zarzadzanie") {
+      if (view === "risks") return `/areas?area=12-zarzadzanie&view=risks${departmentQuery}${riskId ? `&riskId=${riskId}` : ""}`;
       return canonicalManagementDepartmentsPath;
     }
     return canonicalGeneralDashboardPath;
