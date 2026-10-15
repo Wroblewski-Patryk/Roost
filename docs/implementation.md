@@ -190,7 +190,7 @@ Installation paths, domains and credentials stay private.
 
 One implementation owner completes the authorized gate across components,
 integration and native proof. Internal steps/commits are not handoff boundaries.
-Continuing later requires new gate authority.
+Later work needs fresh bounded authority after proof.
 
 Use `roost-runtime-delivery`, `AGENTS.md` and `npm run codex:check`.
 The owner integrates and verifies delegated work; these development controls
@@ -230,15 +230,15 @@ ordinary reversible technical work inside it.
 
 ## Gate authorization boundary
 
-An explicit owner task to deliver work may authorize one named gate, or the
-earliest unmet gate if unnamed, only after its outcome, effects and budget are
-bounded. A proposed gate, a status/planning/readiness request, or an earlier
-task does not override the current owner STOP or activate work. The owner may
-decompose and repair inside an authorized gate, but must not start the next
-gate without a new user instruction. At completion update this handoff, run
-checks, leave recoverable state, report evidence and stop. Remaining account
-usage is not continuation authority. Push/deploy need the gate's explicit
-authority.
+One-off owner tasks authorize one bounded gate; unnamed requests identify only
+the earliest unmet candidate. A continuing owner mandate states objective,
+effects and stops. After verified proof, the coordinator may brief one next
+bounded canonical gate within it. STOP and narrower instructions prevail;
+plans, old tasks, generic "continue" and spare usage grant nothing. Scoped
+push/release needs prior permission and preflight; real-data writes, paid
+models and irreversible effects need exact authority. Close with checks and
+evidence; one-off work stops. See `AGENTS.md` and RF-GOV-016/RF-ACT-011.
+No concurrent dependent gates.
 
 ### Gate 1 — real agent round trip
 
@@ -773,11 +773,10 @@ Prepare one outcome-sized assignment from the selected gate below. It contains:
   credential availability, resource constraints and required owner approvals;
 - observable success and failure cases, evidence locations and completion
   checks;
-- one implementation owner, permitted bounded delegation, commit/push/deploy
-  authority, an owner-approved time/attempt ceiling and token/cost ceiling where
-  enforceable, plus a mandatory stop after the gate. If token/cost enforcement
-  is unavailable, say so and use a shorter time/attempt checkpoint; never call
-  an estimate a hard cap;
+- one owner, bounded delegation, scoped effects, effort estimate and actual
+  limits/stop. Coding without new external charges needs no arbitrary cap;
+  RF-HOST-010 still bounds managed tasks. One-off work stops; a continuing
+  mandate needs proof and a fresh brief;
 - a stop rule for an unplanned provider, material architecture change, repeated
   ineffective operation or exhausted budget. Preserve a checkpoint and require
   independent diagnosis, a materially changed plan and fresh owner authority
@@ -793,7 +792,7 @@ entry/exit language does not authorize a new gate.
 
 ## Product delivery sequence
 
-The [company workflows](product/company-operating-workflows.md) supply detail. Historical G7-G36 notes are not a queue. G24c is stopped; no gate is active. Each outcome needs separate authorization.
+The [company workflows](product/company-operating-workflows.md) supply detail. Historical G7-G36 notes are not a queue. The active gate is stated above; G24c stays stopped. Each outcome needs bounded authority.
 
 The accepted direction is one Windows Host running separate role-scoped Hermes identities with a task-admitted Ollama/gpt-oss or Codex backend. This is only partially proved; a clean owner install, distinct role handoff and ordinary end-to-end company work remain open. G23 local quality passed 1/2 comparison cases and does not qualify the local backend as the default. Codex builds Roost; the Worker performs company work. Hello World is only a disposable first-run check.
 
@@ -802,7 +801,7 @@ The accepted direction is one Windows Host running separate role-scoped Hermes i
 - For each outcome, inspect adapters and acceptance clauses; record working path, gap, native proof, deployed proof and blocker in traceability. Routes, tables and mocks are not whole-journey proof.
 - Deliver across records, authority, API/MCP, web and Worker. Diagnose failed attempts before changing architecture or repeating models.
 - Use isolated disposable test records with verified removal. Inventory all production record families before any cleanup; preview exact deletes, protect linked/audit/provider data, and keep archives out of ordinary active lists.
-- Reserve business direction, money, mandates, customer commitments and irreversible data effects for the owner. Codex resolves routine implementation choices. A completed gate does not open the next.
+- Reserve business direction, money, mandates, customer commitments and irreversible data effects for the owner. Codex resolves routine technical choices. A completed gate alone does not open the next; a continuing mandate permits a fresh brief after proof.
 
 ### Dependency-ordered product outcomes
 
