@@ -51,7 +51,25 @@ ended, without promoting a copy; one retry with the supported longer cleanup
 limit produced the verified copy above. The older verified copy remained intact
 until successful promotion.
 
-## Release status
+## One normal release and read-only production smoke
 
-The production release and read-only post-release smoke remain pending at this
-checkpoint. No production proposal has been withdrawn.
+The one `main` push included commit `084096f859fd1e05e3353aafd0f4f5341cd32734`.
+The GitHub App webhook built its backend image and replaced the backend and
+PostgreSQL containers while retaining the PostgreSQL data volume. Both public
+health routes returned `ok` with that exact commit. The public root returned
+200, and an anonymous Decision-governance read returned 401. The previous
+backend image remained available; the VPS had about 17 GB free after rollout.
+
+Read-only SQL on the retained volume showed 157 finished migrations, none
+unresolved, the v5 manifest and native catalog both valid, and nine pending
+Worker rotation proposals. Five previews were eligible; four reported only
+`active_task`. The nine bound handoffs remained expired, requested and unspent.
+There were no associated issuance operations, effectively active host keys or
+nonterminal agent executions. The historical G24c withdrawal remained one row,
+and the new `expired_worker_rotation` ledger had zero rows. No production
+proposal, Decision, task, handoff, credential or execution was changed by this
+gate. A signed-in owner browser session was unavailable for live console
+read-back; PL/EN console behavior is covered by the browser fixture above.
+
+This completes the bounded correction gate. The wider Outcome 0 and RF-UX-012
+proof remain open. No next gate is authorized here.
