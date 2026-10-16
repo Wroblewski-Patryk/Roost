@@ -121,8 +121,43 @@ the temporary restore database and backup lock were absent. Receipt and key
 remain private outside Git. After backup, root free space was 13,081,182,208 B,
 still above the allowance; the original backend and PostgreSQL were healthy,
 with 160 finished migrations and zero unresolved. Scoped push, one standard
-deployment and signed-in read-only production smoke remain pending.
+deployment and signed-in read-only production smoke were pending at this
+checkpoint and are recorded below.
 
 This slice addresses owner discovery of unassigned records. It does not
 classify 2,400 imports, make them globally approved, prove a live agent packet
 for one of them, or complete all RF-UX-010/012 and RF-CTX-027 clauses.
+
+## Production read-back (2026-10-17)
+
+One fast-forward push moved remote `main` to
+`72d7041839fe5f302424424337022d93ae05ed91`. The single standard Coolify
+deployment `6453` finished at 2026-10-16 22:39 UTC. Public `/health` and
+`/v1/health` returned `ok` and that exact build commit; the running backend
+image had the same tag. PostgreSQL was healthy on its retained
+`rnqqkhl3o3dut4qv56mlxly2_companycore-postgres` volume. Read-only SQL found
+160 finished migrations, none unfinished or rolled back, and unchanged
+CompanyRecord totals of 2,403 non-archived and 2,828 archived. Anonymous GET
+of the new registry returned 401. The current and two prior backend images
+remained available; no second deployment ran. Sampled free space during build
+bottomed at 10,501,529,600 B, above the retained 6 GiB floor; the later
+read-back measured 10,555,842,560 B. The pre-release encrypted backup and
+isolated restore are recorded above; no post-release backup is claimed.
+
+The signed-in owner entered from the 08 Zasoby knowledge register. The new PL
+Current view showed 1–25 of 2,403 across 97 pages, and Next showed 26–50 of
+2,403 on page 2. Literal search by `portfolio-sites-v116` returned the exact
+record on one page. Its detail opened as read-only, with a separate source
+audit. The audit required a selected Task and stated that catalog presence
+grants no global eligibility; no approval action was taken. PL History showed
+1–25 of 37 on page 1 of 2 with archived status. Switching to EN showed the
+translated To organize, Current/History, source warning and 37 archived
+results. The original Polish Task tab was restored afterwards. No production
+CompanyRecord or Task was written.
+
+One copy defect remains in the deployed view: its introductory sentence says
+"Current records" / "Bieżące rekordy" even with History selected. The History
+control and each archived row show the correct state. This does not change
+records or eligibility, but the wording should be corrected in a separately
+authorized release. This bounded owner discovery slice is deployed and
+observed; broader provenance classification and cleanup remain open.
