@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 native procedure launch passed local proof; VPS capacity and fresh backup/restore now qualify release preflight. [Evidence](architecture/procedure-launch-g0.md). Push/deploy pending; G24c/G25 stopped.
+**Active gate:** G0 native procedure launch deployed (`e05af2b7`, Coolify 6449); signed-in owner UI and anonymous `401` passed read-only smoke. [Evidence](architecture/procedure-launch-g0.md). First real run/task write needs a separate exact owner decision; G24c/G25 stopped.
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
