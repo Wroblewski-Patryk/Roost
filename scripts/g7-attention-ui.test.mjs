@@ -64,6 +64,9 @@ try {
         const link = page.locator(`a[href='${decisionTarget}']`);
         await link.waitFor();
         assert.equal(await link.isVisible(), true);
+        const inspector = page.locator(".roost-decision-inspector");
+        await inspector.getByText(locale === "pl" ? "Aktualna propozycja decyzji wymaga uprawnionej odpowiedzi." : "A current Decision proposal needs an authorized response.").first().waitFor();
+        await inspector.getByText("Owner", { exact: true }).waitFor();
         await page.getByText("Orchid project", { exact: false }).first().waitFor();
         await page.getByText("Current sourced task proposal").waitFor();
         await page.getByText(locale === "pl" ? /klasyfikacja jeszcze niepotwierdzona/ : /classification not yet confirmed/).waitFor();
@@ -111,6 +114,31 @@ try {
       await page.screenshot({ path: path.join(output, `${locale}-${mode}-${width}.png`), fullPage: true });
       await page.close(); checked++;
     }
+  }
+  const blockedDecisionReasons = {
+    decision_authority_blocked: {
+      pl: "Przed odpowiedzią na tę propozycję trzeba wyjaśnić uprawnienia do decyzji.",
+      en: "Decision authority must be resolved before this proposal can be answered."
+    },
+    decision_impact_stale: {
+      pl: "Zmienił się wpływ lub zakres uprawnień do decyzji. Właściciel musi odświeżyć podgląd przed odpowiedzią.",
+      en: "The Decision impact or authority changed. The owner must refresh the preview before a response."
+    },
+    decision_agent_admission_required: {
+      pl: "Przydzielony agent potrzebuje aktualnego uprawnienia do każdego objętego zadania. Właściciel musi sprawdzić dopuszczenie.",
+      en: "The assigned agent needs current permission for every affected task. The owner must review admission."
+    }
+  };
+  for (const locale of ["pl", "en"]) for (const [reason, expected] of Object.entries(blockedDecisionReasons)) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 960 } });
+    await page.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
+    await page.route("**/v1/**", route => route.fulfill({ json: { data: route.request().url().includes("/dashboard/command")
+      ? { ...dashboardPacket(), attentionTotal: 1, priorityItems: [{ ...dashboardPacket().priorityItems[0], reason }] }
+      : { items: [], page: 0, hasMore: false } } }));
+    await page.goto(origin);
+    await page.getByRole("button", { name: /Approve information plan/ }).click();
+    await page.locator(".roost-decision-inspector").getByText(expected[locale]).first().waitFor();
+    await page.close(); checked++;
   }
   const page = await browser.newPage({ viewport: { width: 834, height: 960 } });
   await page.addInitScript(() => localStorage.setItem("companycoreLocale", "en"));

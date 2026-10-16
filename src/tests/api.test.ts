@@ -583,6 +583,82 @@ test("Today lists current response work and keeps archived test history out", as
   assert.equal((foreign.body as { data: { totalCount: number } }).data.totalCount, 0);
 });
 
+test("Today resolves a current Decision to its accountable owner and preserves its governance history", async () => {
+  const fixture = await prepareReviewFixture(false, false);
+  const workspaceId = fixture.workspaceId;
+  const auth = fixture.auth;
+  await refreshCompositionRisk(fixture.task.id, auth);
+  const governance = await request("/v1/decisions/governance", { headers: auth });
+  assert.equal(governance.status, 200, JSON.stringify(governance.body));
+  const proposal = await request("/v1/decisions/governance/proposals", { method: "POST", headers: auth, body: JSON.stringify({
+    requestId: randomUUID(), expectedVersion: (governance.body as any).data.expectedVersion,
+    title: "Choose the scoped task approach", context: "Two approaches have different costs",
+    decision: "Use the smaller first delivery", rationale: "It provides the needed evidence",
+    consequences: "Further work needs a separate decision", scopeReason: "Only this task is affected",
+    scope: [{ type: "task", id: fixture.task.id }], supersedesId: null, conflicts: []
+  }) });
+  assert.equal(proposal.status, 201, JSON.stringify(proposal.body));
+  await decisionFixtureProof(fixture);
+  const decisionId = (proposal.body as any).data.record.id as string;
+  const target = `/areas?area=01-strategia&view=decisions&decisionId=${decisionId}&from=attention`;
+  const attention = await request("/v1/dashboard/attention", { headers: auth });
+  assert.equal(attention.status, 200, JSON.stringify(attention.body));
+  const item = (attention.body as any).data.items.find((row: any) => row.id === decisionId);
+  assert.deepEqual({ kind: item?.kind, reason: item?.reason, responsible: item?.responsible, context: item?.context, target: item?.target },
+    { kind: "decision", reason: "decision_pending", responsible: "Test Owner", context: "Two approaches have different costs", target });
+  const command = await request("/v1/dashboard/command", { headers: auth });
+  assert.equal(command.status, 200, JSON.stringify(command.body));
+  assert.ok((command.body as any).data.priorityItems.some((row: any) => row.id === decisionId && row.target === target && row.responsible === "Test Owner"));
+  const other = await registerOwner(`today-decision-foreign-${randomUUID()}@example.test`, "Foreign workspace");
+  const foreignAuth = { Authorization: `Bearer ${other.token}` };
+  assert.equal((await request(`/v1/decisions/${decisionId}/governance`, { headers: foreignAuth })).status, 404);
+  const foreignAttention = await request("/v1/dashboard/attention", { headers: foreignAuth });
+  assert.equal(foreignAttention.status, 200);
+  assert.equal((foreignAttention.body as any).data.items.some((row: any) => row.id === decisionId), false);
+  assert.equal((await request(`/v1/decisions/not-a-uuid/governance`, { headers: auth })).status, 404);
+  const detail = await request(`/v1/decisions/${decisionId}/governance`, { headers: auth });
+  assert.equal(detail.status, 200, JSON.stringify(detail.body));
+  assert.equal((detail.body as any).data.selected.state, "pending");
+  const previewId = (detail.body as any).data.previews[0].id;
+  await prisma.task.update({ where: { id: fixture.task.id }, data: { title: "Revised task scope for impact review" } });
+  const staleAttention = await request("/v1/dashboard/attention", { headers: auth });
+  assert.equal(staleAttention.status, 200, JSON.stringify(staleAttention.body));
+  const staleItem = (staleAttention.body as any).data.items.find((row: any) => row.id === decisionId);
+  assert.deepEqual({ reason: staleItem?.reason, responsible: staleItem?.responsible },
+    { reason: "decision_impact_stale", responsible: "Test Owner" });
+  const stale = await request(`/v1/decisions/${decisionId}/governance/actions`, { method: "POST", headers: auth, body: JSON.stringify({
+    requestId: randomUUID(), expectedVersion: (detail.body as any).data.expectedVersion, action: "accept", previewId
+  }) });
+  assert.equal(stale.status, 409, JSON.stringify(stale.body));
+  await refreshCompositionRisk(fixture.task.id, auth);
+  await decisionFixtureProof(fixture);
+  const currentDetail = await request(`/v1/decisions/${decisionId}/governance`, { headers: auth });
+  assert.equal(currentDetail.status, 200, JSON.stringify(currentDetail.body));
+  const reviewed = await request(`/v1/decisions/${decisionId}/governance/actions`, { method: "POST", headers: auth, body: JSON.stringify({
+    requestId: randomUUID(), expectedVersion: (currentDetail.body as any).data.expectedVersion, action: "review_impact"
+  }) });
+  assert.equal(reviewed.status, 201, JSON.stringify(reviewed.body));
+  await decisionFixtureProof(fixture);
+  const refreshed = await request(`/v1/decisions/${decisionId}/governance`, { headers: auth });
+  assert.equal(refreshed.status, 200, JSON.stringify(refreshed.body));
+  assert.equal((refreshed.body as any).data.current, true);
+  const accepted = await request(`/v1/decisions/${decisionId}/governance/actions`, { method: "POST", headers: auth, body: JSON.stringify({
+    requestId: randomUUID(), expectedVersion: (refreshed.body as any).data.expectedVersion, action: "accept", previewId: (refreshed.body as any).data.previews[0].id
+  }) });
+  assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+  const after = await request("/v1/dashboard/attention", { headers: auth });
+  assert.equal(after.status, 200, JSON.stringify(after.body));
+  assert.equal((after.body as any).data.items.some((row: any) => row.id === decisionId), false);
+  const acceptedDetail = await request(`/v1/decisions/${decisionId}/governance`, { headers: auth });
+  assert.equal(acceptedDetail.status, 200, JSON.stringify(acceptedDetail.body));
+  assert.equal((acceptedDetail.body as any).data.selected.state, "accepted");
+  assert.ok((acceptedDetail.body as any).data.acceptance?.id);
+  assert.ok((acceptedDetail.body as any).data.revisions.some((row: any) => row.id === decisionId && row.state === "accepted"));
+  const current = await request("/v1/decisions?scope=current", { headers: auth });
+  assert.equal(current.status, 200);
+  assert.ok((current.body as any).data.some((row: any) => row.id === decisionId));
+});
+
 test("G21 owner operation retains an older current task after 101 newer scope revisions", { timeout: 180000 }, async () => {
   const owner = await registerOwner(`g21-history-${randomUUID()}@example.test`, "G21 scope history fixture");
   const workspaceId = owner.workspace.id, ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId!;

@@ -173,6 +173,18 @@ try {
     assert.equal(new URL(await page.getByRole("link", { name: locale === "pl" ? "Wróć do Historii" : "Back to History" }).getAttribute("href"), origin).searchParams.get("scope"), "history");
     await page.goto(`${base}&scope=history&decisionId=invalid`);
     await page.getByText(locale === "pl" ? "Nie można otworzyć wskazanej decyzji w tym workspace." : "The requested decision is unavailable in this workspace.").waitFor();
+    await page.goto(`${base}&decisionId=${archivedId}&from=attention`);
+    await page.getByRole("dialog", { name: "Archived contract" }).waitFor();
+    assert.equal(new URL(page.url()).searchParams.get("scope"), "history");
+    assert.equal(new URL(page.url()).searchParams.get("from"), "attention");
+    assert.equal(await page.getByRole("link", { name: locale === "pl" ? "Wróć do uwag" : "Back to attention" }).getAttribute("href"), "/areas?area=00-ogolny&view=overview");
+    await page.getByRole("dialog", { name: "Archived contract" }).press("Escape");
+    assert.equal(new URL(page.url()).searchParams.get("from"), "attention", "closing historical detail retains Today origin");
+    await page.getByRole("link", { name: locale === "pl" ? "Wróć do uwag" : "Back to attention" }).click();
+    assert.equal(new URL(page.url()).searchParams.get("view"), "overview");
+    await page.goto(`${base}&decisionId=invalid&from=attention`);
+    await page.getByText(locale === "pl" ? "Nie można otworzyć wskazanej decyzji w tym workspace." : "The requested decision is unavailable in this workspace.").waitFor();
+    assert.equal(await page.getByRole("link", { name: locale === "pl" ? "Wróć do uwag" : "Back to attention" }).getAttribute("href"), "/areas?area=00-ogolny&view=overview");
     await page.goto(`${base}&scope=history`);
     await page.getByRole("button", { name: locale === "pl" ? "Bieżące" : "Current" }).click();
     await page.getByRole("button", { name: locale === "pl" ? "Archiwizuj" : "Archive" }).first().click();

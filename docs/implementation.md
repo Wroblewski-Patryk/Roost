@@ -2,9 +2,9 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Decision history navigation; core deployed, PL/EN detail-label repair awaits release. [Evidence](ux/owner-decision-history-navigation-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** G0 Today → Decision attention; local UI passed, native DB blocked (Docker stopped), no release. [Evidence](ux/owner-today-decision-attention-2026-10-16.md). G24c/G25 stopped.
 
-**Outcome 1 Today slice (2026-10-15):** Code `e76788bc` deployed after focused/native checks. Signed-in PL/EN Today, exact failed-result Task and observational Decision GET were read back. No current Decision row existed for a fresh Today click. Full Outcome 1/RF-UX-012 remain open. [Proof and limits](ux/owner-today-local-checkpoint-2026-10-15.md).
+**Outcome 1 Today:** Deployed `e76788bc` has signed-in PL/EN Today and failed-result Task proof; no live Decision click. The new Decision path is local only. Full RF-UX-012 remains open. [Earlier proof](ux/owner-today-local-checkpoint-2026-10-15.md); [checkpoint](ux/owner-today-decision-attention-2026-10-16.md).
 
 **Outcome 0 architecture-history slice:** Code `801c1ddc` passed native/API/UI fixtures; build `451d2577` deployed. Signed-in production history and a positive archived-record comparison remain unobserved. Outcome 0 stays open. [Proof and limits](ux/owner-architecture-archive-2026-10-15.md).
 

@@ -1,9 +1,13 @@
 import { Router } from "express";
-import { TaskStatus } from "@prisma/client";
+import { Prisma, TaskStatus } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { companyRuntimeClass } from "../agent-runtime/company-information-runtime";
 import { requireWorkspaceRole } from "../../auth/workspace-access";
+import { retryContextRead } from "../agent-runtime/context-read-retry";
+import { readyTransaction } from "../agent-runtime/task-execution-readiness";
+import { authorityState, decisionAuthority } from "../decisions/decision-authority";
+import { reviewDigest } from "../agent-runtime/task-review-contract";
 
 const OPEN_TASK_STATUSES: TaskStatus[] = ["todo", "in_progress", "blocked"];
 
@@ -51,6 +55,73 @@ export const dashboardRouter = Router();
 
 const ATTENTION_PAGE_SIZE = 25;
 type AttentionRow = { id: string; kind: "decision" | "result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date; executionId: string | null; totalCount: bigint; decisionCount: bigint };
+type DecisionAttentionReason = "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required";
+type DecisionAttentionAuthority = { responsible: string | null; reason: DecisionAttentionReason };
+
+async function decisionAttentionAuthorities(workspaceId: string, ids: string[], ownerName: string | null) {
+  if (!ids.length) return new Map<string, DecisionAttentionAuthority>();
+  const resolved = await retryContextRead(() => readyTransaction(async db => {
+    const revisions = await db.$queryRaw<Array<{ decisionId: string; body: any; impact: any; previewId: string | null; previewImpact: any; previewAuthority: any }>>`
+      SELECT r.decision_id AS "decisionId", r.body,
+        decision_current_impact(r.workspace_id, r.body->'scope') AS impact,
+        p.id AS "previewId", p.impact AS "previewImpact", p.authority AS "previewAuthority"
+      FROM decision_revisions r
+      LEFT JOIN LATERAL (
+        SELECT p.id, p.impact, p.authority FROM decision_impact_previews p
+        WHERE p.decision_id=r.decision_id ORDER BY p.version DESC LIMIT 1
+      ) p ON true
+      WHERE r.workspace_id=${workspaceId}::uuid
+        AND r.decision_id IN (${Prisma.join(ids.map(id => Prisma.sql`${id}::uuid`))})`;
+    const catalog = await authorityState(db, workspaceId, true);
+    const names = new Map(catalog.labels.map(label => [label.id, label.name]));
+    const result: Array<[string, DecisionAttentionAuthority]> = [];
+    for (const revision of revisions) {
+      const authority = await decisionAuthority(db, workspaceId, revision.body, revision.impact, catalog);
+      if (authority.status === "blocked" || !authority.principal) {
+        result.push([revision.decisionId, { responsible: ownerName, reason: "decision_authority_blocked" }]);
+        continue;
+      }
+      if (!revision.previewId || !revision.impact || reviewDigest(revision.impact) !== reviewDigest(revision.previewImpact)
+        || (revision.previewAuthority && reviewDigest(authority) !== reviewDigest(revision.previewAuthority))) {
+        result.push([revision.decisionId, { responsible: ownerName, reason: "decision_impact_stale" }]);
+        continue;
+      }
+      const principal = authority.principal;
+      if (principal.kind === "agent") {
+        const taskIds: string[] = revision.impact.taskIds ?? [];
+        if (!taskIds.length || taskIds.length > 200 || new Set(taskIds).size !== taskIds.length) {
+          result.push([revision.decisionId, { responsible: ownerName, reason: "decision_agent_admission_required" }]);
+          continue;
+        }
+        const grants = await db.$queryRaw<Array<{ taskId: string; credentialId: string }>>`
+          SELECT g.task_id AS "taskId", g.credential_id AS "credentialId" FROM task_capability_grants g
+          WHERE g.workspace_id=${workspaceId}::uuid AND g.agent_id=${principal.id}::uuid
+            AND g.operation='decision_supersede'
+            AND g.snapshot->'decision'=jsonb_build_object('decisionId',${revision.decisionId}::uuid,'previewId',${revision.previewId}::uuid)
+            AND task_capability_status(g)='active'`;
+        const credentialTasks = new Map<string, Set<string>>();
+        for (const grant of grants) {
+          if (!credentialTasks.has(grant.credentialId)) credentialTasks.set(grant.credentialId, new Set());
+          credentialTasks.get(grant.credentialId)!.add(grant.taskId);
+        }
+        if (![...credentialTasks.values()].some(tasks => taskIds.every(id => tasks.has(id)))) {
+          result.push([revision.decisionId, { responsible: ownerName, reason: "decision_agent_admission_required" }]);
+          continue;
+        }
+      }
+      const worker = catalog.workers.find(item => item.principal?.kind === principal.kind && item.principal.id === principal.id);
+      const responsible = principal.kind === "user" && principal.id === catalog.ownerUserId ? ownerName : names.get(worker?.id ?? "") ?? null;
+      result.push([revision.decisionId, {
+        responsible: responsible ?? ownerName,
+        reason: responsible ? "decision_pending" : "decision_authority_blocked"
+      }]);
+    }
+    return result;
+  }, { readOnly: true }));
+  if (!Array.isArray(resolved)) throw new Error("decision_attention_authority_unavailable");
+  return new Map(resolved);
+}
+
 async function attentionPage(workspaceId: string, offset: number) {
   const rows = await prisma.$queryRaw<AttentionRow[]>`
     WITH latest_execution AS (
@@ -153,16 +224,18 @@ async function attentionPage(workspaceId: string, offset: number) {
   const taskById = new Map(tasks.map(task => [task.id, task]));
   const decisionById = new Map(decisions.map(decision => [decision.id, decision]));
   const incidentById = new Map(incidents.map(incident => [incident.id, incident]));
+  const decisionAuthorities = await decisionAttentionAuthorities(workspaceId, decisionIds, workspace?.owner.name ?? null);
   const items = pageRows.map(row => ({
     id: row.id, kind: row.kind, title: row.title, source: row.kind, severity: row.severity,
     status: row.status, dueDate: row.dueDate, updatedAt: row.updatedAt,
-    reason: row.kind === "decision" ? "decision_pending" : row.kind === "result" ? row.status === "failed" ? "result_failed" : row.status === "owner_pending" ? "result_owner_pending" : "result_review"
+    reason: row.kind === "decision" ? decisionAuthorities.get(row.id)?.reason ?? "decision_authority_blocked" : row.kind === "result" ? row.status === "failed" ? "result_failed" : row.status === "owner_pending" ? "result_owner_pending" : "result_review"
       : row.kind === "blocker" ? "task_blocked" : row.kind === "task" ? "task_overdue"
       : row.kind === "incident" ? "incident_blocked" : "risk_high",
     context: briefContext(taskById.get(row.id)?.description ?? decisionById.get(row.id)?.problem
       ?? decisionById.get(row.id)?.context ?? decisionById.get(row.id)?.rationale
       ?? incidentById.get(row.id)?.description),
-    responsible: row.kind === "result" && row.status === "owner_pending" ? workspace?.owner.name ?? null
+    responsible: row.kind === "decision" ? decisionAuthorities.get(row.id)?.responsible ?? null
+      : row.kind === "result" && row.status === "owner_pending" ? workspace?.owner.name ?? null
       : row.kind === "result" && row.status === "review" ? verifierByTask.get(row.id) ?? null
       : row.kind === "result" ? null
       : taskById.get(row.id)?.ownerUser?.name ?? taskById.get(row.id)?.assignedWorkforceEntity?.name ?? null,

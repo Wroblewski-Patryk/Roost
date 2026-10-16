@@ -2261,9 +2261,9 @@ not certify the entire activation ladder.
 [src/modules/google-drive/google-drive.routes.ts](../../src/modules/google-drive/google-drive.routes.ts), [src/integrations/clickup/clickup.client.ts](../../src/integrations/clickup/clickup.client.ts), [src/modules/integration-settings/integration-settings.routes.ts](../../src/modules/integration-settings/integration-settings.routes.ts).
 
 <a id="e-attention"></a>
-**ATTENTION** — Host status and execution evidence surfaces, not full four-category attention center.
+**ATTENTION** — Bounded owner Today, exact result/Decision links and truthful current response work. The Today → Decision attribution and routed PL/EN browser path have a [local checkpoint](../ux/owner-today-decision-attention-2026-10-16.md); disposable API and deployed signed-in proof remain open. This is not full RF-OUT-001/002 or RF-UX-012 acceptance.
 
-[web/src/features/settings/agent-connections-section.tsx](../../web/src/features/settings/agent-connections-section.tsx), [src/modules/dashboard/dashboard.routes.ts](../../src/modules/dashboard/dashboard.routes.ts), [src/modules/agent-events/agent-events.routes.ts](../../src/modules/agent-events/agent-events.routes.ts).
+[web/src/features/departments/general-dashboard.tsx](../../web/src/features/departments/general-dashboard.tsx), [web/src/features/departments/decisions-workbench.tsx](../../web/src/features/departments/decisions-workbench.tsx), [src/modules/dashboard/dashboard.routes.ts](../../src/modules/dashboard/dashboard.routes.ts), [src/modules/agent-events/agent-events.routes.ts](../../src/modules/agent-events/agent-events.routes.ts).
 
 <a id="e-lang"></a>
 **LANG** — PL/EN localStorage/auth preferredLanguage UI selection and English
