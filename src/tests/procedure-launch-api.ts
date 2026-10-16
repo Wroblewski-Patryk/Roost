@@ -210,6 +210,27 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     assert.equal(await prisma.procedureRunStep.count({ where: { runId: run.id } }), 2);
     const tasks = await prisma.task.findMany({ where: { id: { in: run.steps.map((step: any) => step.task.id) } } });
     assert.equal(tasks.length, 2);
+    for (const step of run.steps) {
+      const taskRead = await request(`/v1/tasks/${step.task.id}`, { headers });
+      assert.equal(taskRead.status, 200);
+      assert.deepEqual((taskRead.body as any).data.procedureRunStep, {
+        id: step.id, stepOrder: step.order, stepType: step.executor,
+        run: { id: run.id, procedureId: procedure.id, procedureVersion: procedure.version, procedureName: procedure.name }
+      }, "owner Task read identifies its exact pinned manual/human review step");
+      assert.equal((await request(`/v1/tasks/${step.task.id}`, { headers: foreignHeaders })).status, 404);
+    }
+    const exactBoard = await request(`/v1/operations/work-items?taskId=${run.steps[0].task.id}&limit=1`, { headers });
+    assert.equal(exactBoard.status, 200);
+    assert.deepEqual((exactBoard.body as any).data.workItems.map((item: any) => item.task.id), [run.steps[0].task.id],
+      "status editor can load an exact procedure Task beyond the normal board window");
+    const foreignBoard = await request(`/v1/operations/work-items?taskId=${run.steps[0].task.id}&limit=1`, { headers: foreignHeaders });
+    assert.equal(foreignBoard.status, 200);
+    assert.equal((foreignBoard.body as any).data.workItems.length, 0);
+    await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "admin" } });
+    const nonOwnerTask = await request(`/v1/tasks/${run.steps[0].task.id}`, { headers });
+    assert.equal(nonOwnerTask.status, 200);
+    assert.equal((nonOwnerTask.body as any).data.procedureRunStep, null, "non-owner Task view omits owner-only run navigation");
+    await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "owner" } });
     for (const task of tasks) {
       assert.equal(task.workspaceId, workspaceId);
       assert.equal(task.projectId, project.id);

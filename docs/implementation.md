@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 exact-project Procedure editor: local API/UI reviews pass; release and signed-in smoke pending. [Evidence](architecture/procedure-editor-project-gate.md). Native launch is deployed; first production definition or run needs a separate exact owner decision. G24c/G25 stopped.
+**Active gate:** G0 Procedure launch/manual Task review for one owner-approved run: local proof passed; release blocked by VPS capacity. [Evidence](ux/owner-procedure-launch-human-review-2026-10-16.md). G24c/G25 stopped.
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 

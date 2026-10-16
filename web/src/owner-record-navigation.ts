@@ -1,6 +1,6 @@
 const recordIdPattern = /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 
-export function recordIdFromQuery(search: string, key: "applicationId" | "fromApplicationId" | "decisionId" | "taskId" | "historicalTaskId" | "riskId" | "recordId" | "executionId" | "attentionTaskId" | "attentionExecutionId") {
+export function recordIdFromQuery(search: string, key: "applicationId" | "fromApplicationId" | "decisionId" | "taskId" | "historicalTaskId" | "riskId" | "recordId" | "executionId" | "attentionTaskId" | "attentionExecutionId" | "procedureId" | "runId" | "focusTaskId") {
   const values = new URLSearchParams(search).getAll(key);
   return values.length === 1 && recordIdPattern.test(values[0]) ? values[0].toLowerCase() : null;
 }

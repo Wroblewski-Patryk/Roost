@@ -12,7 +12,7 @@ type Preview = { procedure: { id: string; name: string; purpose: string; version
   taskAssigneeUserId: string; taskAssigneeLabel: string; applicability: Array<{ type: string; entityId: string | null }>;
   steps: Step[]; blockers: string[]; digest: string; previewToken: string | null; expiresAt: string;
   effects: { roostNativeTasks: number; externalWrites: number; agentExecutions: number } };
-type Run = { id: string; procedureVersion: number; projectId: string; projectName: string; inputSnapshot: Record<string, string>; createdAt: string; status: string;
+type Run = { id: string; procedureId?: string; procedureVersion: number; projectId: string; projectName: string; inputSnapshot: Record<string, string>; createdAt: string; status: string;
   steps: Array<{ id: string; order: number; instruction: string; task: { id: string; title: string; status: string };
     outputEvidence: Array<{ id: string; evidence: { summary?: string; references?: string[] }; recordedAt: string }>;
     outcomeHistory: Array<{ id: string; decision: string; evidence: { summary?: string }; reason: string | null }>;
@@ -59,7 +59,7 @@ function message(code: string, pl: boolean) {
   return labels[code]?.[pl ? 0 : 1] || (pl ? `Nie można wykonać operacji (${code}). Odśwież widok.` : `The operation could not be completed (${code}). Refresh this view.`);
 }
 export { message as procedureLaunchMessage };
-function runStatus(value: string, pl: boolean) {
+export function runStatus(value: string, pl: boolean) {
   const labels: Record<string, [string, string]> = { tasks_open: ["Zadania otwarte", "Tasks open"], in_progress: ["W toku", "In progress"],
     exception: ["Wyjątek", "Exception"], tasks_done_evidence_pending: ["Zadania wykonane, czeka dowód", "Tasks done, output pending"],
     owner_accepted: ["Wynik przyjęty przez właściciela", "Owner accepted output"] };
@@ -69,6 +69,11 @@ function taskStatus(value: string, pl: boolean) {
   const labels: Record<string, [string, string]> = { todo: ["Do zrobienia", "To do"], in_progress: ["W toku", "In progress"],
     blocked: ["Zablokowane", "Blocked"], done: ["Wykonane", "Done"], archived: ["Archiwalne", "Archived"] };
   return labels[value]?.[pl ? 0 : 1] || value;
+}
+
+function sameInputs(left: Record<string, string>, right: Record<string, string>) {
+  const keys = Object.keys(left);
+  return keys.length === Object.keys(right).length && keys.every(key => Object.hasOwn(right, key) && left[key] === right[key]);
 }
 
 function OutcomeForm({ runId, stepId, taskStatusValue, onSaved }: { runId: string; stepId: string; taskStatusValue: string; onSaved: () => Promise<void> }) {
@@ -102,8 +107,8 @@ function OutcomeForm({ runId, stepId, taskStatusValue, onSaved }: { runId: strin
   </div>;
 }
 
-export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; name: string; version: number; status: string; updatedAt: string;
-  steps: Array<{ expectedInput?: Record<string, unknown> }> } }) {
+export function ProcedureLaunchPanel({ procedure, focusRunId = null }: { procedure: { id: string; name: string; version: number; status: string; updatedAt: string;
+  steps: Array<{ expectedInput?: Record<string, unknown> }> }; focusRunId?: string | null }) {
   const { locale } = useLanguage();
   const pl = locale === "pl";
   const [projects, setProjects] = useState<Project[]>([]);
@@ -113,12 +118,14 @@ export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; n
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
+  const [focusRunError, setFocusRunError] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [successId, setSuccessId] = useState<string | null>(null);
   const launchRequest = useRef<{ requestId: string; previewToken: string; projectId: string; inputs: Record<string, string> } | null>(null);
   const successRef = useRef<HTMLDivElement>(null);
+  const runRef = useRef<HTMLLIElement>(null);
   const inputKeys = [...new Set(procedure.steps.flatMap(step => Object.keys(step.expectedInput || {})))];
   const load = useCallback(async () => {
     try {
@@ -128,12 +135,24 @@ export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; n
         api<{ data: Run[] }>(`/v1/process-core/procedures/${encodeURIComponent(procedure.id)}/runs`)
       ]);
       setProjects(projectResponse.data.filter(project => project.status === "active"));
-      setRuns(runResponse.data);
+      let runRows = runResponse.data;
+      setFocusRunError(false);
+      if (focusRunId && !runRows.some(run => run.id === focusRunId)) {
+        try {
+          const exact = (await api<{ data: Run }>(`/v1/process-core/procedure-runs/${encodeURIComponent(focusRunId)}`)).data;
+          if (exact.procedureId !== procedure.id) throw new Error("wrong_procedure");
+          runRows = [exact, ...runRows];
+        } catch { setFocusRunError(true); }
+      }
+      setRuns(runRows);
     } catch (caught) { setReadError(errorCode(caught)); }
-  }, [procedure.id]);
+  }, [procedure.id, focusRunId]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { setPreview(null); setSuccessId(null); launchRequest.current = null; }, [procedure.id, procedure.updatedAt]);
   useEffect(() => { if (successId) successRef.current?.focus(); }, [successId]);
+  useEffect(() => { if (focusRunId && runs.some(run => run.id === focusRunId)) {
+    runRef.current?.scrollIntoView({ block: "center" }); runRef.current?.focus();
+  } }, [focusRunId, runs]);
   useEffect(() => {
     if (!preview) return;
     setNow(Date.now());
@@ -154,10 +173,16 @@ export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; n
   }
 
   async function launch() {
+    if (busy) return;
     if (!preview || preview.blockers.length || preview.project.id !== projectId ||
       preview.procedure.id !== procedure.id || preview.procedure.version !== procedure.version ||
       preview.procedure.updatedAt !== procedure.updatedAt || !preview.previewToken ||
-      JSON.stringify(preview.inputs) !== JSON.stringify(inputs) || busy) return;
+      !sameInputs(preview.inputs, inputs)) {
+      setError("procedure_launch_stale");
+      setPreview(null);
+      launchRequest.current = null;
+      return;
+    }
     if (new Date(preview.expiresAt).getTime() <= Date.now()) { setNow(Date.now()); setError("procedure_launch_preview_expired"); return; }
     if (!launchRequest.current || launchRequest.current.previewToken !== preview.previewToken) {
       launchRequest.current = { requestId: crypto.randomUUID(), previewToken: preview.previewToken, projectId, inputs };
@@ -183,9 +208,11 @@ export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; n
   return <section aria-labelledby="procedure-launch-title" className="mt-6 border-t border-base-300 pt-5" data-procedure-launch>
     <h3 className="font-black text-company-ink" id="procedure-launch-title">{pl ? "Uruchomienie i przebiegi" : "Launch and runs"}</h3>
     <p className="mt-1 text-sm text-company-muted">{pl ? "Wybierz dokładny projekt, sprawdź podgląd i dopiero wtedy utwórz zadania w Roost." : "Choose the exact project, inspect the preview, then create tasks in Roost."}</p>
-    {successId ? <div ref={successRef} tabIndex={-1}><CcNotice tone="success" title={pl ? "Przebieg i zadania zapisane" : "Run and tasks saved"} detail={successId} /></div> : null}
+    {successId ? <div ref={successRef} tabIndex={-1}><CcNotice tone="success" title={pl ? "Przebieg i zadania zapisane" : "Run and tasks saved"} detail={successId} />
+      <CcButton href={`/areas?area=04-operacje&view=procedures&procedureId=${encodeURIComponent(procedure.id)}&runId=${encodeURIComponent(successId)}`} size="sm" variant="outline">{pl ? "Zobacz przebieg i ocenę" : "View run and assessment"}</CcButton></div> : null}
     {error ? <CcNotice tone="error" title={message(error, pl)} live /> : null}
     {readError ? <CcNotice tone="warning" title={pl ? "Nie udało się odświeżyć historii lub projektów" : "Could not refresh history or projects"} detail={message(readError, pl)} /> : null}
+    {focusRunError ? <CcNotice live tone="warning" title={pl ? "Przebieg z linku jest niedostępny dla tej procedury." : "The linked run is unavailable for this procedure."} /> : null}
     {procedure.status === "active" ? <div className="mt-4 grid gap-3 rounded-lg border border-base-300 p-3 sm:p-4">
       <label className="grid gap-1 text-sm font-bold" htmlFor="procedure-launch-project">{pl ? "Projekt, którego dotyczy przebieg" : "Project for this run"}
         <select id="procedure-launch-project" className="select select-bordered w-full" value={projectId} onChange={event => { setProjectId(event.target.value); setPreview(null); launchRequest.current = null; }}>
@@ -220,7 +247,8 @@ export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; n
       </div> : null}
     </div> : null}
     <div className="mt-5 flex items-center justify-between gap-2"><h4 className="font-bold">{pl ? "Historia przebiegów" : "Run history"}</h4><CcButton onClick={() => void load()} size="sm" variant="ghost">{pl ? "Odśwież" : "Refresh"}</CcButton></div>
-    {runs.length ? <ol className="mt-2 grid gap-3">{runs.map(run => <li className="rounded-lg border border-base-300 p-3 text-sm" key={run.id}>
+    {runs.length ? <ol className="mt-2 grid gap-3">{runs.map(run => <li className="rounded-lg border border-base-300 p-3 text-sm focus:outline focus:outline-2 focus:outline-primary" key={run.id}
+      ref={run.id === focusRunId ? runRef : null} tabIndex={run.id === focusRunId ? -1 : undefined}>
       <strong>{run.projectName}</strong> · <span className="break-all font-mono text-xs">{run.projectId}</span> · v{run.procedureVersion} · {runStatus(run.status, pl)} · {new Date(run.createdAt).toLocaleString(locale)}
       <p className="break-all text-xs text-company-muted">{run.id}</p>
       <details className="mt-2"><summary>{pl ? "Dane wejściowe przebiegu (tylko właściciel)" : "Run inputs (owner only)"}</summary><pre className="mt-1 whitespace-pre-wrap break-all text-xs">{JSON.stringify(run.inputSnapshot, null, 2)}</pre></details>

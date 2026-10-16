@@ -8,8 +8,9 @@ import { chromium } from 'playwright';
 
 const procedureId = '11111111-1111-4111-8111-111111111111';
 const projectId = '22222222-2222-4222-8222-222222222222';
+const runId = '44444444-4444-4444-8444-444444444444';
 const procedure = { id: procedureId, name: 'Synthetic review procedure', version: 3, status: 'active', updatedAt: '2026-10-16T12:00:00.000Z',
-  steps: [{ expectedInput: { brief: 'Brief' } }] };
+  steps: [{ expectedInput: { decision: 'Decision', brief: 'Brief', context: 'Context' } }] };
 const bundle = await build({ stdin: { contents: `import React from 'react';import {createRoot} from 'react-dom/client';import {LanguageProvider} from './web/src/i18n/i18n';import {ProcedureLaunchPanel} from './web/src/features/departments/procedure-launch-panel';const procedure=${JSON.stringify(procedure)};createRoot(document.getElementById('root')).render(<LanguageProvider><ProcedureLaunchPanel procedure={procedure}/></LanguageProvider>);`, resolveDir: process.cwd(), loader: 'tsx' }, bundle: true, write: false, jsx: 'automatic', define: { 'process.env.NODE_ENV': '"test"' } });
 const cssName = (await readdir('public/react/assets')).find(name => /^index-.*\.css$/.test(name));
 assert.ok(cssName, 'built app CSS is required');
@@ -24,7 +25,7 @@ server.listen(0, '127.0.0.1'); await once(server, 'listening');
 const browser = await chromium.launch({ headless: true });
 let checks = 0;
 try {
-  for (const locale of ['pl', 'en']) for (const width of [390, 1440]) for (const mode of ['eligible', 'blocked']) {
+  for (const locale of ['pl', 'en']) for (const width of [390, 1440]) for (const mode of ['eligible', 'blocked', 'stale', 'expired', 'server_error']) {
     const pl = locale === 'pl';
     const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
     const writes = [], errors = [];
@@ -36,7 +37,7 @@ try {
       if (req.method() === 'GET' && pathname === '/v1/projects') return route.fulfill({ json: { data: [{ id: projectId, name: 'Fictional project', status: 'active' }] } });
       if (req.method() === 'GET' && pathname === `/v1/process-core/procedures/${procedureId}/runs`) {
         if (failHistoryRead) return route.fulfill({ status: 500, json: { error: { code: 'history_unavailable' } } });
-        return route.fulfill({ json: { data: launched ? [{ id: 'run-1', procedureVersion: 3, projectId, projectName: 'Fictional project',
+        return route.fulfill({ json: { data: launched ? [{ id: runId, procedureVersion: 3, projectId, projectName: 'Fictional project',
           inputSnapshot: { brief: 'Changed input' }, createdAt: '2026-10-16T12:00:00.000Z', status: 'tasks_done_evidence_pending',
           steps: [{ id: 'step-1', order: 1, task: { id: 'task-1', title: 'Review the brief', status: 'done' },
             outputEvidence: [], outcomeHistory: [{ id: 'outcome-1', decision: 'exception', evidence: { summary: 'Earlier owner exception' }, reason: 'Earlier reason' }], exception: null }] }] : [] } });
@@ -48,18 +49,20 @@ try {
         return route.fulfill({ json: { data: { procedure: { ...procedure, purpose: 'Review a fictional packet', scope: 'One project', expectedResult: 'Accepted packet' },
           project: { id: projectId, name: 'Fictional project', status: 'active' }, ownerRole: { name: 'Human owner', escalation: 'Manager' },
           taskAssigneeUserId: '33333333-3333-4333-8333-333333333333', taskAssigneeLabel: 'Fictional owner', applicability: [{ type: 'company', entityId: null }],
-          inputs: body.inputs, steps: [{ id: 'step-1', order: 1, instruction: 'Review the brief', executor: 'manual',
-            expectedInput: { brief: 'Brief' }, expectedOutput: { packet: 'Accepted packet' }, validationRule: { success: 'Packet exists', maxAttempts: 2 },
+          inputs: Object.fromEntries(Object.entries(body.inputs).sort(([left], [right]) => left.localeCompare(right))), steps: [{ id: 'step-1', order: 1, instruction: 'Review the brief', executor: 'manual',
+            expectedInput: procedure.steps[0].expectedInput, expectedOutput: { packet: 'Accepted packet' }, validationRule: { success: 'Packet exists', maxAttempts: 2 },
             rollbackInstruction: 'Return to owner', taskTitle: 'Synthetic review procedure · 1. Review the brief' }],
           blockers: mode === 'blocked' ? ['procedure_origin_unverified', 'step_1_executor_unsupported', 'input_missing:context'] : [], digest: 'a'.repeat(64), previewToken: mode === 'blocked' ? null : 'signed-preview',
-          expiresAt: '2099-01-01T00:00:00.000Z', effects: { roostNativeTasks: 1, externalWrites: 0, agentExecutions: 0 } } } });
+          expiresAt: mode === 'expired' ? '2000-01-01T00:00:00.000Z' : '2099-01-01T00:00:00.000Z', effects: { roostNativeTasks: 1, externalWrites: 0, agentExecutions: 0 } } } });
       }
       if (req.method() === 'POST' && pathname === `/v1/process-core/procedures/${procedureId}/actions/launch`) {
         writes.push(req.postDataJSON());
+        if (mode === 'stale') return route.fulfill({ status: 409, json: { error: 'procedure_launch_stale' } });
+        if (mode === 'server_error') return route.fulfill({ status: 503, json: { error: 'server_error' } });
         launched = true;
-        return route.fulfill({ status: 201, json: { data: { replayed: false, run: { id: 'run-1', procedureVersion: 3, projectName: 'Fictional project', createdAt: '2026-10-16T12:00:00.000Z', status: 'tasks_open', steps: [] } } } });
+        return route.fulfill({ status: 201, json: { data: { replayed: false, run: { id: runId, procedureVersion: 3, projectName: 'Fictional project', createdAt: '2026-10-16T12:00:00.000Z', status: 'tasks_open', steps: [] } } } });
       }
-      if (req.method() === 'POST' && pathname === '/v1/process-core/procedure-runs/run-1/steps/step-1/outcomes') {
+      if (req.method() === 'POST' && pathname === `/v1/process-core/procedure-runs/${runId}/steps/step-1/outcomes`) {
         outcomeWrites++; failHistoryRead = true;
         return route.fulfill({ status: 201, json: { data: { outcomeId: 'outcome-2', replayed: false } } });
       }
@@ -71,6 +74,8 @@ try {
     const confirm = panel.getByRole('button', { name: pl ? 'Potwierdź i utwórz zadania' : 'Confirm and create tasks' });
     assert.equal(await confirm.count(), 0, 'confirmation is absent before preview');
     await panel.getByRole('combobox').selectOption(projectId);
+    await panel.getByRole('textbox', { name: 'decision' }).fill('Fictional decision');
+    await panel.getByRole('textbox', { name: 'context' }).fill('Fictional context');
     await panel.getByRole('textbox', { name: 'brief' }).fill('Synthetic owner input');
     const previewButton = panel.getByRole('button', { name: pl ? 'Pokaż podgląd' : 'Preview launch' });
     await previewButton.press('Enter');
@@ -78,17 +83,29 @@ try {
     assert.equal(previewReads, 1);
     await panel.getByText('Human owner').waitFor();
     await panel.getByText('Accepted packet').first().waitFor();
-    assert.equal(await confirm.isDisabled(), mode === 'blocked');
-    if (mode === 'eligible') {
+    assert.equal(await confirm.isDisabled(), ['blocked', 'expired'].includes(mode));
+    if (mode === 'eligible' || mode === 'stale' || mode === 'server_error') {
       await panel.getByRole('textbox', { name: 'brief' }).fill('Changed input');
       assert.equal(await confirm.count(), 0, 'changed input removes stale preview');
       await previewButton.click(); await confirm.waitFor();
       await confirm.press('Enter');
+      if (mode === 'stale') {
+        await panel.getByText(pl ? 'Procedura lub projekt zmieniły się. Odśwież podgląd.' : 'The procedure or project changed. Refresh the preview.').waitFor();
+        assert.equal(await confirm.count(), 0, 'stale reply clears the preview');
+        assert.equal(writes.length, 1);
+      } else if (mode === 'server_error') {
+        await panel.getByText(pl ? /Nie można wykonać operacji/ : /The operation could not be completed/).waitFor();
+        assert.equal(writes.length, 1);
+      } else {
       await panel.getByText(pl ? 'Przebieg i zadania zapisane' : 'Run and tasks saved').waitFor();
       assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('tabindex')), '-1', 'focus moves to saved result');
       assert.equal(writes.length, 1);
       assert.equal(writes[0].inputs.brief, 'Changed input');
+      assert.equal(writes[0].inputs.context, 'Fictional context');
+      assert.equal(writes[0].inputs.decision, 'Fictional decision');
+      assert.equal(writes[0].previewToken, 'signed-preview');
       assert.match(writes[0].requestId, /^[0-9a-f-]{36}$/i);
+      assert.match(await panel.getByRole('link', { name: pl ? 'Zobacz przebieg i ocenę' : 'View run and assessment' }).getAttribute('href'), new RegExp(`runId=${runId}`));
       await panel.getByText(projectId, { exact: true }).last().waitFor();
       await panel.getByText(pl ? 'Wyjątek: Earlier owner exception' : 'Exception: Earlier owner exception').waitFor();
       const inputsDetails = panel.getByText(pl ? 'Dane wejściowe przebiegu (tylko właściciel)' : 'Run inputs (owner only)');
@@ -99,9 +116,10 @@ try {
       await panel.getByText(pl ? 'Ocena zapisana' : 'Decision saved').waitFor();
       await panel.getByText(pl ? 'Nie udało się odświeżyć historii lub projektów' : 'Could not refresh history or projects').waitFor();
       assert.equal(outcomeWrites, 1);
+      }
     } else {
-      await panel.getByText(pl ? 'Krok 1: typ wykonawcy nie jest obsługiwany.' : 'Step 1: executor type is unsupported.').waitFor();
-      await panel.getByText(pl ? 'Uzupełnij dane: context.' : 'Provide input: context.').waitFor();
+      if (mode === 'blocked') await panel.getByText(pl ? 'Krok 1: typ wykonawcy nie jest obsługiwany.' : 'Step 1: executor type is unsupported.').waitFor();
+      else await panel.getByText(pl ? 'Podgląd wygasł. Pobierz nowy.' : 'The preview expired. Get a new one.').waitFor();
       assert.deepEqual(writes, []);
     }
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, `${locale}/${width}/${mode} overflow`);

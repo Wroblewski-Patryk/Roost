@@ -1,6 +1,6 @@
-import { DragEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../api/client";
-import { recordIdFromQuery, validateApplicationReturn, validateTaskPacketNavigation } from '../../owner-record-navigation';
+import { recordIdFromQuery, validateApplicationReturn, validateTaskNavigation } from '../../owner-record-navigation';
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
@@ -18,6 +18,7 @@ import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
 import { TaskReadinessModal } from "./task-readiness";
+import { ProcedureTaskPreview, type ProcedureLinkedTask, type ProcedureRunStepLink } from "./procedure-task-preview";
 import { TodayResultPreview, todayResultReturnPath } from "./today-result-preview";
 import { ReferenceSiteStudy } from "./reference-site-study";
 import { navigateApp } from "../../app-navigation";
@@ -525,7 +526,8 @@ export function TaskPreviewModal({
   onClose,
   onSaved,
   onReady,
-  onStudy
+  onStudy,
+  procedureRunStep
 }: {
   item: OperationsWorkItem;
   taskLists: OperationsTaskList[];
@@ -535,6 +537,7 @@ export function TaskPreviewModal({
   onSaved: () => void;
   onReady: (taskId: string) => void;
   onStudy?: (taskId: string, taskTitle: string) => void;
+  procedureRunStep?: ProcedureRunStepLink | null;
 }) {
   const { t, locale } = useLanguage();
   const informationBadge = informationResultBadge(item, locale);
@@ -641,10 +644,11 @@ export function TaskPreviewModal({
   return (
     <CcRecordEditorModal
       actions={<>
-        {!item.retiredGoal && onStudy && item.task.status !== "archived" ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)} onClick={() => { onClose(); onStudy(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">{locale === "pl" ? "Badanie stron" : "Site study"}</CcButton> : null}
-        {!item.retiredGoal && (!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject")) ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
+        {!procedureRunStep && !item.retiredGoal && onStudy && item.task.status !== "archived" ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)} onClick={() => { onClose(); onStudy(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">{locale === "pl" ? "Badanie stron" : "Site study"}</CcButton> : null}
+        {!procedureRunStep && !item.retiredGoal && (!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject")) ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
         {item.retiredGoal ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={() => { onClose(); onReady(item.id); }} type="button" variant="outline">{locale === "pl" ? "Otwórz historię próby" : "Open attempt history"}</CcButton>
-          : <CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton>}
+          : procedureRunStep ? <CcButton href={`/areas?area=04-operacje&view=tasks&taskId=${encodeURIComponent(item.id)}`} variant="outline">{locale === "pl" ? "Otwórz przebieg zadania" : "Open task run"}</CcButton>
+            : <CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton>}
         <CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton disabled={statusRequestBusy} loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton>
       </>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
@@ -1512,12 +1516,30 @@ export function OperationsRoute() {
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
+  const [selectedTaskProcedureLink, setSelectedTaskProcedureLink] = useState<ProcedureRunStepLink | null>(null);
+  const [taskOpening, setTaskOpening] = useState(false);
+  const taskOpenRequest = useRef(0);
+  const [focusWorkItemId, setFocusWorkItemId] = useState(() => recordIdFromQuery(window.location.search, "focusTaskId"));
   const [studyTask, setStudyTask] = useState<{ id: string; title: string } | null>(null);
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
+  const [procedureTask, setProcedureTask] = useState<ProcedureLinkedTask | null>(null);
   const [resultPreviewExecutionId, setResultPreviewExecutionId] = useState<string | null>(null);
   const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => new URLSearchParams(window.location.search).has('taskId'));
-  const [navigationError, setNavigationError] = useState(false);
+  const [navigationError, setNavigationError] = useState(() => new URLSearchParams(window.location.search).has("focusTaskId")
+    && !recordIdFromQuery(window.location.search, "focusTaskId"));
   const [applicationReturn, setApplicationReturn] = useState<string | null>(null);
+  async function openBoardTask(item: OperationsWorkItem) {
+    const request = ++taskOpenRequest.current;
+    setTaskOpening(true);
+    try {
+      const task = (await api<{ data: ProcedureLinkedTask & { procedureRunStep: ProcedureRunStepLink | null } }>(`/v1/tasks/${item.id}`)).data;
+      await validateTaskNavigation(item.id, async () => task);
+      if (request !== taskOpenRequest.current) return;
+      if (task.procedureRunStep && ["manual", "human_review"].includes(task.procedureRunStep.stepType)) setProcedureTask(task);
+      else { setSelectedTaskProcedureLink(null); setSelectedTask(item); }
+    } catch { if (request === taskOpenRequest.current) setNavigationError(true); }
+    finally { if (request === taskOpenRequest.current) setTaskOpening(false); }
+  }
   useEffect(() => {
     if (history) return;
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
@@ -1531,22 +1553,27 @@ export function OperationsRoute() {
       return;
     }
     let active = true;
-    validateTaskPacketNavigation(taskId, async id => {
-      const response = await api<{ data: { id: string; status: string } }>(`/v1/tasks/${id}`);
+    void (async () => {
+      const response = await api<{ data: { id: string; title: string; status: string; procedureRunStep?: ProcedureRunStepLink | null } }>(`/v1/tasks/${taskId}`);
+      await validateTaskNavigation(taskId, async () => response.data);
       if (response.data.status === "archived") {
-        window.location.assign(taskScopeHref("history", window.location.search, id));
+        window.location.assign(taskScopeHref("history", window.location.search, taskId));
         throw new Error("archived_task_redirect");
       }
-      return response;
-    }).then(async id => {
+      return response.data;
+    })().then(async task => {
+      if (task.procedureRunStep && ["manual", "human_review"].includes(task.procedureRunStep.stepType)) {
+        if (active) setProcedureTask(task as ProcedureLinkedTask);
+        return;
+      }
       if (fromApplicationId && !fromAttention) {
         try {
-          const path = await validateApplicationReturn(fromApplicationId, id, "task",
+          const path = await validateApplicationReturn(fromApplicationId, task.id, "task",
             applicationId => api(`/v1/product-engineering/applications/${applicationId}`));
           if (active) setApplicationReturn(path);
         } catch { if (active) setApplicationReturn(null); }
       }
-      if (active) setReadinessTask(id);
+      if (active) setReadinessTask(task.id);
     }).catch((error) => { if (active && !(error instanceof Error && error.message === "archived_task_redirect")) setNavigationError(true); });
     return () => { active = false; };
   }, [history, fromAttention]);
@@ -1560,8 +1587,22 @@ export function OperationsRoute() {
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
   // A direct record does not need the entire board behind its modal. Read the
   // exact task first; load the board when the owner returns to that surface.
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=exclude${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures" && !history && !holdBoardForRecord, t);
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=exclude${recordIdFromQuery(window.location.search, "focusTaskId") ? `&taskId=${encodeURIComponent(recordIdFromQuery(window.location.search, "focusTaskId")!)}` : ""}${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures" && !history && !holdBoardForRecord, t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
+  useEffect(() => {
+    if (packet.status !== "ready" || !focusWorkItemId) return;
+    const item = rows.find(row => row.id === focusWorkItemId);
+    if (item) void (async () => {
+      try {
+        const task = (await api<{ data: ProcedureLinkedTask & { procedureRunStep: ProcedureRunStepLink | null } }>(`/v1/tasks/${item.id}`)).data;
+        await validateTaskNavigation(item.id, async () => task);
+        setSelectedTaskProcedureLink(task.procedureRunStep && ["manual", "human_review"].includes(task.procedureRunStep.stepType) ? task.procedureRunStep : null);
+        setSelectedTask(item);
+      } catch { setNavigationError(true); }
+    })();
+    else setNavigationError(true);
+    setFocusWorkItemId(null);
+  }, [packet.status, rows, focusWorkItemId]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
   const assignmentOptions = packet.data?.assignmentOptions;
@@ -1613,6 +1654,7 @@ export function OperationsRoute() {
     <>
       {navigationError ? <CcNotice tone="error" title={locale === 'pl' ? 'Wskazane zadanie jest niedostępne w tym workspace.' : 'The requested task is unavailable in this workspace.'}
         action={<CcButton variant="outline" href="/areas?area=04-operacje&view=tasks">{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
+      {taskOpening ? <CcNotice tone="loading" title={locale === "pl" ? "Sprawdzanie zadania" : "Checking task"} /> : null}
       <CcPageHeader
         actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView === "tasks" ? <TaskScopeSwitch history={false} /> : null}</>}
         description={departmentScope ? locale === "pl" ? `Praca przypisana do działu ${departmentLabel(departmentScope, t)}.` : `Work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
@@ -1640,7 +1682,7 @@ export function OperationsRoute() {
               taskQuery={taskQuery}
               priorityFilter={priorityFilter}
               dateFilter={dateFilter}
-              setSelectedTask={setSelectedTask}
+              setSelectedTask={(item) => void openBoardTask(item)}
               onCreateTask={() => openCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)}
               onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
               onTaskQueryChange={setTaskQuery}
@@ -1654,7 +1696,7 @@ export function OperationsRoute() {
               statuses={statuses.filter(status => status.key !== "archived")}
               selectedListIds={selectedListIds}
               hasSelectableLists={selectableListIds.length > 0}
-              setSelectedTask={setSelectedTask}
+              setSelectedTask={(item) => void openBoardTask(item)}
               onCreateTask={openCreateTask}
               onRefresh={refresh}
               onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
@@ -1671,11 +1713,18 @@ export function OperationsRoute() {
       ) : null}
 
       {resultPreviewExecutionId && recordIdFromQuery(window.location.search, 'taskId') ? <TodayResultPreview key={resultPreviewExecutionId} taskId={recordIdFromQuery(window.location.search, 'taskId')!} executionId={resultPreviewExecutionId} onOpenTask={() => { setResultPreviewExecutionId(null); setReadinessTask(recordIdFromQuery(window.location.search, 'taskId')); }} /> : null}
+      {procedureTask ? <ProcedureTaskPreview key={procedureTask.id} task={procedureTask} onClose={() => {
+        setProcedureTask(null);
+        if (new URLSearchParams(window.location.search).has("taskId")) {
+          setHoldBoardForRecord(false);
+          navigateApp("/areas?area=04-operacje&view=tasks");
+        }
+      }} /> : null}
       {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} returnToApplication={Boolean(applicationReturn)} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (applicationReturn) navigateApp(applicationReturn); else if (fromAttention) {
         const executionId = recordIdFromQuery(window.location.search, 'executionId');
         navigateApp(executionId ? todayResultReturnPath(readinessTask, executionId) : "/areas?area=00-ogolny&view=overview");
       } }} onSaved={refresh} /> : null}
-      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} onStudy={(id, title) => setStudyTask({ id, title })} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
+      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} onStudy={(id, title) => setStudyTask({ id, title })} procedureRunStep={selectedTaskProcedureLink} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => { setSelectedTask(null); setSelectedTaskProcedureLink(null); if (new URLSearchParams(window.location.search).has("focusTaskId")) navigateApp("/areas?area=04-operacje&view=tasks"); }} onSaved={refresh} /> : null}
       {studyTask ? <ReferenceSiteStudy key={studyTask.id} taskId={studyTask.id} taskTitle={studyTask.title} onClose={() => setStudyTask(null)} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}

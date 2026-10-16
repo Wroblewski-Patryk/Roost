@@ -134,7 +134,11 @@ tasksRouter.get("/:id", asyncHandler(async (req, res) => {
   const goalRetired = req.auth!.authType === "user" && req.auth!.workspaceRole === "owner" && task.goal?.status === "archived"
     && await prisma.goal.count({ where: { id: task.goalId!, workspaceId: req.auth!.workspaceId,
       status: "archived", mandateVersions: { some: { status: "retired" } } } }) > 0;
-  res.json({ data: { ...data, goalRetired: Boolean(goalRetired) } });
+  const procedureRunStep = req.auth!.authType === "user" && req.auth!.workspaceRole === "owner"
+    ? await prisma.procedureRunStep.findFirst({ where: { taskId: task.id, run: { workspaceId: req.auth!.workspaceId } },
+      select: { id: true, stepOrder: true, stepType: true, run: { select: { id: true, procedureId: true,
+        procedureVersion: true, procedureName: true } } } }) : null;
+  res.json({ data: { ...data, goalRetired: Boolean(goalRetired), procedureRunStep } });
 }));
 
 tasksRouter.post("/", asyncHandler(async (req, res) => {

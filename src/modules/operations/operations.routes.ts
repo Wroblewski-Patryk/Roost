@@ -21,6 +21,7 @@ const workItemsQuerySchema = z.object({
   priority: z.string().min(1).optional(),
   source: z.string().min(1).optional(),
   taskListId: z.string().uuid().optional(),
+  taskId: z.string().uuid().optional(),
   departmentKey: z.string().refine((value) => Boolean(resolveDepartmentEntry(value))).optional(),
   includeCompanyWide: z.enum(["true", "false"]).default("true"),
   refresh: z.string().optional(),
@@ -344,7 +345,8 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const tasks = await prisma.task.findMany({
     where: {
       workspaceId,
-      ...(contextualTaskIds ? { id: { in: contextualTaskIds } } : {}),
+      ...(query.taskId ? { id: contextualTaskIds ? { in: contextualTaskIds.filter(id => id === query.taskId) } : query.taskId }
+        : contextualTaskIds ? { id: { in: contextualTaskIds } } : {}),
       ...(query.status ? { status: query.status } : query.archive === "all" ? {} : { status: query.archive === "only" ? "archived" : { not: "archived" as const } }),
       ...(query.priority ? { priority: query.priority } : {}),
       ...(query.source ? { source: query.source } : {}),
