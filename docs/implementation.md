@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 native procedure launch has passed local/native checks; release is stopped at the 2026-10-16 VPS capacity preflight. [Scope, proof and stop](architecture/procedure-launch-g0.md). No production push or migration. G24c/G25 stopped.
+**Active gate:** G0 native procedure launch passed local proof; VPS capacity and fresh backup/restore now qualify release preflight. [Evidence](architecture/procedure-launch-g0.md). Push/deploy pending; G24c/G25 stopped.
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
