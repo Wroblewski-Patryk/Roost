@@ -50,7 +50,7 @@ const copy = {
   }
 } as const;
 
-const reasonText: Record<string, { pl: string; en: string }> = {
+export const reasonText: Record<string, { pl: string; en: string }> = {
   task_required: { pl: "Wybierz zadanie, aby sprawdzić dopuszczenie", en: "Choose a task to check eligibility" },
   record_missing: { pl: "Bieżący rekord jest niedostępny", en: "The current record is unavailable" },
   missing_review: { pl: "Brak oceny właściciela dla tego zadania", en: "No owner review for this task" },
@@ -102,7 +102,7 @@ const valueText: Record<string, { pl: string; en: string }> = {
   unverified: { pl: "Niezweryfikowany", en: "Unverified" }, unknown: { pl: "Nieznany", en: "Unknown" },
   production: { pl: "Produkcyjne", en: "Production" }, isolated_test: { pl: "Izolowane testy", en: "Isolated test" }
 };
-function localizedValue(value: string | null | undefined, lang: "pl" | "en") {
+export function localizedValue(value: string | null | undefined, lang: "pl" | "en") {
   if (!value) return "—";
   return valueText[value]?.[lang] || humanizeBusinessValue(value, undefined, lang);
 }

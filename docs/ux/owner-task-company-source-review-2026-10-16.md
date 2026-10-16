@@ -1,0 +1,29 @@
+# Task-bound CompanyRecord review in an ordinary Task
+
+## Accepted G0 boundary
+
+The owner approved one bounded gate on 2026-10-16. In an ordinary Task, the workspace owner can select one CompanyRecord, inspect its current body, source metadata, exact revision and SHA-256 content digest, then append an approval for that revision and Task with a stated classification, provenance, verification method/reference, inclusion reason and expiry. The owner can withdraw the Task's current approval with a reason. An approval is an owner attestation and a context eligibility input. It does not make the Task Ready, launch a Worker, or independently verify the record.
+
+Production proof is read-only. No real CompanyRecord or approval may be created or modified for demonstration without a separate exact owner decision. G24c/G25 remain stopped.
+
+## Implementation
+
+The ordinary Task editor opens **Task sources / Źródła zadania** for an owner. An owner-only bounded selector uses `GET /v1/company-records/task-source-options?taskId=...&q=...` (20 metadata rows plus a has-more flag). It verifies the Task and workspace; archived Tasks are unavailable. The selected record uses `GET /v1/company-records/:id/source-audit?projection=current&taskId=...`, which returns the full current body and compact review history metadata without earlier version bodies. The response supplies the current digest calculated by the same function used for review receipts and packet eligibility.
+
+The owner explicitly chooses classification and enters verification and validity details. A write is bound to the displayed revision. The interface locks record selection during a write and retains the same request ID and exact body after an uncertain response. It reloads the audit after success or a stale-revision/archived-Task refusal. Withdrawal appends a new review receipt; the prior approval remains in the history. Only the latest Task-specific receipt controls eligibility. Approvals for other Tasks have no effect.
+
+The server rejects new reviews for archived Tasks and retains its owner, workspace, application, revision, expiry and idempotency guards. The shared trust decision now normalizes camel-case and separator variants of forbidden provenance across `source` and the source kind/system/ID/path metadata fields. This closes synthetic/fixture spelling bypasses before approval and again on agent/packet reads.
+
+## Verification and limits
+
+- Local UI fixture: `node scripts/task-company-source-review-ui.test.mjs` passed 4/4 in PL/EN at 390 and 1280 CSS pixels. It opens the source review from the ordinary Task preview and covers the full revision view, approval and withdrawal (including an expired approval), keyboard Escape, error and identical retry body, write-time picker lock, and overflow.
+- Trust unit fixture: `node node_modules/tsx/dist/cli.mjs --test src/tests/company-source-trust.test.ts` passed 2/2, including synthetic/fixture spelling denials. One pre-existing reference-site fixture used mismatched URL spellings; its two fields were aligned before the passing run.
+- Native HTTP/global-MCP and database assertions passed 9/9 with `ROOST_G9_SOURCE_READ_ONLY=1` and `npm run test:company-information:local` (`scripts/company-source-read-native.test.mjs`). This includes the ordinary Task picker, owner write/withdrawal, stale/foreign/archived/expired/replay denials, current digest, agent read limits and global MCP. The disposable database and role were verified absent, and the local PostgreSQL container's prior stopped state was restored.
+- The same command without that flag ran the sealed Worker-input fixture (`scripts/company-information-native.test.mjs`). Its first 11 subtests passed, including separate-process native validation of unchanged queued HTTP context, SQL denials, source edit invalidation and withdrawal. Its later company-risk-scope subtest failed with `P2010` / `company_risk_scope_invalid` at the risk-scope request. The identical failure reproduced at the same line on the clean pre-gate checkout `a6f8fd0b`, confirming it predates this change. Both disposable databases and roles were verified absent. The complete G6a suite is **not green**.
+- `npm run test:api:local` was started as a broad regression run after Docker Engine became available. Its first two unrelated top-level tests passed; the owned test child was then stopped to keep this gate bounded, and the runner exited after its disposable database cleanup path. A focused rerun with `COMPANYCORE_TEST_NAME_PATTERN='G9 Ready source watches'` passed 1/1 after the full migration chain and seed on the disposable local database. No full API-suite pass is claimed.
+- Independent UX and Security reviews found concrete issues in the initial local implementation. Corrections and source-level re-reviews passed; native and deployed effects remain outside those reviews.
+- `npm run validate` and `npm run codex:check` passed during local work. Release preflight, deployment and signed-in production read-back remain pending and must be recorded with their actual results before this gate is called complete.
+
+Preliminary read-only release inventory on 2026-10-16 found remote `main` and the running backend image at `322c74f6`, a healthy PostgreSQL container, and the predecessor image retained. The VPS had 11,404,918,784 bytes available, below the previously documented 12,884,901,888-byte Roost build planning allowance. No cache cleanup or release action was performed for this gate. Capacity and recovery must be reassessed after native proof and before any push.
+
+This bounded gate does not prove a real owner adoption of a production source, a live Worker task, or whole-product RF-CTX-027/RF-UX-012 acceptance.

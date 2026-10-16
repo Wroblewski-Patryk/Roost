@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none (STOP). G0 manual Task review deployed and signed-in PL/EN verified; no second production run. [Evidence](ux/owner-procedure-launch-human-review-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** G0 Task source review: G9a/API/UI pass; G6a partial; VPS capacity blocks release. G24c/G25 STOP. [Evidence](ux/owner-task-company-source-review-2026-10-16.md).
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 

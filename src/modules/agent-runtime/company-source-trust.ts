@@ -25,7 +25,12 @@ export function companySourceDigest(record: CompanyRecord) {
   return createHash("sha256").update(JSON.stringify(companySourceApprovedContent(record))).digest("hex");
 }
 
-const forbiddenOrigin = /(?:^|[\s_-])(bootstrap|certification|synthetic|fixture|test|superseded|unverified|legacy_assumption|runtime_redaction)(?:$|[\s_-])/i;
+const forbiddenOrigin = /(?:^|\s)(bootstrap|certification|synthetic|fixtures?|tests?|superseded|unverified|legacy assumption|runtime redaction)(?:$|\s)/;
+function forbiddenSourceLabel(value: unknown) {
+  if (typeof value !== "string") return false;
+  const words = value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[^a-zA-Z0-9]+/g, " ").toLowerCase().trim();
+  return forbiddenOrigin.test(words);
+}
 export function companySourceEligible(record: CompanyRecord, review: CompanySourceReview | undefined, taskId: string, applicationId: string | null, now = new Date()) {
   return companySourceEligibility(record, review, taskId, applicationId, now).eligible;
 }
@@ -52,7 +57,8 @@ export function companySourceEligibility(record: CompanyRecord, review: CompanyS
   if (!["active", "approved", "accepted"].includes(record.status)) reasons.push("record_inactive");
   if (["failed", "waived"].includes(record.verificationState)) reasons.push("verification_failed");
   if (record.applicationId !== applicationId && record.applicationId !== null) reasons.push("application_scope");
-  if (forbiddenOrigin.test(record.source) || forbiddenOrigin.test(String(metadata.sourceKind ?? ""))) reasons.push("forbidden_provenance");
+  if ([record.source, metadata.sourceKind, metadata.sourceSystem, metadata.sourceId, metadata.filePath].some(forbiddenSourceLabel))
+    reasons.push("forbidden_provenance");
   return { eligible: reasons.length === 0, reasons };
 }
 

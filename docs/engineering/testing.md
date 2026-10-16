@@ -122,6 +122,8 @@ context-process and active-stop tests cover the unchanged admission/stop protoco
 
 ## Installation bootstrap regression
 
+Ordinary Task CompanyRecord review: run `node scripts/task-company-source-review-ui.test.mjs` after `npm run build:web` for the PL/EN narrow/wide owner form and uncertain-write retry. Run `node node_modules/tsx/dist/cli.mjs --test src/tests/company-source-trust.test.ts` for the exact digest and forbidden-provenance rules. With `ROOST_G9_SOURCE_READ_ONLY=1`, `npm run test:company-information:local` runs the disposable PostgreSQL HTTP/global-MCP fixture in `scripts/company-source-read-native.test.mjs`; without that flag it runs the existing sealed Worker-input fixture in `scripts/company-information-native.test.mjs`. Both require an already running Docker Engine and never start it. See [owner Task review evidence](../ux/owner-task-company-source-review-2026-10-16.md).
+
 `npm run test:bootstrap` requires `BOOTSTRAP_TEST_DATABASE_URL` pointing to a
 migrated, disposable local database named exactly `companycore_test_bootstrap`
 in the `public` schema. The test refuses other targets and clears only that test

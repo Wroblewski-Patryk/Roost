@@ -56,12 +56,20 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
     const unreviewed = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'unreviewed', title: 'Unreviewed source' } });
     const foreign = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'foreign', title: 'Foreign task source' } });
     const synthetic = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'synthetic', title: 'Synthetic source', source: 'synthetic_fixture' } });
+    const camelSynthetic = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'synthetic-camel', title: 'Camel synthetic source', source: 'syntheticData' } });
+    const camelFixture = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'fixture-camel', title: 'Camel fixture source', source: 'fixtureV1' } });
+    const systemFixture = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'fixture-system', title: 'Fixture system source', metadata: { sourceKind: 'owner_note', sourceSystem: 'fixture' } } });
+    const pathFixture = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'fixture-path', title: 'Fixture path source', metadata: { sourceKind: 'owner_note', filePath: 'fixtures/source.md' } } });
     const nestedMetadata = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'nested-metadata', title: 'Nested metadata source', metadata: { sourceKind: { kind: 'synthetic_fixture', body: 'Unapproved body' } } } });
     await prisma.dependency.create({ data: { workspaceId, dependencyType: 'requires', fromEntityType: 'task', fromEntityId: task.id, toEntityType: 'company_record', toEntityId: approved.id } });
     await prisma.evidenceRecord.create({ data: { workspaceId, entityType: 'company_record', entityId: approved.id, type: 'documentation', reference: 'Unreviewed linked evidence body' } });
     for (const source of [approved, stale, withdrawn]) assert.equal((await approve(source, task.id, owner)).status, 201);
     assert.equal((await approve(foreign, otherTask.id, owner)).status, 201);
     assert.equal((await approve(synthetic, task.id, owner)).status, 400);
+    assert.equal((await approve(camelSynthetic, task.id, owner)).status, 400);
+    assert.equal((await approve(camelFixture, task.id, owner)).status, 400);
+    assert.equal((await approve(systemFixture, task.id, owner)).status, 400);
+    assert.equal((await approve(pathFixture, task.id, owner)).status, 400);
     assert.equal((await approve(nestedMetadata, task.id, owner)).status, 400);
     assert.equal((await approve(withdrawn, task.id, owner, 'withdraw')).status, 201);
     await prisma.companyRecord.update({ where: { id: stale.id }, data: { description: 'Changed after review' } });
@@ -75,6 +83,65 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
     assert.equal(general.status, 201, JSON.stringify(general.body));
     const generalKey = general.body.data.key;
 
+    await t.test('ordinary Task owner review picker, exact write and withdrawal guards', async () => {
+      const pickerRoot = `/v1/company-records/task-source-options?taskId=${task.id}`;
+      const options = await request(`${pickerRoot}&q=Approved%20source`, owner);
+      assert.equal(options.status, 200, JSON.stringify(options.body));
+      assert.deepEqual(options.body.data.items.map(item => item.id), [approved.id]);
+      assert.equal('description' in options.body.data.items[0], false);
+      assert.equal('metadata' in options.body.data.items[0], false);
+      assert.equal((await request(pickerRoot, agentKey)).status, 403);
+      assert.equal((await request(pickerRoot, generalKey)).status, 403);
+      assert.equal((await request(`/v1/company-records/${approved.id}/source-audit?projection=full&taskId=${task.id}`, agentKey)).status, 403);
+      const exact = await request(`/v1/company-records/${approved.id}/source-audit?projection=full&taskId=${task.id}`, owner);
+      assert.equal(exact.status, 200);
+      assert.equal(exact.body.data.currentRecord.description, 'Current approved facts');
+      assert.equal(exact.body.data.currentRevision, approved.updatedAt.toISOString());
+      assert.equal(exact.body.data.currentDigest, exact.body.data.eligibility.review.contentDigest);
+
+      const ordinary = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'knowledge_record',
+        key: 'ordinary-task-source', title: 'Ordinary task source', description: 'One task only',
+        metadata: { sourceKind: 'owner_note', sourceId: 'ordinary-source' } } });
+      const reviewPath = `/v1/company-records/${ordinary.id}/context-reviews`;
+      const payload = { requestId: randomUUID(), taskId: task.id, expectedRevision: ordinary.updatedAt.toISOString(),
+        action: 'approve', classification: 'observation', provenance: 'Owner primary note', environment: 'isolated_test',
+        verificationMethod: 'Owner read-back', verificationRef: 'disposable-fixture', inclusionReason: 'Only this task',
+        validUntil: new Date(Date.now() + 86400000).toISOString() };
+      const eventBefore = await prisma.event.count({ where: { workspaceId, resourceId: ordinary.id, type: 'company_source_reviewed' } });
+      const created = await request(reviewPath, owner, payload);
+      assert.equal(created.status, 201, JSON.stringify(created.body));
+      assert.equal((await request(reviewPath, owner, payload)).status, 200, 'exact retry is idempotent');
+      assert.equal((await request(reviewPath, owner, { ...payload, inclusionReason: 'Different request' })).status, 409);
+      assert.equal(await prisma.event.count({ where: { workspaceId, resourceId: ordinary.id, type: 'company_source_reviewed' } }), eventBefore + 1);
+      assert.equal((await request(`/v1/company-records/${ordinary.id}/source-audit?projection=summary&taskId=${task.id}`, owner)).body.data.eligibility.status, 'eligible');
+      assert.equal((await request(`/v1/company-records/${ordinary.id}/source-audit?projection=summary&taskId=${otherTask.id}`, owner)).body.data.eligibility.status, 'ineligible');
+      assert.equal((await request(`/v1/agent-runtime/tasks/${task.id}/company-sources/${ordinary.id}`, agentKey)).status, 200);
+      assert.equal((await request(`/v1/agent-runtime/tasks/${otherTask.id}/company-sources/${ordinary.id}`, agentKey)).status, 404);
+      assert.equal((await request(reviewPath, owner, { ...payload, requestId: randomUUID(), expectedRevision: '2020-01-01T00:00:00.000Z' })).status, 409);
+      assert.equal((await request(reviewPath, owner, { ...payload, requestId: randomUUID(), taskId: randomUUID() })).status, 404);
+      assert.equal((await request(reviewPath, owner, { ...payload, requestId: randomUUID(), validUntil: new Date(Date.now() - 1000).toISOString() })).status, 400);
+
+      const archivedTask = await prisma.task.create({ data: { workspaceId, title: 'Archived ordinary task', status: 'archived' } });
+      assert.equal((await request(`/v1/company-records/task-source-options?taskId=${archivedTask.id}`, owner)).status, 409);
+      assert.equal((await request(reviewPath, owner, { ...payload, requestId: randomUUID(), taskId: archivedTask.id })).status, 409);
+      const otherWorkspace = await request('/auth/register', null, { email: 'ordinary-foreign@example.test',
+        password: 'synthetic-test-password-only', name: 'Other owner', workspaceName: 'Other workspace' });
+      assert.equal(otherWorkspace.status, 201);
+      const foreignTask = await prisma.task.create({ data: { workspaceId: otherWorkspace.body.data.workspace.id, title: 'Foreign task' } });
+      assert.equal((await request(`/v1/company-records/task-source-options?taskId=${foreignTask.id}`, owner)).status, 404);
+      assert.equal((await request(reviewPath, owner, { ...payload, requestId: randomUUID(), taskId: foreignTask.id })).status, 404);
+      assert.equal((await request(`/v1/company-records/${ordinary.id}/source-audit?projection=full&taskId=${task.id}`, otherWorkspace.body.data.token)).status, 404);
+
+      const withdrawal = await request(reviewPath, owner, { ...payload, requestId: randomUUID(), action: 'withdraw',
+        inclusionReason: 'No longer valid' });
+      assert.equal(withdrawal.status, 201, JSON.stringify(withdrawal.body));
+      const after = await request(`/v1/company-records/${ordinary.id}/source-audit?projection=full&taskId=${task.id}`, owner);
+      assert.deepEqual(after.body.data.reviews.map(row => row.action), ['withdraw', 'approve']);
+      assert.equal(after.body.data.eligibility.status, 'ineligible');
+      assert.equal(after.body.data.eligibility.reasons.includes('withdrawn'), true);
+      assert.equal((await request(`/v1/agent-runtime/tasks/${task.id}/company-sources/${ordinary.id}`, agentKey)).status, 404);
+    });
+
     await t.test('approved projection, direct ID and task/record negatives', async () => {
       const list = await request(`/v1/agent-runtime/tasks/${task.id}/company-sources`, agentKey);
       assert.equal(list.status, 200, JSON.stringify(list.body));
@@ -87,7 +154,7 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       assert.equal('metadata' in source.content, false);
       assert.equal('priority' in source.content, false);
       assert.equal((await request(`/v1/agent-runtime/tasks/${task.id}/company-sources/${approved.id}`, agentKey)).status, 200);
-      for (const record of [stale, withdrawn, unreviewed, foreign, synthetic, nestedMetadata])
+      for (const record of [stale, withdrawn, unreviewed, foreign, synthetic, camelSynthetic, camelFixture, systemFixture, pathFixture, nestedMetadata])
         assert.equal((await request(`/v1/agent-runtime/tasks/${task.id}/company-sources/${record.id}`, agentKey)).status, 404);
       assert.equal((await request(`/v1/agent-runtime/tasks/${otherTask.id}/company-sources`, agentKey)).status, 404);
       assert.equal((await request(`/v1/agent-runtime/tasks/${task.id}/company-sources`, generalKey)).status, 403);
@@ -198,6 +265,11 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       assert.ok(BigInt(next.body.data.history[0].ordinal) < BigInt(page.body.data.history[0].ordinal));
       const full = await request(`/v1/company-records/${approved.id}/source-audit?limit=1`, owner);
       assert.equal(full.body.data.history[0].body.description, 'Another historical body');
+      const current = await request(`/v1/company-records/${approved.id}/source-audit?projection=current&taskId=${task.id}&limit=1`, owner);
+      assert.equal(current.status, 200);
+      assert.equal(current.body.data.currentRecord.description, 'Current approved facts');
+      assert.equal(current.body.data.currentDigest, current.body.data.eligibility.review.contentDigest);
+      assert.equal('body' in current.body.data.history[0], false);
       const expiring = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'expiring', title: 'Expiring source' } });
       const priorReview = await prisma.companySourceReview.findFirstOrThrow({ where: { recordId: approved.id, taskId: task.id } });
       const { companySourceDigest } = require('../dist/modules/agent-runtime/company-source-trust.js');
@@ -214,7 +286,7 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       const application = await prisma.application.create({ data: { workspaceId, name: 'Synthetic application', slug: 'synthetic-app' } });
       await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
       const appTask = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: 'Read app source', assignedWorkforceEntityId: agent.id } });
-      const appSource = await prisma.companyRecord.create({ data: { workspaceId, applicationId: application.id, recordType: 'architecture_document', key: 'app-source', title: 'Approved app source', metadata: { sourceKind: 'owner_note', filePath: 'synthetic.md' } } });
+      const appSource = await prisma.companyRecord.create({ data: { workspaceId, applicationId: application.id, recordType: 'architecture_document', key: 'app-source', title: 'Approved app source', metadata: { sourceKind: 'owner_note', filePath: 'reference.md' } } });
       await prisma.companyRecord.create({ data: { workspaceId, applicationId: application.id, recordType: 'architecture_document', key: 'app-unreviewed', title: 'Unreviewed app source' } });
       assert.equal((await approve(appSource, task.id, owner)).status, 400);
       assert.equal((await approve(appSource, appTask.id, owner)).status, 201);

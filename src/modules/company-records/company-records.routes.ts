@@ -120,6 +120,26 @@ companyRecordsRouter.get("/registry", asyncHandler(async (req, res) => {
   });
   res.json({ data: { items, total, page: input.page, pageSize: input.pageSize } });
 }));
+// A bounded owner-only picker for an ordinary Task. It carries no record body.
+companyRecordsRouter.get("/task-source-options", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId;
+  if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner") return res.status(403).json({ error: "source_audit_owner_required" });
+  const input = z.object({ taskId: z.string().uuid(), q: z.string().trim().max(120).default("") }).strict().parse(req.query);
+  const [owner, task] = await Promise.all([
+    prisma.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId }, select: { id: true } }),
+    prisma.task.findFirst({ where: { id: input.taskId, workspaceId }, select: { id: true, status: true } })
+  ]);
+  if (!owner) return res.status(403).json({ error: "source_audit_owner_required" });
+  if (!task) return res.status(404).json({ error: "source_audit_task_scope_invalid" });
+  if (task.status === "archived") return res.status(409).json({ error: "source_review_task_archived" });
+  const isId = z.string().uuid().safeParse(input.q).success;
+  const rows = await prisma.companyRecord.findMany({ where: { workspaceId,
+    ...(input.q ? { OR: [{ title: { contains: input.q, mode: "insensitive" } },
+      { key: { contains: input.q, mode: "insensitive" } }, ...(isId ? [{ id: input.q }] : [])] } : {}) },
+    select: { id: true, title: true, key: true, recordType: true, status: true, verificationState: true, source: true, updatedAt: true },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }], take: 21 });
+  res.json({ data: { items: rows.slice(0, 20), hasMore: rows.length > 20 } });
+}));
 companyRecordsRouter.get("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const record = await prisma.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { parent: true, children: true } });
   if (!record) return res.status(404).json({ error: "not_found" }); res.json({ data: (await serialize(workspaceId, [record]))[0] });
@@ -170,7 +190,7 @@ companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
     prisma.companyRecord.findFirst({ where: { id: recordId, workspaceId } })
   ]);
   if (!owner) return res.status(403).json({ error: "source_audit_owner_required" });
-  const page = z.object({ projection: z.enum(["full", "summary"]).default("full"), taskId: z.string().uuid().optional(),
+  const page = z.object({ projection: z.enum(["full", "summary", "current"]).default("full"), taskId: z.string().uuid().optional(),
     limit: z.coerce.number().int().min(1).max(100).default(100),
     beforeOrdinal: z.coerce.number().int().positive().optional(),
     beforeHistoryOrdinal: z.coerce.bigint().positive().optional() }).parse(req.query);
@@ -180,7 +200,7 @@ companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
     prisma.sourceBodyHistory.findMany({ where: { workspaceId, sourceTable: "company_records", sourceId: recordId,
       ...(page.beforeHistoryOrdinal ? { ordinal: { lt: page.beforeHistoryOrdinal } } : {}) },
       orderBy: { ordinal: "desc" }, take: page.limit + 1,
-      ...(page.projection === "summary" ? { select: { ordinal: true, sourceTable: true, sourceId: true,
+      ...(page.projection !== "full" ? { select: { ordinal: true, sourceTable: true, sourceId: true,
         workspaceId: true, operation: true, recordedAt: true } } : {}) }),
     prisma.sourceBodyHistory.findFirst({ where: { workspaceId, sourceTable: "company_records", sourceId: recordId,
       operation: { in: ["before_update", "delete"] } }, select: { ordinal: true } }),
@@ -210,7 +230,7 @@ companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
       sourceId: sourceField("sourceId"), filePath: sourceField("filePath") },
     applicationId: record.applicationId, createdAt: record.createdAt, updatedAt: record.updatedAt } : null;
   res.json({ data: { currentRecord: page.projection === "summary" ? summary : record,
-    currentRevision: record?.updatedAt.toISOString() ?? null, eligibility, reviews: currentPage,
+    currentRevision: record?.updatedAt.toISOString() ?? null, currentDigest: record ? companySourceDigest(record) : null, eligibility, reviews: currentPage,
     reviewHistoryTruncated: hasMore, nextBeforeOrdinal: hasMore ? currentPage.at(-1)?.ordinal : null,
     history: bodyPage.map(row => ({ ...row, ordinal: row.ordinal.toString() })),
     nextBeforeHistoryOrdinal: history.length > page.limit ? bodyPage.at(-1)?.ordinal.toString() : null,
@@ -232,10 +252,11 @@ companyRecordsRouter.post("/:id/context-reviews", asyncHandler(async (req, res) 
       ? { status: 200, review: prior } : { status: 409, error: "source_review_request_conflict" };
     const [owner, task, record] = await Promise.all([
       db.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId! }, select: { id: true } }),
-      db.task.findFirst({ where: { id: input.taskId, workspaceId }, select: { id: true, projectId: true } }),
+      db.task.findFirst({ where: { id: input.taskId, workspaceId }, select: { id: true, projectId: true, status: true } }),
       db.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId } })
     ]);
     if (!owner || !task || !record) return { status: 404, error: "source_review_scope_invalid" };
+    if (task.status === "archived") return { status: 409, error: "source_review_task_archived" };
     if (record.applicationId && (!task.projectId || !await db.applicationProject.findFirst({ where: { projectId: task.projectId, applicationId: record.applicationId, application: { workspaceId } }, select: { applicationId: true } })))
       return { status: 400, error: "source_review_application_scope_invalid" };
     if (record.updatedAt.toISOString() !== input.expectedRevision) return { status: 409, error: "source_review_revision_changed" };

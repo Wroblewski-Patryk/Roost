@@ -21,6 +21,7 @@ import { TaskReadinessModal } from "./task-readiness";
 import { ProcedureTaskPreview, type ProcedureLinkedTask, type ProcedureRunStepLink } from "./procedure-task-preview";
 import { TodayResultPreview, todayResultReturnPath } from "./today-result-preview";
 import { ReferenceSiteStudy } from "./reference-site-study";
+import { TaskCompanySourceReview } from "./task-company-source-review";
 import { navigateApp } from "../../app-navigation";
 import { TaskReviewModal } from "./task-review";
 import { reviewMessages } from "./task-review-messages";
@@ -527,6 +528,7 @@ export function TaskPreviewModal({
   onSaved,
   onReady,
   onStudy,
+  onSources,
   procedureRunStep
 }: {
   item: OperationsWorkItem;
@@ -537,6 +539,7 @@ export function TaskPreviewModal({
   onSaved: () => void;
   onReady: (taskId: string) => void;
   onStudy?: (taskId: string, taskTitle: string) => void;
+  onSources?: (taskId: string, taskTitle: string) => void;
   procedureRunStep?: ProcedureRunStepLink | null;
 }) {
   const { t, locale } = useLanguage();
@@ -548,7 +551,7 @@ export function TaskPreviewModal({
   const [statusRequestBusy, setStatusRequestBusy] = useState(false);
   const [statusRequestError, setStatusRequestError] = useState("");
   const closableIntent = clickUpIntentClosable(item);
-  const profile = useOwnerPacket<AuthMe>("/v1/auth/me", closableIntent, t);
+  const profile = useOwnerPacket<AuthMe>("/v1/auth/me", closableIntent || Boolean(onSources), t);
   const canCloseIntent = profile.data?.authType === "user" && profile.data.workspaces?.some((workspace) => workspace.id === profile.data?.workspaceId && workspace.role === "owner");
 
   async function requestClickUpStatus() {
@@ -644,6 +647,10 @@ export function TaskPreviewModal({
   return (
     <CcRecordEditorModal
       actions={<>
+        {!procedureRunStep && !item.retiredGoal && onSources && canCloseIntent && item.task.status !== "archived" ? <CcButton
+          disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)}
+          onClick={() => { onClose(); onSources(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">
+          {locale === "pl" ? "Źródła zadania" : "Task sources"}</CcButton> : null}
         {!procedureRunStep && !item.retiredGoal && onStudy && item.task.status !== "archived" ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)} onClick={() => { onClose(); onStudy(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">{locale === "pl" ? "Badanie stron" : "Site study"}</CcButton> : null}
         {!procedureRunStep && !item.retiredGoal && (!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject")) ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
         {item.retiredGoal ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={() => { onClose(); onReady(item.id); }} type="button" variant="outline">{locale === "pl" ? "Otwórz historię próby" : "Open attempt history"}</CcButton>
@@ -1521,6 +1528,7 @@ export function OperationsRoute() {
   const taskOpenRequest = useRef(0);
   const [focusWorkItemId, setFocusWorkItemId] = useState(() => recordIdFromQuery(window.location.search, "focusTaskId"));
   const [studyTask, setStudyTask] = useState<{ id: string; title: string } | null>(null);
+  const [sourceTask, setSourceTask] = useState<{ id: string; title: string } | null>(null);
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
   const [procedureTask, setProcedureTask] = useState<ProcedureLinkedTask | null>(null);
   const [resultPreviewExecutionId, setResultPreviewExecutionId] = useState<string | null>(null);
@@ -1724,7 +1732,8 @@ export function OperationsRoute() {
         const executionId = recordIdFromQuery(window.location.search, 'executionId');
         navigateApp(executionId ? todayResultReturnPath(readinessTask, executionId) : "/areas?area=00-ogolny&view=overview");
       } }} onSaved={refresh} /> : null}
-      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} onStudy={(id, title) => setStudyTask({ id, title })} procedureRunStep={selectedTaskProcedureLink} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => { setSelectedTask(null); setSelectedTaskProcedureLink(null); if (new URLSearchParams(window.location.search).has("focusTaskId")) navigateApp("/areas?area=04-operacje&view=tasks"); }} onSaved={refresh} /> : null}
+      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} onSources={(id, title) => setSourceTask({ id, title })} onStudy={(id, title) => setStudyTask({ id, title })} procedureRunStep={selectedTaskProcedureLink} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => { setSelectedTask(null); setSelectedTaskProcedureLink(null); if (new URLSearchParams(window.location.search).has("focusTaskId")) navigateApp("/areas?area=04-operacje&view=tasks"); }} onSaved={refresh} /> : null}
+      {sourceTask ? <TaskCompanySourceReview key={sourceTask.id} taskId={sourceTask.id} taskTitle={sourceTask.title} onClose={() => setSourceTask(null)} /> : null}
       {studyTask ? <ReferenceSiteStudy key={studyTask.id} taskId={studyTask.id} taskTitle={studyTask.title} onClose={() => setStudyTask(null)} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}
