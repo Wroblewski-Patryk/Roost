@@ -101,11 +101,24 @@ For a standard Roost release, the owner has standing authorization for one
 `docker builder prune -f` of unused build cache per fresh VPS preflight when
 capacity requires it. The operator verifies the intended host, reclaimable
 cache, absence of a concurrent build/deploy and healthy services before the
-command, then measures recovered space and service health afterwards. This is
-not approval for `--all`, `docker system prune`, images, containers, volumes,
-backups, business data or any other cleanup. Insufficient space after this
-bounded step stops the release; backup, rollback and capacity requirements
-still apply. The exact cache step needs no repeated owner question.
+command, then measures recovered space and service health afterwards. This
+cache authorization is not approval for `--all`, `docker system prune`,
+images, containers, volumes, backups, business data or any other cleanup. The
+exact cache step needs no repeated owner question.
+
+For future Roost releases, the owner also authorizes a narrower image-capacity
+rule when a fresh preflight shows insufficient build space. Check the exact tag
+and immutable image ID, zero references from any container, no concurrent
+build/deploy, healthy retained PostgreSQL, and the rollback set before each
+removal. Remove at most one oldest unused **Roost backend** image at a time,
+without force, while always retaining the running image and the two newest
+previous backend images. Record the tag, ID, command result and physical
+`df -B1 /` recovery after each image; stop immediately at the required build
+allowance. The rule does not include other services' images, containers,
+volumes, business data, broad prune or a changed rollback requirement. If any
+precondition fails or the bounded recovery remains insufficient, stop the
+release for a new owner decision. Backup, rollback and capacity requirements
+still apply.
 
 Required smoke checks after deploy:
 
