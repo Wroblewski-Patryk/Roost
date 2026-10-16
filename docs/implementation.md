@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Today → Decision attention; local UI passed, native DB blocked (Docker stopped), no release. [Evidence](ux/owner-today-decision-attention-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** G0 Today → Decision attention; local/native and backup passed, release pending. [Evidence](ux/owner-today-decision-attention-2026-10-16.md). G24c/G25 stopped.
 
 **Outcome 1 Today:** Deployed `e76788bc` has signed-in PL/EN Today and failed-result Task proof; no live Decision click. The new Decision path is local only. Full RF-UX-012 remains open. [Earlier proof](ux/owner-today-local-checkpoint-2026-10-15.md); [checkpoint](ux/owner-today-decision-attention-2026-10-16.md).
 
