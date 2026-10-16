@@ -11,11 +11,25 @@ const row = (number, status = 'active') => ({
   id: id(number), title: number === 1 ? 'Triage legacy import' : `Triage record ${number}`,
   key: `triage-${number}`, recordType: number === 1 ? 'architecture_section' : 'requirement',
   status, source: 'documentation-import', verificationState: 'not_started',
-  metadata: { sourceKind: number === 1 ? 'legacy_assumption' : 'canonical_documentation',
-    sourceSystem: 'fixture-docs' }, updatedAt: '2026-10-17T10:00:00.000Z'
+  metadata: { sourceKind: number === 1 ? 'legacy_assumption' : null,
+    sourceSystem: 'fixture-docs', sourceRoot: 'D:/fictional/source',
+    sourceRevision: 'rev-1', filePath: 'docs/example.md' }, updatedAt: '2026-10-17T10:00:00.000Z'
 });
 const current = Array.from({ length: 26 }, (_, index) => row(index + 1));
 const historical = row(90, 'archived');
+const groupId = `import:${'a'.repeat(32)}`, documentId = `doc:${'b'.repeat(32)}`;
+const otherId = `other:${'d'.repeat(32)}`;
+const group = { id: groupId, kind: 'import', applicationId: id(902), applicationName: 'Example app',
+  sourceSystem: 'fixture-docs', sourceRoot: 'D:/fictional/source', sourceRevision: 'rev-1',
+  recordCount: 26, documentCount: 1, legacyAssumptionCount: 1, unspecifiedKindCount: 25 };
+const sameNameGroup = { ...group, id: `import:${'c'.repeat(32)}`, applicationId: id(903),
+  recordCount: 1, legacyAssumptionCount: 0, unspecifiedKindCount: 1 };
+const otherGroup = { ...group, id: otherId, kind: 'other', recordKey: 'triage-other',
+  applicationId: null, applicationName: null, sourceSystem: null, sourceRoot: null, sourceRevision: null,
+  recordCount: 1, documentCount: 0, legacyAssumptionCount: 0, unspecifiedKindCount: 0 };
+const otherRecord = { ...row(91), title: 'Triage other record', key: 'triage-other',
+  source: 'companycore', metadata: { sourceKind: null, sourceSystem: null } };
+const document = { id: documentId, filePath: 'docs/example.md', recordCount: 26 };
 const full = record => ({ ...record, description: 'Exact private record body',
   businessPurpose: 'Owner inspection', rationale: 'Read only', acceptanceCriteria: ['Fixture criterion'],
   priority: 'high', functionalState: 'unknown', implementationCoverage: 0.25,
@@ -39,7 +53,7 @@ server.listen(0, '127.0.0.1'); await once(server, 'listening');
 const browser = await chromium.launch({ headless: true });
 let checks = 0;
 try {
-  for (const locale of ['pl', 'en']) for (const width of [390, 1280]) {
+  for (const locale of ['pl', 'en']) for (const width of [390, 1440]) {
     const pl = locale === 'pl';
     const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
     await page.addInitScript(value => localStorage.setItem('companycoreLocale', value), locale);
@@ -56,13 +70,31 @@ try {
       if (pathname === '/v1/company-records/registry') return route.fulfill({ json: { data: {
         items: [], total: 0, page: 1, pageSize: 50 } } });
       if (pathname === '/v1/company-records/registry/unassigned') {
-        const params = url.searchParams, scope = params.get('scope'), q = params.get('q'), pageNumber = Number(params.get('page'));
+        const params = url.searchParams, scope = params.get('scope'), q = params.get('q'), level = params.get('level'), pageNumber = Number(params.get('page'));
         assert.equal(params.get('pageSize'), '25');
         if (q === 'recover' && ++recoveryReads === 1) return route.fulfill({ status: 503, json: { error: 'temporarily_unavailable' } });
-        const matching = scope === 'history' ? [historical] : q === 'missing' ? [] : q === 'legacy' ? [current[0]]
-          : q === 'recover' ? [current[0]] : current;
-        return route.fulfill({ json: { data: { items: matching.slice((pageNumber - 1) * 25, pageNumber * 25),
-          total: matching.length, page: pageNumber, pageSize: 25 } } });
+        if (level === 'groups') {
+          assert.equal(params.has('groupId'), false);
+          const items = scope === 'history' ? [{ ...group, recordCount: 1, unspecifiedKindCount: 1, legacyAssumptionCount: 0 }] : [group, sameNameGroup, otherGroup];
+          return route.fulfill({ json: { data: { level, items, total: items.length, recordTotal: scope === 'history' ? 1 : 28,
+            page: pageNumber, pageSize: 25 } } });
+        }
+        if (level === 'documents') {
+          assert.equal(params.get('groupId'), groupId);
+          const items = scope === 'history' ? [{ ...document, recordCount: 1 }] : [document];
+          return route.fulfill({ json: { data: { level, items, total: 1, recordTotal: scope === 'history' ? 1 : 26,
+            page: pageNumber, pageSize: 25 } } });
+        }
+        assert.equal(level, 'records');
+        if (!q) {
+          assert.ok([groupId, otherId].includes(params.get('groupId')));
+          assert.equal(params.get('documentId'), params.get('groupId') === otherId ? null : documentId);
+        } else assert.equal(params.has('groupId'), false, 'search remains flat');
+        const matching = scope === 'history' ? [historical] : !q && params.get('groupId') === otherId ? [otherRecord]
+          : q === 'missing' ? [] : q === 'legacy' ? [current[0]]
+            : q === 'recover' ? [current[0]] : current;
+        return route.fulfill({ json: { data: { level, items: matching.slice((pageNumber - 1) * 25, pageNumber * 25),
+          total: matching.length, recordTotal: matching.length, page: pageNumber, pageSize: 25 } } });
       }
       if (pathname === `/v1/company-records/${id(1)}`) {
         if (delayDetail) await new Promise(resolve => setTimeout(resolve, 350));
@@ -75,15 +107,35 @@ try {
         reviewHistoryTruncated: false, nextBeforeOrdinal: null, history: [], nextBeforeHistoryOrdinal: null,
         priorBodiesAvailable: false, historyStartsAtMigration: true, overwrittenBeforeMigrationAvailable: false,
         eligibility: { status: 'task_required', reasons: [], task: null, review: null } } } });
+      if (pathname === `/v1/company-records/${id(90)}/source-audit/task-options`) return route.fulfill({ json: { data: { items: [], hasMore: false } } });
+      if (pathname === `/v1/company-records/${id(90)}/source-audit`) return route.fulfill({ json: { data: {
+        currentRecord: historical, currentRevision: historical.updatedAt, reviews: [],
+        reviewHistoryTruncated: false, nextBeforeOrdinal: null, history: [], nextBeforeHistoryOrdinal: null,
+        priorBodiesAvailable: false, historyStartsAtMigration: true, overwrittenBeforeMigrationAvailable: false,
+        eligibility: { status: 'task_required', reasons: [], task: null, review: null } } } });
       throw new Error(`Unexpected ${pathname}`);
     });
     await page.goto(`http://127.0.0.1:${server.address().port}/areas?area=08-zasoby&view=knowledge`);
     await page.getByRole('link', { name: pl ? 'Do uporządkowania' : 'To organize' }).click();
-    await page.getByText('Triage legacy import').filter({ visible: true }).first().waitFor();
     assert.match(page.url(), /catalog=unassigned/);
+    await page.getByRole('region', { name: pl ? 'Grupy źródeł' : 'Source groups' }).waitFor();
+    await page.getByText(pl ? '28 rekordów · grupy 1–3 z 3' : '28 records · groups 1–3 of 3').waitFor();
+    await page.getByText(pl ? 'Grupy odzwierciedlają zapisane metadane źródła' : 'Groups reflect recorded source metadata', { exact: false }).waitFor();
+    assert.equal(await page.getByRole('button', { name: new RegExp(id(902)) }).count(), 1);
+    assert.equal(await page.getByRole('button', { name: new RegExp(id(903)) }).count(), 1);
+    await page.getByRole('button', { name: /triage-other/ }).press('Enter');
+    await page.getByText('Triage other record').filter({ visible: true }).first().waitFor();
+    await page.getByRole('navigation', { name: pl ? 'Ścieżka źródła' : 'Source path' })
+      .getByRole('button', { name: pl ? 'Wszystkie grupy' : 'All groups' }).press('Enter');
+    await page.getByRole('button', { name: new RegExp(id(902)) }).press('Enter');
+    await page.getByRole('region', { name: pl ? 'Dokumenty źródłowe' : 'Source documents' }).waitFor();
+    await page.getByText(pl ? '26 rekordów · dokumenty 1–1 z 1' : '26 records · documents 1–1 of 1').waitFor();
+    await page.getByRole('button', { name: /docs\/example.md/ }).press('Enter');
+    await page.getByText('Triage legacy import').filter({ visible: true }).first().waitFor();
     await page.getByText(pl ? '1–25 z 26' : '1–25 of 26').waitFor();
     await page.getByText(pl ? 'Katalog nie nadaje dopuszczenia' : 'The catalog does not grant eligibility').waitFor();
     assert.equal(await page.getByText('legacy_assumption').count() > 0, true);
+    assert.equal(await page.getByText(pl ? 'Rodzaj źródła nie zapisany' : 'Source kind not recorded').count() > 0, true);
     assert.equal(await page.getByText(pl ? 'Sekcja architektury' : 'Architecture section').count() > 0, true);
     if (width === 390) assert.equal(await page.getByText('Triage legacy import · triage-1').isVisible(), true);
     const pages = page.getByRole('navigation', { name: pl ? 'Strony źródeł' : 'Source pages' });
@@ -101,6 +153,7 @@ try {
     await page.getByRole('button', { name: `${pl ? 'Szczegóły' : 'Details'}: Triage legacy import` }).click();
     const detail = page.getByRole('dialog', { name: 'Triage legacy import' });
     await detail.getByText('Exact private record body').waitFor();
+    await detail.getByText(pl ? 'Bez przypisania do działu ani całej firmy' : 'No department or company-wide assignment', { exact: false }).waitFor();
     await detail.getByText('0.25').waitFor();
     await detail.getByText(id(902)).waitFor();
     assert.equal(await detail.locator('input, select, textarea').count(), 0);
@@ -109,8 +162,17 @@ try {
     await page.getByRole('dialog', { name: /(?:Pochodzenie i dopuszczenie źródła|Source provenance and eligibility)/ }).waitFor();
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: pl ? 'Historia' : 'History' }).press('Enter');
+    await page.getByText(pl ? 'Zarchiwizowane rekordy bez przypisania do działu' : 'Archived records without a department assignment', { exact: false }).waitFor();
+    await page.getByRole('button', { name: new RegExp(id(902)) }).press('Enter');
+    await page.getByRole('button', { name: /docs\/example.md/ }).press('Enter');
     await page.getByText('Triage record 90').filter({ visible: true }).first().waitFor();
     assert.equal(await page.getByText('Triage legacy import').filter({ visible: true }).count(), 0);
+    await page.getByRole('button', { name: `${pl ? 'Szczegóły' : 'Details'}: Triage record 90` }).click();
+    const historicalDetail = page.getByRole('dialog', { name: 'Triage record 90' });
+    await historicalDetail.getByText('Exact private record body').waitFor();
+    await historicalDetail.getByRole('button', { name: pl ? 'Audyt źródła' : 'Source audit' }).click();
+    await page.getByRole('dialog', { name: /(?:Pochodzenie i dopuszczenie źródła|Source provenance and eligibility)/ }).waitFor();
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: pl ? 'Bieżące' : 'Current' }).press('Enter');
     const search = page.getByLabel(pl ? 'Szukaj we wszystkich typach' : 'Search all record types');
     await search.fill('legacy');

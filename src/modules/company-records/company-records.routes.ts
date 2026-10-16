@@ -59,6 +59,25 @@ const registrySelect = { id: true, title: true, key: true, recordType: true, sta
   priority: true, functionalState: true, verificationState: true,
   source: true, metadata: true, createdAt: true, updatedAt: true } satisfies Prisma.CompanyRecordSelect;
 
+// Group only recorded documentation provenance. Incomplete import metadata is
+// visible separately; an absent sourceKind never becomes canonical knowledge.
+const completeDocumentSource = Prisma.sql`r.source = 'documentation-import' AND r.application_id IS NOT NULL
+  AND jsonb_typeof(r.metadata) = 'object'
+  AND jsonb_typeof(r.metadata->'sourceSystem') = 'string' AND btrim(r.metadata->>'sourceSystem') <> ''
+  AND jsonb_typeof(r.metadata->'sourceRoot') = 'string' AND btrim(r.metadata->>'sourceRoot') <> ''
+  AND jsonb_typeof(r.metadata->'sourceRevision') = 'string' AND btrim(r.metadata->>'sourceRevision') <> ''
+  AND jsonb_typeof(r.metadata->'filePath') = 'string' AND btrim(r.metadata->>'filePath') <> ''`;
+const sourceGroupId = Prisma.sql`CASE WHEN ${completeDocumentSource} THEN
+  'import:' || md5(jsonb_build_array(r.workspace_id::text, r.application_id::text,
+    r.metadata->>'sourceSystem', r.metadata->>'sourceRoot', r.metadata->>'sourceRevision')::text)
+  WHEN r.source = 'documentation-import' THEN
+    'incomplete:' || md5(jsonb_build_array(r.workspace_id::text, r.application_id::text)::text)
+  ELSE 'other:' || md5(jsonb_build_array(r.workspace_id::text, r.id::text)::text) END`;
+const sourceDocumentId = Prisma.sql`CASE WHEN ${completeDocumentSource} THEN
+  'doc:' || md5(jsonb_build_array(r.workspace_id::text, r.application_id::text,
+    r.metadata->>'sourceSystem', r.metadata->>'sourceRoot', r.metadata->>'sourceRevision',
+    r.metadata->>'filePath')::text) ELSE NULL END`;
+
 async function registryItems(workspaceId: string, records: Array<Prisma.CompanyRecordGetPayload<{ select: typeof registrySelect }>>) {
   const detailed = await serialize(workspaceId, records);
   return records.map(({ metadata }, index) => {
@@ -66,7 +85,7 @@ async function registryItems(workspaceId: string, records: Array<Prisma.CompanyR
       ? metadata as Record<string, unknown> : {};
     const sourceField = (key: string) => {
       const value = fields[key];
-      if (typeof value !== "string") return null;
+      if (typeof value !== "string" || !value.trim()) return null;
       return value.length > 160 ? `${value.slice(0, 157)}…` : value;
     };
     const ownerDepartment = detailed[index].organizationalContext?.ownerDepartment;
@@ -138,8 +157,14 @@ companyRecordsRouter.get("/registry/unassigned", asyncHandler(async (req, res) =
     scope: z.enum(["current", "history"]).default("current"),
     q: z.string().trim().max(120).default(""),
     page: z.coerce.number().int().min(1).max(10000).default(1),
-    pageSize: z.coerce.number().int().min(1).max(100).default(50)
+    pageSize: z.coerce.number().int().min(1).max(100).default(50),
+    level: z.enum(["records", "groups", "documents"]).default("records"),
+    groupId: z.string().regex(/^(import|incomplete|other):[a-f0-9]{32}$/).optional(),
+    documentId: z.string().regex(/^doc:[a-f0-9]{32}$/).optional()
   }).strict().parse(req.query);
+  if ((input.level === "documents" && !input.groupId) || (input.documentId && !input.groupId)
+    || (input.level === "groups" && (input.groupId || input.documentId)))
+    return res.status(400).json({ error: "invalid_source_group_selection" });
   const status = input.scope === "history" ? Prisma.sql`r.status = 'archived'` : Prisma.sql`r.status <> 'archived'`;
   const filter = Prisma.sql`
     r.workspace_id = ${workspaceId}::uuid AND ${status}
@@ -151,17 +176,85 @@ companyRecordsRouter.get("/registry/unassigned", asyncHandler(async (req, res) =
     AND (${input.q} = '' OR position(lower(${input.q}) in lower(r.title)) > 0
       OR position(lower(${input.q}) in lower(r.key)) > 0
       OR position(lower(${input.q}) in lower(coalesce(r.description, ''))) > 0)`;
+  if (input.level === "groups" || input.level === "documents") {
+    const classified = Prisma.sql`WITH classified AS (
+      SELECT r.id, r.key AS record_key, r.application_id, a.name AS application_name,
+        CASE WHEN ${completeDocumentSource} THEN 'import'
+          WHEN r.source = 'documentation-import' THEN 'incomplete' ELSE 'other' END AS kind,
+        ${sourceGroupId} AS group_id, ${sourceDocumentId} AS document_id,
+        CASE WHEN ${completeDocumentSource} THEN r.metadata->>'sourceSystem' ELSE NULL END AS source_system,
+        CASE WHEN ${completeDocumentSource} THEN r.metadata->>'sourceRoot' ELSE NULL END AS source_root,
+        CASE WHEN ${completeDocumentSource} THEN r.metadata->>'sourceRevision' ELSE NULL END AS source_revision,
+        CASE WHEN ${completeDocumentSource} THEN r.metadata->>'filePath' ELSE NULL END AS file_path,
+        CASE WHEN jsonb_typeof(r.metadata->'sourceKind') = 'string'
+          THEN NULLIF(btrim(r.metadata->>'sourceKind'), '') ELSE NULL END AS source_kind
+      FROM company_records r
+      LEFT JOIN applications a ON a.id = r.application_id AND a.workspace_id = r.workspace_id
+      WHERE ${filter}
+    )`;
+    if (input.level === "groups") {
+      const grouped = Prisma.sql`SELECT group_id AS id, kind, application_id, application_name,
+        CASE WHEN kind = 'other' THEN max(record_key) ELSE NULL END AS record_key,
+        source_system, source_root, source_revision, count(*)::int AS record_count,
+        count(DISTINCT document_id)::int AS document_count,
+        count(*) FILTER (WHERE source_kind = 'legacy_assumption')::int AS legacy_assumption_count,
+        count(*) FILTER (WHERE source_kind IS NULL)::int AS unspecified_kind_count
+        FROM classified GROUP BY group_id, kind, application_id, application_name,
+          source_system, source_root, source_revision`;
+      const { totals, items } = await prisma.$transaction(async transaction => {
+        const totals = await transaction.$queryRaw<Array<{ total: number; record_total: number }>>`
+          ${classified} SELECT count(*)::int AS total, coalesce(sum(record_count), 0)::int AS record_total
+          FROM (${grouped}) groups`;
+        const items = await transaction.$queryRaw<Array<{ id: string; kind: string; record_key: string | null; application_id: string | null;
+          application_name: string | null; source_system: string | null; source_root: string | null;
+          source_revision: string | null; record_count: number; document_count: number;
+          legacy_assumption_count: number; unspecified_kind_count: number }>>`
+          ${classified} SELECT * FROM (${grouped}) groups
+          ORDER BY CASE kind WHEN 'import' THEN 0 WHEN 'incomplete' THEN 1 ELSE 2 END,
+            lower(coalesce(application_name, '')), lower(coalesce(source_system, '')), id
+          LIMIT ${input.pageSize} OFFSET ${(input.page - 1) * input.pageSize}`;
+        return { totals: totals[0], items };
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+      return res.json({ data: { level: "groups", items: items.map(item => ({
+        id: item.id, kind: item.kind, recordKey: item.record_key,
+        applicationId: item.application_id, applicationName: item.application_name,
+        sourceSystem: item.source_system, sourceRoot: item.source_root, sourceRevision: item.source_revision,
+        recordCount: item.record_count, documentCount: item.document_count,
+        legacyAssumptionCount: item.legacy_assumption_count, unspecifiedKindCount: item.unspecified_kind_count
+      })), total: totals?.total ?? 0, recordTotal: totals?.record_total ?? 0,
+      page: input.page, pageSize: input.pageSize } });
+    }
+    const grouped = Prisma.sql`SELECT document_id AS id, file_path, count(*)::int AS record_count
+      FROM classified WHERE group_id = ${input.groupId} AND kind = 'import'
+      GROUP BY document_id, file_path`;
+    const { totals, items } = await prisma.$transaction(async transaction => {
+      const totals = await transaction.$queryRaw<Array<{ total: number; record_total: number }>>`
+        ${classified} SELECT count(*)::int AS total, coalesce(sum(record_count), 0)::int AS record_total
+        FROM (${grouped}) documents`;
+      const items = await transaction.$queryRaw<Array<{ id: string; file_path: string; record_count: number }>>`
+        ${classified} SELECT * FROM (${grouped}) documents
+        ORDER BY lower(file_path), id LIMIT ${input.pageSize} OFFSET ${(input.page - 1) * input.pageSize}`;
+      return { totals: totals[0], items };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+    return res.json({ data: { level: "documents",
+      items: items.map(item => ({ id: item.id, filePath: item.file_path, recordCount: item.record_count })),
+      total: totals?.total ?? 0, recordTotal: totals?.record_total ?? 0,
+      page: input.page, pageSize: input.pageSize } });
+  }
+  const groupFilter = input.groupId ? Prisma.sql`AND ${sourceGroupId} = ${input.groupId}` : Prisma.empty;
+  const documentFilter = input.documentId ? Prisma.sql`AND ${sourceDocumentId} = ${input.documentId}` : Prisma.empty;
   const { total, records } = await prisma.$transaction(async transaction => {
     const count = await transaction.$queryRaw<Array<{ total: number }>>`
-      SELECT count(*)::int AS total FROM company_records r WHERE ${filter}`;
+      SELECT count(*)::int AS total FROM company_records r WHERE ${filter} ${groupFilter} ${documentFilter}`;
     const pageIds = await transaction.$queryRaw<Array<{ id: string }>>`
-      SELECT r.id FROM company_records r WHERE ${filter}
+      SELECT r.id FROM company_records r WHERE ${filter} ${groupFilter} ${documentFilter}
       ORDER BY r.updated_at DESC, r.id DESC LIMIT ${input.pageSize} OFFSET ${(input.page - 1) * input.pageSize}`;
     const pageRecords = await transaction.companyRecord.findMany({ where: { workspaceId, id: { in: pageIds.map(row => row.id) } }, select: registrySelect });
     const byId = new Map(pageRecords.map(record => [record.id, record]));
     return { total: count[0]?.total ?? 0, records: pageIds.flatMap(row => { const record = byId.get(row.id); return record ? [record] : []; }) };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
-  res.json({ data: { items: await registryItems(workspaceId, records), total, page: input.page, pageSize: input.pageSize } });
+  res.json({ data: { level: "records", items: await registryItems(workspaceId, records), total,
+    recordTotal: total, page: input.page, pageSize: input.pageSize } });
 }));
 // A bounded owner-only picker for an ordinary Task. It carries no record body.
 companyRecordsRouter.get("/task-source-options", asyncHandler(async (req, res) => {

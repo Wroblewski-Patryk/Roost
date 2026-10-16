@@ -488,6 +488,115 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       assert.ok(Array.isArray(legacy.body.data));
       assert.equal(legacy.body.data[0].description, 'Searchable private description');
     });
+    await t.test('owner source hierarchy preserves exact provenance, totals and workspace boundaries', async () => {
+      const appA = await prisma.application.create({ data: { workspaceId, name: 'Grouping App A', slug: 'grouping-app-a' } });
+      const appB = await prisma.application.create({ data: { workspaceId, name: 'Grouping App B', slug: 'grouping-app-b' } });
+      const provenance = (sourceId, filePath, revision = 'rev-1', extra = {}) => ({
+        sourceSystem: 'fictional-repository', sourceRoot: 'D:/fictional/source',
+        sourceRevision: revision, sourceId, filePath, headingPath: ['Example'], ...extra
+      });
+      const entries = [
+        { key: 'group-proof-a1', applicationId: appA.id, metadata: provenance('a1', 'docs/same.md', 'rev-1', { sourceKind: 'legacy_assumption' }) },
+        { key: 'group-proof-a2', applicationId: appA.id, metadata: provenance('a2', 'docs/same.md') },
+        { key: 'group-proof-a3', applicationId: appA.id, metadata: provenance('a3', 'docs/second.md', 'rev-1', { sourceKind: '  ' }) },
+        { key: 'group-proof-b1', applicationId: appB.id, metadata: provenance('b1', 'docs/same.md') },
+        { key: 'group-proof-a-rev2', applicationId: appA.id, metadata: provenance('a-rev2', 'docs/same.md', 'rev-2') },
+        { key: 'group-proof-incomplete', applicationId: appA.id, metadata: { sourceSystem: 'fictional-repository', sourceRevision: 'rev-1', filePath: 'docs/same.md' } },
+        { key: 'group-proof-malformed', applicationId: appA.id, metadata: { sourceSystem: 'fictional-repository', sourceRoot: ['not-a-root'], sourceRevision: 'rev-1', filePath: 'docs/same.md' } },
+        { key: 'group-proof-other', applicationId: null, source: 'companycore', metadata: {} },
+        { key: 'group-proof-history', applicationId: appA.id, status: 'archived', metadata: provenance('history', 'docs/same.md') },
+        { key: 'group-proof-mapped', applicationId: appA.id, metadata: provenance('mapped', 'docs/same.md') },
+        { key: 'group-proof-other-app', applicationId: appA.id, source: 'companycore', metadata: {} },
+        { key: 'group-proof-other-second', applicationId: null, source: 'companycore', metadata: {} }
+      ];
+      const records = await Promise.all(entries.map(entry => prisma.companyRecord.create({ data: {
+        workspaceId, recordType: 'architecture_section', key: entry.key, title: 'Grouping proof same title',
+        description: 'Exact private grouping body', source: entry.source ?? 'documentation-import',
+        status: entry.status ?? 'active', applicationId: entry.applicationId, metadata: entry.metadata
+      } })));
+      const department = await prisma.workspaceDepartment.findFirstOrThrow({ where: { workspaceId, key: '02-produkt' } });
+      await prisma.organizationalDepartmentRelation.create({ data: { workspaceId, entityType: 'company_record',
+        entityId: records[9].id, departmentId: department.id, relationshipRole: 'owner' } });
+      const root = '/v1/company-records/registry/unassigned?q=Grouping%20proof&pageSize=2';
+      const groups = await request(`${root}&level=groups`, owner);
+      assert.equal(groups.status, 200, JSON.stringify(groups.body));
+      assert.equal(groups.body.data.total, 7);
+      assert.equal(groups.body.data.recordTotal, 10);
+      assert.equal(groups.body.data.items.length, 2);
+      const laterGroups = await Promise.all([2, 3, 4].map(page => request(`${root}&level=groups&page=${page}`, owner)));
+      const allGroups = [groups, ...laterGroups].flatMap(result => result.body.data.items);
+      assert.equal(allGroups.length, 7);
+      const appAGroup = allGroups.find(group => group.kind === 'import' && group.applicationId === appA.id && group.sourceRevision === 'rev-1');
+      assert.ok(appAGroup);
+      assert.equal(appAGroup.recordCount, 3);
+      assert.equal(appAGroup.documentCount, 2);
+      assert.equal(appAGroup.legacyAssumptionCount, 1);
+      assert.equal(appAGroup.unspecifiedKindCount, 2);
+      assert.equal(allGroups.filter(group => group.kind === 'import').length, 3, 'same names never merge apps or revisions');
+      const incomplete = allGroups.find(group => group.kind === 'incomplete');
+      const otherGroups = allGroups.filter(group => group.kind === 'other');
+      assert.equal(incomplete.recordCount, 2);
+      assert.equal(otherGroups.length, 3);
+      assert.equal(new Set(otherGroups.map(group => group.id)).size, 3, 'other records remain separate even without an application');
+      assert.deepEqual(new Set(otherGroups.map(group => group.applicationId)), new Set([null, appA.id]));
+      assert.ok(otherGroups.every(group => group.recordCount === 1));
+      assert.deepEqual(new Set(otherGroups.map(group => group.recordKey)),
+        new Set(['group-proof-other', 'group-proof-other-app', 'group-proof-other-second']));
+      const groupId = encodeURIComponent(appAGroup.id);
+      const documents = await request(`${root}&level=documents&groupId=${groupId}&pageSize=1`.replace('pageSize=2&', ''), owner);
+      assert.equal(documents.status, 200, JSON.stringify(documents.body));
+      assert.equal(documents.body.data.total, 2);
+      assert.equal(documents.body.data.recordTotal, 3);
+      assert.equal(documents.body.data.items.length, 1);
+      const documentNext = await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&level=documents&groupId=${groupId}&pageSize=1&page=2`, owner);
+      const allDocuments = [documents, documentNext].flatMap(result => result.body.data.items);
+      const sameDocument = allDocuments.find(document => document.filePath === 'docs/same.md');
+      assert.equal(sameDocument.recordCount, 2);
+      const fragments = await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&level=records&groupId=${groupId}&documentId=${encodeURIComponent(sameDocument.id)}&pageSize=1`, owner);
+      assert.equal(fragments.body.data.total, 2);
+      assert.equal(fragments.body.data.items.length, 1);
+      assert.equal('description' in fragments.body.data.items[0], false);
+      const fragmentNext = await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&level=records&groupId=${groupId}&documentId=${encodeURIComponent(sameDocument.id)}&pageSize=1&page=2`, owner);
+      assert.deepEqual(new Set([...fragments.body.data.items, ...fragmentNext.body.data.items].map(item => item.id)),
+        new Set([records[0].id, records[1].id]));
+      const unspecified = [...fragments.body.data.items, ...fragmentNext.body.data.items].find(item => item.id === records[1].id);
+      assert.equal(unspecified.metadata.sourceKind, null, 'missing kind is never labeled canonical');
+      const blankKind = await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&level=records&groupId=${groupId}&pageSize=10`, owner);
+      assert.equal(blankKind.body.data.items.find(item => item.id === records[2].id).metadata.sourceKind, null,
+        'blank kind is also not recorded');
+      assert.equal((await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&level=records&groupId=${encodeURIComponent(incomplete.id)}`, owner)).body.data.total, 2);
+      for (const other of otherGroups) {
+        const result = await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&level=records&groupId=${encodeURIComponent(other.id)}`, owner);
+        assert.equal(result.body.data.total, 1);
+        assert.equal(result.body.data.items[0].key, other.recordKey);
+      }
+      assert.equal((await request(`${root}&level=records`, owner)).body.data.total, 10, 'flat search remains cross-type and complete');
+      const history = await request(`${root}&scope=history&level=groups`, owner);
+      assert.equal(history.body.data.total, 1);
+      assert.equal(history.body.data.recordTotal, 1);
+      assert.equal((await request(`/v1/company-records/registry/unassigned?q=Grouping%20proof&scope=history&level=documents&groupId=${encodeURIComponent(history.body.data.items[0].id)}`, owner)).body.data.recordTotal, 1);
+      assert.equal((await request(`${root}&level=documents`, owner)).status, 400);
+      assert.equal((await request(`${root}&level=records&groupId=bad`, owner)).status, 400);
+      for (const credential of [agentKey, generalKey, null]) {
+        assert.equal((await request(`${root}&level=groups`, credential)).status, credential ? 403 : 401);
+        assert.equal((await request(`${root}&level=documents&groupId=${groupId}`, credential)).status, credential ? 403 : 401);
+      }
+      const foreign = await request('/auth/register', null, { email: 'grouping-foreign@example.test',
+        password: 'synthetic-test-password-only', name: 'Foreign owner', workspaceName: 'Foreign grouping workspace' });
+      assert.equal(foreign.status, 201);
+      await prisma.companyRecord.create({ data: { workspaceId: foreign.body.data.workspace.id,
+        applicationId: (await prisma.application.create({ data: { workspaceId: foreign.body.data.workspace.id,
+          name: 'Grouping App A', slug: 'foreign-grouping-app' } })).id,
+        recordType: 'architecture_section', key: 'foreign-group-proof', title: 'Grouping proof same title',
+        source: 'documentation-import', metadata: provenance('foreign', 'docs/same.md') } });
+      const foreignGroups = await request(`${root}&level=groups`, foreign.body.data.token);
+      assert.equal(foreignGroups.body.data.recordTotal, 1);
+      assert.equal((await request(`${root}&level=documents&groupId=${groupId}`, foreign.body.data.token)).body.data.total, 0);
+      await prisma.workspaceMembership.create({ data: { workspaceId, userId: foreign.body.data.user.id, role: 'member' } });
+      const member = await request('/auth/login', null, { email: 'grouping-foreign@example.test',
+        password: 'synthetic-test-password-only', workspaceId });
+      assert.equal((await request(`${root}&level=groups`, member.body.data.token)).status, 403);
+    });
     process.stdout.write('G9a native source read: task-bound HTTP and global MCP positive/negative assertions passed\n');
   } finally {
     await prisma.$disconnect();

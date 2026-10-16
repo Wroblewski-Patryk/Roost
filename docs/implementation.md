@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none (STOP). G0 Task source review deployed; no real source approval. [Evidence](ux/owner-task-company-source-review-2026-10-16.md). G24c/G25 STOP
+**Active gate:** G0 Outcome 0 source grouping, locally verified; release held on capacity. [Evidence](ux/owner-company-source-grouping-2026-10-17.md). G24c/G25 STOP
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
