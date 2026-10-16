@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Task source review: G9a/API/UI pass; G6a partial; release pending. G24c/G25 STOP. [Evidence](ux/owner-task-company-source-review-2026-10-16.md).
+**Active gate:** none (STOP). G0 Task source review deployed; no real source approval. [Evidence](ux/owner-task-company-source-review-2026-10-16.md). G24c/G25 STOP
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
