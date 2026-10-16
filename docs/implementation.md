@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 retired Goal Task correction. [Evidence](ux/owner-retired-goal-task-truth-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** G0 procedure provenance and use. [Evidence](ux/owner-procedure-provenance-2026-10-16.md). G24c/G25 stopped.
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
@@ -24,7 +24,7 @@ Current delivery status and evidence.
 
 **Company data audit (2026-10-14):** 240 public tables inventoried; two synthetic agents/logs deleted and some gate records removed from active views with audit retained. Old procedures, repeated Decisions, a technical Goal and one record linked to provider tasks remain. Further deletion needs exact provenance. Worker stopped; no company-task proof.
 
-**Rdzeń inventory (2026-10-14 21:42 UTC, read-only):** 240 public tables, 138 nonempty; 33 active procedures, 10 proposed Decisions, one technical Goal, 280 Tasks and 5,231 CompanyRecords. Counts are not a deletion list. Focused native Today proof shows repeat `--apply` preserves matched inactive CompanyRecords and architecture components. Other provenance/cleanup remains open.
+**Rdzeń inventory (2026-10-14):** 240 tables, 138 nonempty; 33 active procedures, 10 proposed Decisions, one technical Goal, 280 Tasks and 5,231 CompanyRecords. Counts are not a deletion list; wider provenance/cleanup remains open.
 
 **G0 signals release (2026-10-16):** Backup/restore verified; Coolify 6440 deployed `4b4c33d5`. API healthy, prior image retained, 11 GB free. [Proof](ux/owner-department-signals-2026-10-15.md).
 

@@ -13,6 +13,7 @@ import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
 import { isReferenceSiteChecklist } from "../product-engineering/reference-site-checklist-contract";
 import { archiveProcedure, procedureArchivePreview } from "./procedure-archive";
+import { procedureProvenanceView } from "./procedure-provenance";
 
 type CoverageStatus = "covered" | "partial" | "missing" | "deferred";
 
@@ -321,6 +322,13 @@ processCoreRouter.get("/procedures/:id", asyncHandler(async (req, res) => {
   if (!procedure) return sendApiError(res, 404, "procedure_not_found");
   const contexts = await organizationalContextsForEntities(req.auth!.workspaceId, "procedure", [procedure.id]);
   res.json({ data: { ...procedure, organizationalContext: contexts.get(procedure.id) } });
+}));
+
+processCoreRouter.get("/procedures/:id/provenance", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await procedureProvenanceView(req.auth!.workspaceId, z.string().uuid().parse(req.params.id));
+  if ("error" in result) return sendApiError(res, 404, String(result.error));
+  res.json({ data: result });
 }));
 
 processCoreRouter.post("/procedures", asyncHandler(async (req, res) => {

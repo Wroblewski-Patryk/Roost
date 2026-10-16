@@ -49,6 +49,7 @@ import { registerReferenceSiteG24aTests } from "./reference-site-g24a-api";
 import { registerReferenceSiteG24bTests } from "./reference-site-g24b-api";
 import { registerExpiredWorkerRotationApiTests } from "./expired-worker-rotation-api";
 import { registerProcedureArchiveApiTests } from "./procedure-archive-api";
+import { registerProcedureProvenanceApiTests } from "./procedure-provenance-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerTaskProposalTests({ request, registerOwner });
@@ -60,6 +61,7 @@ registerReferenceSiteG24aTests({ request, registerOwner });
 registerReferenceSiteG24bTests({ request, registerOwner });
 registerExpiredWorkerRotationApiTests({ request, registerOwner });
 registerProcedureArchiveApiTests({ request, registerOwner });
+registerProcedureProvenanceApiTests({ request, registerOwner });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
@@ -2607,6 +2609,11 @@ test("native risk level admission binds independent evidence to exact operations
   assert.equal((await get()).operations.runtime_execute.gates.find((g:any)=>g.gate==="owner_approval").status,"stale");
   await prepareAdmissionFixture(route,f.input,auth);const before=await get();
   const changed=await post("scope",{...before.scope.input,commit:"c".repeat(40),requestId:randomUUID(),expectedVersion:before.expectedVersion});assert.equal(changed.status,200);
+  const provenance=await request(`/v1/process-core/procedures/${before.scope.input.procedureId}/provenance`,{headers:auth});
+  assert.equal(provenance.status,200,JSON.stringify(provenance.body));
+  const taskLinks=(provenance.body as any).data.tasks;
+  assert.ok(taskLinks.history.some((link:any)=>link.taskId===task.id&&link.basis==="composition"),"composition pinned to old scope is history after re-admission");
+  assert.equal(taskLinks.current.some((link:any)=>link.taskId===task.id&&link.basis==="composition"),false,"old composition is not current use");
   assert.equal((await get()).operations.runtime_execute.status,"blocked");
   assert.equal((await post("scope",{...before.scope.input,requestId:randomUUID(),expectedVersion:before.expectedVersion})).status,409);
  });

@@ -66,6 +66,23 @@ type Procedure = {
   updatedAt: string;
 };
 
+type ProcedureProvenance = {
+  procedure: Pick<Procedure, "id" | "name" | "purpose" | "scope" | "version" | "status">;
+  origin: { state: "unknown" } | { state: "recorded"; recordKind: "audit" | "event"; action: string; recordedAt: string; actorType: string | null };
+  lifecycle: Array<{ id: string; action: string; actorType: string | null; recordedAt: string }>;
+  configuration: {
+    process: { id: string; name: string; status: string } | null;
+    ownerRole: { id: string; name: string } | null;
+    stages: Array<{ id: string; name: string; status: string }>;
+    policies: Array<{ id: string; name: string; status: string }>;
+    applications: Array<{ id: string; name: string; status: string; relationType: string; required: boolean }>;
+    capabilities: Array<{ id: string; name: string; deprecated: boolean; relationType: string; required: boolean }>;
+  };
+  tasks: { current: ProcedureTaskLink[]; history: ProcedureTaskLink[] };
+};
+
+type ProcedureTaskLink = { taskId: string; title: string; status: string; basis: "admission" | "composition"; version: number; operation: string | null; current: boolean; recordedAt: string };
+
 type ArchiveLink = { id?: string; scopeId?: string; pipelineId?: string | null; applicationId?: string; capabilityDefinitionId?: string; taskId?: string; status?: string; taskStatus?: string; scopeVersion?: number; current?: boolean; required?: boolean; deprecated?: boolean };
 type ArchiveImpact = {
   steps: number;
@@ -253,8 +270,12 @@ function ProcedureEditor({ procedure, processes, toolOptions, permissionOptions,
   );
 }
 
-function ProcedureDetail({ procedure, busy, archiveOpen = false, canArchive, onActivate, onArchive, onClose, onEdit }: {
+function ProcedureDetail({ procedure, provenance, provenanceStatus, provenanceError, onRefreshProvenance, busy, archiveOpen = false, canArchive, onActivate, onArchive, onClose, onEdit }: {
   procedure: Procedure;
+  provenance: ProcedureProvenance | null;
+  provenanceStatus: "idle" | "loading" | "ready" | "error";
+  provenanceError: string | null;
+  onRefreshProvenance: () => void;
   busy: boolean;
   onActivate: () => void;
   onArchive: () => void;
@@ -263,37 +284,96 @@ function ProcedureDetail({ procedure, busy, archiveOpen = false, canArchive, onA
   archiveOpen?: boolean;
   canArchive: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const pl = locale === "pl";
   const departments = departmentScopes(procedure.process);
+  const host = useRef<HTMLElement>(null);
+  const closeAction = useRef(onClose);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  closeAction.current = onClose;
+  useEffect(() => {
+    returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => returnFocus.current?.focus();
+  }, []);
+  useEffect(() => {
+    if (archiveOpen) return;
+    host.current?.querySelector<HTMLButtonElement>("[data-procedure-close]")?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); closeAction.current(); return; }
+      if (event.key !== "Tab" || !host.current) return;
+      const focusable = [...host.current.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+        .filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) return;
+      if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1)?.focus(); }
+      else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0]?.focus(); }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [archiveOpen]);
   return (
     <div aria-labelledby="procedure-detail-title" aria-modal="true" aria-hidden={archiveOpen} className="fixed inset-0 z-40 grid place-items-center bg-neutral/60 p-3 sm:p-4" role="dialog">
-      <article className="roost-work-surface grid max-h-[92vh] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-company shadow-2xl">
+      <article className="roost-work-surface grid max-h-[92vh] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-company shadow-2xl" ref={host}>
         <header className="flex items-start justify-between gap-4 border-b border-base-300 bg-base-100/45 p-4 sm:p-5">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><span className={`badge badge-sm ${statusBadge(procedure.status)}`}>{humanize(procedure.status)}</span><span className="text-xs font-bold text-company-muted">Version {procedure.version} · Updated {updatedLabel(procedure.updatedAt)}</span></div>
+            <div className="flex flex-wrap items-center gap-2"><span className={`badge badge-sm ${statusBadge(procedure.status)}`}>{humanizeBusinessValue(procedure.status, "Unknown", locale)}</span><span className="text-xs font-bold text-company-muted">{pl ? "Wersja" : "Version"} {procedure.version} · {pl ? "Zmieniono" : "Updated"} {updatedLabel(procedure.updatedAt)}</span></div>
             <h2 className="mt-2 text-2xl font-black text-company-ink" id="procedure-detail-title">{procedure.name}</h2>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-company-muted">{procedure.purpose}</p>
           </div>
-          <button aria-label="Close procedure" className="btn btn-ghost btn-sm btn-circle" onClick={onClose} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button>
+          <button aria-label={pl ? "Zamknij procedurę" : "Close procedure"} className="btn btn-ghost btn-sm btn-circle" data-procedure-close onClick={onClose} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button>
         </header>
         <div className="min-h-0 overflow-y-auto px-4 py-4 sm:px-5">
           <dl className="grid gap-0 border-y border-base-300 text-sm md:grid-cols-2">
-            {[["Departments", departments.join(" · ")], ["Process", procedure.process?.name || "Not linked"], ["Scope", procedure.scope || "Not specified"], ["Expected result", procedure.expectedResult || "Missing — activation is blocked"], ["Owner", procedure.ownerRole?.name || "Not assigned"], ["Authority", procedure.requiredPermissions.length ? procedure.requiredPermissions.join(", ") : "No explicit permission requirements"]].map(([label, value]) => (
+            {[[pl ? "Działy" : "Departments", procedure.process?.department ? departments.join(" · ") : pl ? "Wszystkie działy" : "All departments"], [pl ? "Proces" : "Process", procedure.process?.name || (pl ? "Brak powiązania" : "Not linked")], [pl ? "Zakres" : "Scope", procedure.scope || (pl ? "Nie określono" : "Not specified")], [pl ? "Oczekiwany wynik" : "Expected result", procedure.expectedResult || (pl ? "Brak — aktywacja zablokowana" : "Missing — activation is blocked")], [pl ? "Właściciel" : "Owner", procedure.ownerRole?.name || (pl ? "Nie przypisano" : "Not assigned")], [pl ? "Uprawnienia" : "Authority", procedure.requiredPermissions.length ? procedure.requiredPermissions.join(", ") : (pl ? "Brak jawnych wymagań uprawnień" : "No explicit permission requirements")]].map(([label, value]) => (
               <div className="grid gap-1 border-b border-base-300 px-1 py-3 last:border-b-0 md:grid-cols-[8rem_minmax(0,1fr)] md:odd:border-r" key={label}><dt className="font-bold text-company-muted">{label}</dt><dd className="min-w-0 text-company-ink">{value}</dd></div>
             ))}
           </dl>
+          {canArchive ? <ProcedureProvenancePanel value={provenance} status={provenanceStatus} error={provenanceError} onRefresh={onRefreshProvenance} /> : null}
           <section className="mt-6">
-            <div className="flex items-end justify-between gap-3 border-b border-base-300 pb-2"><div><h3 className="font-black text-company-ink">Steps</h3><p className="text-sm text-company-muted">The executable order of work.</p></div><span className="text-xs font-bold text-company-muted">{procedure.steps.length} {procedure.steps.length === 1 ? "step" : "steps"}</span></div>
-            <ol>{procedure.steps.map((step) => <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-base-300 py-4" key={step.id}><span className="text-right text-sm font-black tabular-nums text-primary">{String(step.stepOrder).padStart(2, "0")}</span><div className="min-w-0"><p className="text-sm font-bold leading-6 text-company-ink">{step.instruction}</p>{step.rollbackInstruction ? <p className="mt-1 text-xs text-warning">Rollback: {step.rollbackInstruction}</p> : null}</div></li>)}</ol>
+            <div className="flex items-end justify-between gap-3 border-b border-base-300 pb-2"><div><h3 className="font-black text-company-ink">{pl ? "Kroki" : "Steps"}</h3><p className="text-sm text-company-muted">{pl ? "Kolejność wykonania pracy." : "The executable order of work."}</p></div><span className="text-xs font-bold text-company-muted">{procedure.steps.length} {pl ? "kroków" : procedure.steps.length === 1 ? "step" : "steps"}</span></div>
+            <ol>{procedure.steps.map((step) => <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-base-300 py-4" key={step.id}><span className="text-right text-sm font-black tabular-nums text-primary">{String(step.stepOrder).padStart(2, "0")}</span><div className="min-w-0"><p className="text-sm font-bold leading-6 text-company-ink">{step.instruction}</p>{step.rollbackInstruction ? <p className="mt-1 text-xs text-warning">{pl ? "Wycofanie:" : "Rollback:"} {step.rollbackInstruction}</p> : null}</div></li>)}</ol>
           </section>
         </div>
         <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-base-300 bg-base-100/35 p-4 sm:px-5">
           {canArchive && procedure.status !== "archived" ? <CcButton disabled={busy} iconLeft="ph-archive" onClick={onArchive} size="sm" variant="ghost">{t("procedures.archive.open")}</CcButton> : null}
-          <div className="flex flex-wrap justify-end gap-2"><CcButton onClick={onClose} size="sm" variant="ghost">Close</CcButton><CcButton iconLeft="ph-pencil-simple" onClick={onEdit} size="sm" variant="outline">{procedure.status === "draft" ? "Edit draft" : "Create improvement draft"}</CcButton>{procedure.status === "draft" ? <CcButton loading={busy} onClick={onActivate} size="sm" variant="primary">Activate</CcButton> : null}</div>
+          <div className="flex flex-wrap justify-end gap-2"><CcButton onClick={onClose} size="sm" variant="ghost">{pl ? "Zamknij" : "Close"}</CcButton><CcButton iconLeft="ph-pencil-simple" onClick={onEdit} size="sm" variant="outline">{procedure.status === "draft" ? pl ? "Edytuj szkic" : "Edit draft" : pl ? "Utwórz szkic ulepszenia" : "Create improvement draft"}</CcButton>{procedure.status === "draft" ? <CcButton loading={busy} onClick={onActivate} size="sm" variant="primary">{pl ? "Aktywuj" : "Activate"}</CcButton> : null}</div>
         </footer>
       </article>
     </div>
   );
+}
+
+function ProcedureProvenancePanel({ value, status, error, onRefresh }: {
+  value: ProcedureProvenance | null; status: "idle" | "loading" | "ready" | "error"; error: string | null; onRefresh: () => void;
+}) {
+  const { locale } = useLanguage();
+  const pl = locale === "pl";
+  const date = (at: string) => new Date(at).toLocaleString(pl ? "pl-PL" : "en-US");
+  const statusLabel = (value: string) => humanizeBusinessValue(value, pl ? "Nieznany" : "Unknown", locale);
+  const actionLabel = (value: string) => ({
+    "procedure.create_draft": pl ? "Utworzono szkic" : "Draft created",
+    "procedure.propose_revision": pl ? "Zaproponowano rewizję" : "Revision proposed",
+    "procedure.update_draft": pl ? "Zmieniono szkic" : "Draft updated",
+    "procedure.activate": pl ? "Aktywowano" : "Activated",
+    "procedure.archive": pl ? "Zarchiwizowano" : "Archived",
+    procedure_draft_created: pl ? "Utworzono szkic" : "Draft created",
+    procedure_revision_proposed: pl ? "Zaproponowano rewizję" : "Revision proposed"
+  } as Record<string, string>)[value] || (pl ? "Inny zapis cyklu życia" : "Other lifecycle record");
+  const recordKindLabel = (value: string) => value === "audit" ? pl ? "audyt" : "audit" : pl ? "zdarzenie" : "event";
+  const actorLabel = (value: string | null) => ({ user: pl ? "użytkownik" : "user", agent: "agent", system: pl ? "system" : "system", integration: pl ? "integracja" : "integration" } as Record<string, string>)[value || ""] || (pl ? "nieustalony aktor" : "unknown actor");
+  const operationLabel = (value: string) => ({ runtime_execute: pl ? "wykonanie" : "execution", review_decision: pl ? "przegląd" : "review", return_to_executor: pl ? "zwrot do wykonawcy" : "return to executor", create_specialist_task: pl ? "zadanie specjalisty" : "specialist task" } as Record<string, string>)[value] || (pl ? "inna operacja" : "other operation");
+  const group = (label: string, rows: string[]) => <div className="border-b border-base-300 py-3 last:border-b-0"><dt className="text-xs font-bold uppercase tracking-wide text-company-muted">{label}</dt><dd className="mt-1 text-sm text-company-ink">{rows.length ? rows.join(" · ") : pl ? "Brak zapisanego powiązania" : "No recorded link"}</dd></div>;
+  const taskList = (items: ProcedureTaskLink[], empty: string) => items.length ? <ul className="space-y-2">{items.map((item) => <li className="rounded-lg border border-base-300 p-3" key={`${item.basis}:${item.taskId}:${item.operation}:${item.version}`}><a className="font-bold text-primary underline-offset-2 hover:underline" href={`/areas?area=04-operacje&view=tasks&taskId=${encodeURIComponent(item.taskId)}`}>{item.title}</a><p className="mt-1 text-xs text-company-muted">{statusLabel(item.status)} · {item.basis === "admission" ? pl ? "Dopuszczenie" : "Admission" : pl ? "Kompozycja" : "Composition"} v{item.version}{item.operation ? ` · ${operationLabel(item.operation)}` : ""} · {date(item.recordedAt)}</p></li>)}</ul> : <p className="text-sm text-company-muted">{empty}</p>;
+  return <section aria-labelledby="procedure-provenance-title" className="mt-6 border-t border-base-300 pt-5" data-procedure-provenance>
+    <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-black text-company-ink" id="procedure-provenance-title">{pl ? "Pochodzenie i użycie" : "Provenance and use"}</h3><p className="text-sm text-company-muted">{pl ? "Zapisane fakty o tej wersji. Powiązanie nie dowodzi udanego wykonania." : "Recorded facts for this version. A link does not prove successful execution."}</p></div><CcButton onClick={onRefresh} size="sm" variant="ghost">{pl ? "Odśwież" : "Refresh"}</CcButton></div>
+    {status === "loading" || status === "idle" ? <p className="mt-4 text-sm text-company-muted" role="status">{pl ? "Wczytywanie pochodzenia…" : "Loading provenance…"}</p> : null}
+    {status === "error" ? <CcNotice tone="error" title={pl ? "Nie udało się odczytać pochodzenia" : "Could not load provenance"} description={error || undefined} /> : null}
+    {status === "ready" && value ? <div className="mt-4 space-y-5">
+      <div className="rounded-lg border border-base-300 bg-base-100/40 p-4"><h4 className="font-bold text-company-ink">{pl ? "Zapisany zamiar" : "Recorded intent"}</h4><p className="mt-2 text-sm">{value.procedure.purpose}</p><p className="mt-2 text-sm"><strong>{pl ? "Zakres:" : "Scope:"}</strong> {value.procedure.scope || (pl ? "Nie określono" : "Not specified")}</p></div>
+      <div><h4 className="font-bold text-company-ink">{pl ? "Pochodzenie" : "Origin"}</h4>{value.origin.state === "recorded" ? <p className="mt-1 text-sm">{pl ? "Bezpośredni zapis" : "Direct record"}: {actionLabel(value.origin.action)} · {date(value.origin.recordedAt)} · {recordKindLabel(value.origin.recordKind)} · {actorLabel(value.origin.actorType)}</p> : <p className="mt-1 text-sm text-warning">{pl ? "Nieustalone — brak bezpośredniego zapisu utworzenia lub rewizji tej wersji." : "Unknown — no direct creation or revision record for this version."}</p>}{value.lifecycle.length ? <details className="mt-2 text-sm"><summary className="cursor-pointer font-semibold">{pl ? "Dziennik cyklu życia" : "Lifecycle log"} ({value.lifecycle.length})</summary><ul className="mt-2 space-y-1">{value.lifecycle.map((item) => <li key={item.id}>{date(item.recordedAt)} · {actionLabel(item.action)} · {actorLabel(item.actorType)}</li>)}</ul></details> : null}</div>
+      <div><h4 className="font-bold text-company-ink">{pl ? "Powiązania konfiguracji" : "Configuration links"}</h4><dl className="mt-1 grid gap-x-5 md:grid-cols-2">{group(pl ? "Proces" : "Process", value.configuration.process ? [`${value.configuration.process.name} (${statusLabel(value.configuration.process.status)})`] : [])}{group(pl ? "Rola właścicielska" : "Owner role", value.configuration.ownerRole ? [value.configuration.ownerRole.name] : [])}{group(pl ? "Etapy pipeline" : "Pipeline stages", value.configuration.stages.map((row) => `${row.name} (${statusLabel(row.status)})`))}{group(pl ? "Zasady" : "Policies", value.configuration.policies.map((row) => `${row.name} (${statusLabel(row.status)})`))}{group(pl ? "Aplikacje" : "Applications", value.configuration.applications.map((row) => `${row.name} (${statusLabel(row.status)}${row.required ? pl ? ", wymagane" : ", required" : ""})`))}{group(pl ? "Kompetencje" : "Capabilities", value.configuration.capabilities.map((row) => `${row.name} (${row.deprecated ? pl ? "wycofana" : "deprecated" : pl ? "bieżąca" : "current"}${row.required ? pl ? ", wymagana" : ", required" : ""})`))}</dl></div>
+      <div className="grid gap-4 md:grid-cols-2"><div><h4 className="mb-2 font-bold text-company-ink">{pl ? "Powiązania z bieżącymi zadaniami" : "Links to current tasks"} ({value.tasks.current.length})</h4>{taskList(value.tasks.current, pl ? "Brak bieżących powiązań." : "No current links.")}</div><div><h4 className="mb-2 font-bold text-company-ink">{pl ? "Historyczne powiązania" : "Historical links"} ({value.tasks.history.length})</h4>{taskList(value.tasks.history, pl ? "Brak historycznych powiązań." : "No historical links.")}</div></div>
+    </div> : null}
+  </section>;
 }
 
 const archiveImpactGroups = [
@@ -427,6 +507,10 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
   const [busy, setBusy] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [ownerRole, setOwnerRole] = useState(false);
+  const [provenance, setProvenance] = useState<ProcedureProvenance | null>(null);
+  const [provenanceStatus, setProvenanceStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [provenanceError, setProvenanceError] = useState<string | null>(null);
+  const [provenanceRefresh, setProvenanceRefresh] = useState(0);
   const [archivePreview, setArchivePreview] = useState<ArchivePreview | null>(null);
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
@@ -471,6 +555,17 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
 
   useEffect(() => { void load(); }, [load]);
   const selected = procedures.find((item) => item.id === selectedId) || null;
+  useEffect(() => {
+    if (!ownerRole || !selectedId) { setProvenance(null); setProvenanceStatus("idle"); return; }
+    let alive = true;
+    setProvenance(null);
+    setProvenanceStatus("loading");
+    setProvenanceError(null);
+    void api<{ data: ProcedureProvenance }>(`/v1/process-core/procedures/${encodeURIComponent(selectedId)}/provenance`)
+      .then(({ data }) => { if (alive) { setProvenance(data); setProvenanceStatus("ready"); } })
+      .catch((caught) => { if (alive) { setProvenanceError(caught instanceof AppApiError ? caught.code : "procedure_provenance_unavailable"); setProvenanceStatus("error"); } });
+    return () => { alive = false; };
+  }, [ownerRole, selectedId, selected?.updatedAt, provenanceRefresh]);
   const toolOptions = useMemo<CcMultiSelectOption[]>(() => [
     { value: "companycore", label: "Roost", description: "Built-in operating system" },
     ...toolAdapters.map((adapter) => ({ value: adapter.provider, label: adapter.name, description: humanize(adapter.connectionStatus) }))
@@ -611,7 +706,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
         {status === "ready" ? <CcDataTable columns={columns} density="compact" emptyDetail={t("procedures.emptyDetail")} emptyTitle={t("procedures.empty")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(procedure) => procedure.name} initialQuickFilter="current" initialSort={{ key: "name", direction: "asc" }} labels={tableLabels} mobileMode="cards" quickFilters={[{ key: "current", label: t("procedures.current"), predicate: (procedure) => !["archived", "retired"].includes(procedure.status) }, { key: "all", label: t("procedures.all"), predicate: () => true }]} rowActionItems={rowActions} rows={procedures} searchPlaceholder={t("procedures.search")} tableMinWidthClassName="min-w-[920px]" /> : null}
       </div>
       {contractId?<ProcedureContractsModal procedureId={contractId} onClose={()=>setContractId(null)}/>:null}
-      {selected ? <ProcedureDetail archiveOpen={confirmArchive} canArchive={ownerRole} busy={busy} onActivate={() => void activate()} onArchive={openArchive} onClose={() => { setSelectedId(null); setArchiveSuccess(false); }} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
+      {selected ? <ProcedureDetail archiveOpen={confirmArchive} canArchive={ownerRole} busy={busy} provenance={provenance} provenanceStatus={provenanceStatus} provenanceError={provenanceError} onRefreshProvenance={() => setProvenanceRefresh((value) => value + 1)} onActivate={() => void activate()} onArchive={openArchive} onClose={() => { setSelectedId(null); setArchiveSuccess(false); }} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
       {selected && confirmArchive && ownerRole ? <ProcedureArchiveDialog procedure={selected} preview={archivePreview} loading={archiveLoading} busy={busy} stale={archiveStale} error={archiveError} reason={archiveReason} acknowledged={archiveAcknowledged} onReason={setArchiveReason} onAcknowledge={setArchiveAcknowledged} onRefresh={() => void refreshArchive(selected.id, true)} onCancel={closeArchive} onConfirm={() => void archive()} /> : null}
       {editing !== undefined ? <ProcedureEditor error={error} onClose={() => { setEditing(undefined); setError(null); }} onSubmit={(event) => void submit(event)} permissionOptions={permissionOptions} procedure={editing} processes={processes} saving={busy} toolOptions={toolOptions} /> : null}
     </section>

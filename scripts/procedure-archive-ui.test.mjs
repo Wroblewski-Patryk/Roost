@@ -38,6 +38,7 @@ try {
       const request = route.request(), pathname = new URL(request.url()).pathname;
       if (request.method() === 'GET' && pathname === '/v1/auth/me') return route.fulfill({ json: { data: { authType: 'user', workspaceId: 'workspace-1', workspaces: [{ id: 'workspace-1', active: true, role: mode === 'readonly' ? 'viewer' : 'owner' }] } } });
       if (request.method() === 'GET' && pathname === '/v1/process-core/procedures') { if (mode === 'identity' && reads >= 1) listVersion = 4; return route.fulfill({ json: { data: [procedure()] } }); }
+      if (request.method() === 'GET' && pathname === `/v1/process-core/procedures/${procedureId}/provenance`) return route.fulfill({ json: { data: { procedure: procedure(), origin: { state: 'unknown' }, lifecycle: [], configuration: { process: null, ownerRole: null, stages: [], policies: [], applications: [], capabilities: [] }, tasks: { current: [], history: [] } } } });
       if (request.method() === 'GET' && pathname === '/v1/company-os/processes') return route.fulfill({ json: { data: [] } });
       if (request.method() === 'GET' && pathname === '/v1/company-os/tool-adapters') return route.fulfill({ json: { data: [] } });
       if (request.method() === 'GET' && pathname === '/v1/company-os/integration-capabilities') return route.fulfill({ json: { data: [] } });
