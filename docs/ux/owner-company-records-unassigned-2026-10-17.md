@@ -101,15 +101,27 @@ containers remained running, PostgreSQL healthy. No further cache prune is
 authorized or useful for this release. Push, deployment and backup remain
 unattempted.
 
-The smaller next decision is capacity: add physical free space without
-removing retained images, or separately approve an exact unused older backend
-image for deletion after another ownership/reference check. The identified
-older image `13f17f26` had image ID
-`sha256:a4fecb73a011ed5564e2b6e67ce32012330c582a7c5415f047d645c83dd2eec2`
-and zero container references at the follow-up check; it is neither the running
-build nor its immediate predecessor. This is only a candidate, not deletion
-authority or a guaranteed physical-space gain. Recheck free space, queue,
-backup/recovery readiness, exact build and image references before any release.
+The owner subsequently authorized removal of **only** old backend image
+`13f17f26` with ID
+`sha256:a4fecb73a011ed5564e2b6e67ce32012330c582a7c5415f047d645c83dd2eec2`.
+The immediate read-only preflight matched that exact tag/ID, zero container
+references, no build container, finished Coolify queue, healthy retained
+PostgreSQL, and unchanged running `1836b518` plus predecessor `322c74f6`
+images. One `docker image rm` without force untagged and deleted only the
+approved image. Physical free space rose from 12,605,853,696 B to
+13,171,994,624 B, a measured gain of 566,140,928 B. The resulting free
+space exceeded the planning allowance. Both retained Roost containers and
+the rollback image remained.
+
+A fresh encrypted PostgreSQL backup `b5a1c0da-9daa-4052-83eb-0cc20a2d037d`
+captured 301,769,938 archive bytes at 2026-10-16 22:29:38 UTC. Isolated
+restore matched the source and was verified at 22:35:31 UTC. A separate
+`verifyPrerequisites` read-back authenticated the latest encrypted copy;
+the temporary restore database and backup lock were absent. Receipt and key
+remain private outside Git. After backup, root free space was 13,081,182,208 B,
+still above the allowance; the original backend and PostgreSQL were healthy,
+with 160 finished migrations and zero unresolved. Scoped push, one standard
+deployment and signed-in read-only production smoke remain pending.
 
 This slice addresses owner discovery of unassigned records. It does not
 classify 2,400 imports, make them globally approved, prove a live agent packet
