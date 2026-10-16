@@ -213,13 +213,18 @@ async function attentionPage(workspaceId: string, offset: number) {
     const metadata = execution.metadata as Record<string, any> | null;
     return metadata?.executionContract?.taskRoles?.verifier?.id;
   }).filter((id): id is string => typeof id === "string");
-  const verifiers = await prisma.workforceEntity.findMany({ where: { workspaceId, id: { in: verifierIds } }, select: { id: true, name: true } });
+  const managerIds = executions.map(execution => {
+    const metadata = execution.metadata as Record<string, any> | null;
+    return metadata?.executionContract?.taskRoles?.accountableManager?.id;
+  }).filter((id): id is string => typeof id === "string");
+  const verifiers = await prisma.workforceEntity.findMany({ where: { workspaceId, id: { in: [...verifierIds, ...managerIds] } }, select: { id: true, name: true } });
   const verifierById = new Map(verifiers.map(verifier => [verifier.id, verifier.name]));
   const verifierByTask = new Map<string, string | null>();
+  const managerByTask = new Map<string, string | null>();
   for (const execution of executions) {
-    if (verifierByTask.has(execution.taskId)) continue;
     const metadata = execution.metadata as Record<string, any> | null;
-    verifierByTask.set(execution.taskId, verifierById.get(metadata?.executionContract?.taskRoles?.verifier?.id) ?? null);
+    if (!verifierByTask.has(execution.taskId)) verifierByTask.set(execution.taskId, verifierById.get(metadata?.executionContract?.taskRoles?.verifier?.id) ?? null);
+    if (!managerByTask.has(execution.taskId)) managerByTask.set(execution.taskId, verifierById.get(metadata?.executionContract?.taskRoles?.accountableManager?.id) ?? null);
   }
   const taskById = new Map(tasks.map(task => [task.id, task]));
   const decisionById = new Map(decisions.map(decision => [decision.id, decision]));
@@ -237,6 +242,7 @@ async function attentionPage(workspaceId: string, offset: number) {
     responsible: row.kind === "decision" ? decisionAuthorities.get(row.id)?.responsible ?? null
       : row.kind === "result" && row.status === "owner_pending" ? workspace?.owner.name ?? null
       : row.kind === "result" && row.status === "review" ? verifierByTask.get(row.id) ?? null
+      : row.kind === "result" && row.status === "failed" ? managerByTask.get(row.id) ?? null
       : row.kind === "result" ? null
       : taskById.get(row.id)?.ownerUser?.name ?? taskById.get(row.id)?.assignedWorkforceEntity?.name ?? null,
     related: taskById.get(row.id)?.project?.name ?? taskById.get(row.id)?.goal?.title
@@ -244,6 +250,7 @@ async function attentionPage(workspaceId: string, offset: number) {
     provenance: taskById.get(row.id)?.source ?? decisionById.get(row.id)?.source ?? incidentById.get(row.id)?.source ?? null,
     provenanceConfirmed: false,
     target: row.kind === "decision" ? `/areas?area=01-strategia&view=decisions&decisionId=${row.id}&from=attention`
+      : row.kind === "result" && row.executionId ? `/areas?area=04-operacje&view=tasks&taskId=${row.id}&executionId=${row.executionId}&from=attention`
       : ["result", "blocker", "task"].includes(row.kind) ? `/areas?area=04-operacje&view=tasks&taskId=${row.id}&from=attention`
       : row.kind === "incident" ? `/areas?area=09-technologia&view=incidents&recordId=${row.id}&from=attention`
       : `/areas?area=12-zarzadzanie&view=risks&recordId=${row.id}&from=attention`

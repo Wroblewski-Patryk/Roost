@@ -248,9 +248,16 @@ export async function informationManagedAdmission(client: PrismaClient, auth: Au
 export async function informationResult(db: Db, auth: AuthContext, taskId: string) {
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId: auth.workspaceId } });
   if (!task) return { error: "task_not_found" };
-  const execution = await db.agentExecution.findFirst({ where: { taskId, workspaceId: auth.workspaceId, applicationId: null, metadata: { path: ["executionContract", "executionClass"], equals: companyRuntimeClass } }, orderBy: { createdAt: "desc" } });
+  const execution = await db.agentExecution.findFirst({ where: { taskId, workspaceId: auth.workspaceId, applicationId: null, metadata: { path: ["executionContract", "executionClass"], equals: companyRuntimeClass } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
   if (!execution) return { status: "empty", executionId: null, summary: null, finalResponse: null, reason: null, canReview: false, materialVersion: null, review: null, sources: [], budget: null };
   const contract = (execution.metadata as any).executionContract;
+  const verifierId = contract?.taskRoles?.verifier?.id;
+  const managerId = contract?.taskRoles?.accountableManager?.id;
+  const [workspaceOwner, verifier, manager] = await Promise.all([
+    db.workspace.findUnique({ where: { id: auth.workspaceId }, select: { owner: { select: { name: true } } } }),
+    typeof verifierId === "string" ? db.workforceEntity.findFirst({ where: { id: verifierId, workspaceId: auth.workspaceId }, select: { name: true } }) : Promise.resolve(null),
+    typeof managerId === "string" ? db.workforceEntity.findFirst({ where: { id: managerId, workspaceId: auth.workspaceId }, select: { name: true } }) : Promise.resolve(null)
+  ]);
   const sources = await db.companyRecord.findMany({ where: { workspaceId: auth.workspaceId, id: { in: contract.context.company.map((r: any) => r.id) } }, select: { id: true, title: true, updatedAt: true } });
   const materialVersion = await digest({ id: execution.id, finalResponse: execution.finalResponse, summary: execution.summary, metadata: execution.metadata, verification: execution.verification });
   const history = await db.agentExecutionEvent.findFirst({ where: { executionId: execution.id, type: "information_review" }, orderBy: { createdAt: "desc" } });
@@ -268,6 +275,10 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
     inspectReady(db, auth.workspaceId, taskId, undefined, true), riskLevelAdmission(db, taskId, "review_decision")
   ]) : [null, null];
   const result = { status: execution.status, executionId: execution.id, summary: execution.summary, finalResponse: execution.finalResponse,
+    nextResponsible: execution.status === "failed" || roleReview?.decision === "reject" ? { role: "manager", name: manager?.name ?? null }
+      : roleReview?.actorAgentId && roleReview.decision === "approve"
+        ? { role: "owner", name: auth.authType === "user" ? workspaceOwner?.owner.name ?? null : null }
+        : { role: "verifier", name: verifier?.name ?? null },
     reason: (execution.errorState as any)?.code ?? null, canReview: false,
     materialVersion, review: roleReview ? { decision: roleReview.decision === "approve"
       ? roleReview.actorAgentId ? ownerDecision?.decision ?? "verified_pending_owner" : "accept"

@@ -18,6 +18,7 @@ import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
 import { TaskReadinessModal } from "./task-readiness";
+import { TodayResultPreview, todayResultReturnPath } from "./today-result-preview";
 import { ReferenceSiteStudy } from "./reference-site-study";
 import { navigateApp } from "../../app-navigation";
 import { TaskReviewModal } from "./task-review";
@@ -1500,6 +1501,7 @@ export function OperationsRoute() {
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
   const [studyTask, setStudyTask] = useState<{ id: string; title: string } | null>(null);
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
+  const [resultPreviewExecutionId, setResultPreviewExecutionId] = useState<string | null>(null);
   const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => new URLSearchParams(window.location.search).has('taskId'));
   const [navigationError, setNavigationError] = useState(false);
   const [applicationReturn, setApplicationReturn] = useState<string | null>(null);
@@ -1508,6 +1510,13 @@ export function OperationsRoute() {
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
     if (new URLSearchParams(window.location.search).has('taskId') && !taskId) { setNavigationError(true); return; }
     if (!taskId) return;
+    const query = new URLSearchParams(window.location.search);
+    if (fromAttention && query.has('executionId')) {
+      const executionId = recordIdFromQuery(window.location.search, 'executionId');
+      if (!executionId || query.getAll('executionId').length !== 1) setNavigationError(true);
+      else setResultPreviewExecutionId(executionId);
+      return;
+    }
     let active = true;
     validateTaskPacketNavigation(taskId, async id => {
       const response = await api<{ data: { id: string; status: string } }>(`/v1/tasks/${id}`);
@@ -1527,7 +1536,7 @@ export function OperationsRoute() {
       if (active) setReadinessTask(id);
     }).catch((error) => { if (active && !(error instanceof Error && error.message === "archived_task_redirect")) setNavigationError(true); });
     return () => { active = false; };
-  }, [history]);
+  }, [history, fromAttention]);
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
   const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
@@ -1648,7 +1657,11 @@ export function OperationsRoute() {
         </section>
       ) : null}
 
-      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} returnToApplication={Boolean(applicationReturn)} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (applicationReturn) navigateApp(applicationReturn); else if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); }} onSaved={refresh} /> : null}
+      {resultPreviewExecutionId && recordIdFromQuery(window.location.search, 'taskId') ? <TodayResultPreview key={resultPreviewExecutionId} taskId={recordIdFromQuery(window.location.search, 'taskId')!} executionId={resultPreviewExecutionId} onOpenTask={() => { setResultPreviewExecutionId(null); setReadinessTask(recordIdFromQuery(window.location.search, 'taskId')); }} /> : null}
+      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} returnToApplication={Boolean(applicationReturn)} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (applicationReturn) navigateApp(applicationReturn); else if (fromAttention) {
+        const executionId = recordIdFromQuery(window.location.search, 'executionId');
+        navigateApp(executionId ? todayResultReturnPath(readinessTask, executionId) : "/areas?area=00-ogolny&view=overview");
+      } }} onSaved={refresh} /> : null}
       {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} onStudy={(id, title) => setStudyTask({ id, title })} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
       {studyTask ? <ReferenceSiteStudy key={studyTask.id} taskId={studyTask.id} taskTitle={studyTask.title} onClose={() => setStudyTask(null)} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}

@@ -5,6 +5,7 @@ import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
 import { DashboardCommandPacket, DashboardPriorityItem } from "../../types";
+import { recordIdFromQuery } from "../../owner-record-navigation";
 import { TaskProposalReview } from "./task-proposal-review";
 import { TaskProposalMandates } from "./task-proposal-mandates";
 
@@ -89,9 +90,53 @@ export function GeneralDashboard() {
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [narrowInspector, setNarrowInspector] = useState(() => window.matchMedia("(max-width: 1279px)").matches);
   const [showAllAttention, setShowAllAttention] = useState(false);
+  const returnTaskId = recordIdFromQuery(window.location.search, "attentionTaskId");
+  const returnExecutionId = recordIdFromQuery(window.location.search, "attentionExecutionId");
   const inspectorRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => { setMoreItems([]); setMoreHasMore(null); setMoreOffset(command.data?.attentionNextOffset || 0); setMoreError(false); }, [command.data]);
+  useEffect(() => {
+    if (!returnTaskId || !returnExecutionId || !command.data) return;
+    let active = true;
+    void (async () => {
+      const initialRows = command.data.priorityItems || [];
+      const rows = [...initialRows];
+      let offset = command.data.attentionNextOffset || rows.length;
+      let hasMore = Boolean(command.data.attentionHasMore);
+      const find = () => rows.find(row => row.kind === "result" && row.id === returnTaskId
+        && row.target && new URLSearchParams(row.target.split("?")[1]).get("executionId") === returnExecutionId);
+      try {
+        while (!find() && hasMore && active) {
+          const response = await api<{ data: { items: DashboardPriorityItem[]; hasMore: boolean; nextOffset: number } }>(`/v1/dashboard/attention?offset=${offset}`);
+          if (!Array.isArray(response.data?.items) || response.data.nextOffset <= offset) break;
+          rows.push(...response.data.items);
+          offset = response.data.nextOffset;
+          hasMore = response.data.hasMore;
+        }
+        if (!active) return;
+        if (rows.length > initialRows.length) {
+          setMoreItems(rows.slice(initialRows.length));
+          setMoreOffset(offset);
+          setMoreHasMore(hasMore);
+        }
+        if (find()) {
+          setSelectedPriorityKey(`result:${returnTaskId}`);
+          setShowAllAttention(true);
+          setInspectorOpen(true);
+        }
+      } catch { if (active) setMoreError(true); }
+    })();
+    return () => { active = false; };
+  }, [command.data, returnTaskId, returnExecutionId]);
+  useEffect(() => {
+    if (!returnTaskId || !inspectorOpen || selectedPriorityKey !== `result:${returnTaskId}`) return;
+    const frame = window.requestAnimationFrame(() => {
+      triggerRef.current = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-attention-key]"))
+        .find(button => button.dataset.attentionKey === `result:${returnTaskId}`) ?? null;
+      inspectorRef.current?.querySelector<HTMLElement>("button")?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [inspectorOpen, returnTaskId, selectedPriorityKey]);
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 1279px)");
@@ -176,7 +221,7 @@ export function GeneralDashboard() {
                     {(showAllAttention ? priorityItems : priorityItems.slice(0, 5)).map((item, index) => {
                       const selected = item.id === selectedPriority?.id && item.kind === selectedPriority?.kind;
                       return (
-                        <button aria-pressed={selected} className={`roost-decision-row ${priorityTone(item)}${selected ? " is-selected" : ""}`} key={`${item.kind || item.source}-${item.id}`} onClick={(event) => choosePriority(item, event.currentTarget)} type="button">
+                        <button aria-pressed={selected} className={`roost-decision-row ${priorityTone(item)}${selected ? " is-selected" : ""}`} data-attention-key={`${item.kind}:${item.id}`} key={`${item.kind || item.source}-${item.id}`} onClick={(event) => choosePriority(item, event.currentTarget)} type="button">
                           <span className="roost-decision-number">{String(index + 1).padStart(2, "0")}</span>
                           <span className="roost-decision-copy"><strong>{item.title}</strong><small>{reasonLabel(item, t)} · {item.responsible || t("general.responsibleUnknown")}{item.related ? ` · ${item.related}` : ""}</small></span>
                           <span className="roost-decision-impact">{attentionStatus(item.status, locale) || t("state.normal")}</span>

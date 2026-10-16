@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import { useAppLocation, useClientNavigation } from "./app-navigation";
-import { innovationRecordPath, recordIdFromQuery } from "./owner-record-navigation";
+import { innovationRecordPath, recordIdFromQuery, todayReturnPath } from "./owner-record-navigation";
 import {
   canonicalGeneralDashboardPath,
   canonicalProductMapPath,
@@ -266,8 +266,9 @@ function App() {
   }
 
   if (pathname === "/dashboard" || pathname === "/react-dashboard" || (pathname === "/areas" && currentAreaKey() === "00-ogolny")) {
-    if (pathname !== "/areas" || window.location.search !== "?area=00-ogolny&view=overview") {
-      window.history.replaceState(null, "", canonicalGeneralDashboardPath);
+    const dashboardPath = todayReturnPath(window.location.search, canonicalGeneralDashboardPath);
+    if (pathname !== "/areas" || window.location.search !== dashboardPath.slice("/areas".length)) {
+      window.history.replaceState(null, "", dashboardPath);
     }
     return <>{metadata}<PrivateAppRoute activeArea="00-ogolny"><GeneralDashboard /></PrivateAppRoute></>;
   }

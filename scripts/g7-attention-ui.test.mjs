@@ -29,7 +29,7 @@ server.listen(0, "127.0.0.1"); await once(server, "listening");
 const browser = await chromium.launch({ headless: true });
 const origin = `http://127.0.0.1:${server.address().port}`;
 const decisionTarget = `/areas?area=01-strategia&view=decisions&decisionId=${decisionId}&from=attention`;
-const resultTarget = `/areas?area=04-operacje&view=tasks&taskId=${id}&from=attention`;
+const resultTarget = `/areas?area=04-operacje&view=tasks&taskId=${id}&executionId=${id}&from=attention`;
 function dashboardPacket() { return { generatedAt: new Date().toISOString(), summary: {}, departmentSignals: [], latestRouteProposals: [], attentionTotal: 2, priorityItems: [
   { id: decisionId, kind: "decision", title: "Approve information plan", status: "pending", reason: "decision_pending", responsible: "Owner", related: "Orchid project", provenance: "roost_decision", provenanceConfirmed: false, target: decisionTarget },
   { id, kind: "result", title: "Review worker finding", status: "review", reason: "result_review", responsible: "Analyst", target: resultTarget },

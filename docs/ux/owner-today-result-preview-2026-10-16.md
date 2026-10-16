@@ -1,0 +1,23 @@
+# Today failed/result attempt preview, 2026-10-16
+
+## Authorized outcome and baseline
+
+This bounded Outcome 1 gate lets the owner open an existing Today failed/result card, reach the exact Task and latest attempt, understand what happened, see the recorded accountable role and available evidence limits, and take one safe next step in the existing review, correction or explicit wait path. Return to Today preserves the current card context; History remains separate. RF-OUT-001/002 and RF-UX-010/012 are still wider requirements. No Worker/model restart, G24c/G25 continuation or production business-data write is authorized.
+
+Signed-in production baseline on deployed `14f576af`: PL and EN Today showed one existing failed Worker card. Its link opened the Task Ready editor first. The failure (`information_lease_lost`), selected sources and stale continuation were buried deeper in the form; the card named no responsible person. The observed execution remains audit evidence, not a new authorization.
+
+## Local implementation and authority
+
+The Today result target now includes the exact latest execution ID. The real Operations route opens a compact read-only preview before the Task Ready editor. It fetches the workspace-scoped Task and the existing information-result projection and refuses to display result content if the ID changed, the result is no longer terminal, the Task closed, or review already accepted/returned. Missing, foreign and malformed records fail closed. The API and attention query use the same latest-execution tie order.
+
+For a failed attempt, the preview explains the recorded failure, shows the accountable manager from the pinned Ready, sources, checkpoint and declared limits, and explicitly waits for owner assessment and separate Ready correction/authorization before retry. A failure does not transfer task accountability to the owner. Completed results link to the existing task review; a rejected result calls for manager correction and a verified result pending owner decision names that step. The preview performs no write and has no retry or authorization control. The return route preserves validated task/execution IDs; Today restores a matching current card across attention pages and moves keyboard focus to its inspector, then back to the card when closed. If the item left current attention, it is not recreated.
+
+## Verification and release boundary
+
+The local route-level browser fixture passed 36 PL/EN journeys at 390 and 1440 CSS pixels: failed with known and generic reason, completed, changed-attempt stale, foreign, API error, later-page return, reviewed and closed. It checked no horizontal overflow, keyboard Escape, inspector focus and card focus, and absence of retry/authorize buttons. This fixture mounts the production Operations route and Today return canonicalizer with synthetic read-only API responses; it does not prove the signed-in deployed app.
+
+The native company-information fixture uses a fresh disposable PostgreSQL database and real HTTP/SQL authority. It checks exact failed execution target, recorded manager, source/result projection, foreign Task-result 404 and foreign Today absence, plus the existing Ready/Worker failure/refusal journey. The final rerun passed 13/13 with owned database/role removed and previously stopped PostgreSQL container restored. `npm run validate`, `npm run codex:check`, adjacent G7 attention UI 89/89 and `git diff --check` passed.
+
+Fresh VPS preflight aligned remote `main`, the running backend image and public health at `14f576af`; PostgreSQL was healthy on the retained named volume with 158 finished migrations and none unresolved. The latest Coolify release queue entry was finished; no newer deployment was present. Three Roost backend images were retained for rollback. The VPS had 19,162,886,144 bytes free, above the 12,884,901,888-byte planning allowance, so no cache prune was used. Fresh encrypted backup `7783a981-5e61-44b5-be43-dffc5ceb25ea` captured 282,398,736 bytes, passed isolated restore and prerequisite read-back, and left the restore database absent. Scoped push, one standard deployment and signed-in read-only production smoke remain pending at this checkpoint.
+
+Independent UX review found that an earlier fixture mounted an unused Tasks workbench and that the router dropped return parameters; the implementation and route-level fixture were corrected. The follow-up reviewer inspected rendered PL/EN 390/1440 screenshots and found no clipping or remaining local blocker; the generic failure explanation was then added. Independent Security re-review found no remaining P0/P1 disclosure or authority bypass after recorded-role, stale-link and tie-order fixes. Deployed UI verification remains required.

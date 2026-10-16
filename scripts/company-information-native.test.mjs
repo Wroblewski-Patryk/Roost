@@ -1105,12 +1105,19 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 1);
       const failedResult = await request(`${root}/information-result`, token);
       assert.equal(failedResult.body.data.status, 'failed');
+      assert.equal(failedResult.body.data.executionId, runtimeExecutionId);
+      assert.deepEqual(failedResult.body.data.nextResponsible, { role: 'manager', name: 'Independent human manager' });
       assert.equal(failedResult.body.data.canReview, false);
       assert.ok(failedResult.body.data.execution.events.some(event => event.type === 'failed'));
+      assert.equal((await request(`${root}/information-result`, foreignToken)).status, 404);
       const resultAttention = await request('/v1/dashboard/command', token);
       assert.equal(resultAttention.status, 200, JSON.stringify(resultAttention.body));
       assert.ok(resultAttention.body.data.priorityItems.some(item => item.kind === 'result' && item.id === runtimeTask.id
-        && item.status === 'failed' && item.target === `/areas?area=04-operacje&view=tasks&taskId=${runtimeTask.id}&from=attention`));
+        && item.status === 'failed' && item.responsible === 'Independent human manager'
+        && item.target === `/areas?area=04-operacje&view=tasks&taskId=${runtimeTask.id}&executionId=${runtimeExecutionId}&from=attention`));
+      const foreignAttention = await request('/v1/dashboard/attention', foreignToken);
+      assert.equal(foreignAttention.status, 200);
+      assert.equal(foreignAttention.body.data.items.some(item => item.id === runtimeTask.id), false);
       assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'todo');
       const failedBoard = await request('/v1/operations/work-items?limit=200', token);
       const failedBoardTask = failedBoard.body.data.workItems.find(item => item.task.id === runtimeTask.id);

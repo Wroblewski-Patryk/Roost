@@ -1,8 +1,19 @@
 const recordIdPattern = /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 
-export function recordIdFromQuery(search: string, key: "applicationId" | "fromApplicationId" | "decisionId" | "taskId" | "historicalTaskId" | "riskId" | "recordId") {
+export function recordIdFromQuery(search: string, key: "applicationId" | "fromApplicationId" | "decisionId" | "taskId" | "historicalTaskId" | "riskId" | "recordId" | "executionId" | "attentionTaskId" | "attentionExecutionId") {
   const values = new URLSearchParams(search).getAll(key);
   return values.length === 1 && recordIdPattern.test(values[0]) ? values[0].toLowerCase() : null;
+}
+
+export function todayReturnPath(search: string, canonicalPath: string) {
+  const query = new URLSearchParams(search);
+  if (query.getAll("area").length !== 1 || query.get("area") !== "00-ogolny"
+    || query.getAll("view").length !== 1 || query.get("view") !== "overview") return canonicalPath;
+  const taskId = recordIdFromQuery(search, "attentionTaskId");
+  const executionId = recordIdFromQuery(search, "attentionExecutionId");
+  return taskId && executionId
+    ? `${canonicalPath}&attentionTaskId=${encodeURIComponent(taskId)}&attentionExecutionId=${encodeURIComponent(executionId)}`
+    : canonicalPath;
 }
 
 export function innovationRecordPath(search: string, canonicalPath: string) {
