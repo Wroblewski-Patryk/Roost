@@ -2,9 +2,9 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Today → Decision attention; local/native and backup passed, release pending. [Evidence](ux/owner-today-decision-attention-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** G0 Today → Decision attention deployed; real Decision click unobserved. [Evidence](ux/owner-today-decision-attention-2026-10-16.md). G24c/G25 stopped.
 
-**Outcome 1 Today:** Deployed `e76788bc` has signed-in PL/EN Today and failed-result Task proof; no live Decision click. The new Decision path is local only. Full RF-UX-012 remains open. [Earlier proof](ux/owner-today-local-checkpoint-2026-10-15.md); [checkpoint](ux/owner-today-decision-attention-2026-10-16.md).
+**Outcome 1 Today:** Build `14f576af` deployed; PL/EN Today stayed healthy but had no eligible Decision. Native Decision journey passed; RF-UX-012 remains open. [Proof](ux/owner-today-decision-attention-2026-10-16.md).
 
 **Outcome 0 architecture-history slice:** Code `801c1ddc` passed native/API/UI fixtures; build `451d2577` deployed. Signed-in production history and a positive archived-record comparison remain unobserved. Outcome 0 stays open. [Proof and limits](ux/owner-architecture-archive-2026-10-15.md).
 
