@@ -289,10 +289,14 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
 
 // Human editor projection: labels and revision references, never resolved source
 // bodies, agent metadata, credentials or client-authorable acceptance evidence.
-export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string, userId?: string, executionClass?: string) {
+export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string, userId?: string, executionClass?: string, includeRetiredGoalHistory = false) {
   const context = await loadTaskAgentContext(workspaceId, taskId, null, db);
   if (!context) return null;
   const task = context.task, pin = object(task.executionReadiness);
+  const retiredGoal = includeRetiredGoalHistory && task.goalId ? await db.goal.findFirst({
+    where: { id: task.goalId, workspaceId, status: "archived", mandateVersions: { some: { status: "retired" } } },
+    select: { id: true, title: true, mandateVersions: { where: { status: "retired" }, select: { version: true }, orderBy: { version: "desc" }, take: 1 } }
+  }) : null;
   const applications = await db.application.findMany({ where: { workspaceId, slug: { not: "roost" }, projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true, name: true }, orderBy: { name: "asc" } });
   const company = ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(executionClass ?? "") || !executionClass && isCompanyInformation(pin.contract);
   const selected = company ? null : applicationId ?? (applications.some(app => app.id === pin.applicationId) ? pin.applicationId : applications.length === 1 ? applications[0]!.id : null);
@@ -367,7 +371,8 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     managers: managers.map(item => ({ id: item.id, label: item.name, revision: item.updatedAt.toISOString() })),
     components: safeComponents.map(item => ({ id: item.id, label: item.name, revision: item.updatedAt.toISOString() })),
     hiddenSensitiveComponents: components.length - safeComponents.length,
-    task: { id: task.id, title: task.title, status: task.status, project: task.project ? { id: task.project.id, name: "name" in task.project ? task.project.name : null } : null, goal: task.goal ? { id: task.goal.id, title: "title" in task.goal ? task.goal.title : null } : null },
+    task: { id: task.id, title: task.title, status: task.status, source: task.source, project: task.project ? { id: task.project.id, name: "name" in task.project ? task.project.name : null } : null, goal: task.goal ? { id: task.goal.id, title: "title" in task.goal ? task.goal.title : null } : null,
+      retiredGoal: retiredGoal ? { id: retiredGoal.id, title: retiredGoal.title, mandateVersion: retiredGoal.mandateVersions[0]?.version ?? null } : null },
     agent: agent ? { id: agent.id, name: "name" in agent ? agent.name : null, role: agent.role, eligible: agent.type === "agent" && agent.status === "active", competencies: strings(agent.skillIndex), tools: strings(agent.toolIndex).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)), permissions: strings(agent.authorityScope).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)) } : null,
     applications, projects, goals, agents, applicationId: selected, activeExecution: active > 0, catalogTruncated: records.length > 500,
     models,

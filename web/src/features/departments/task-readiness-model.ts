@@ -20,7 +20,8 @@ export type ReadyEditor = {
   taskIdentity: { contractId: string; branch: string | null };
   components: CatalogEntry[]; managers: CatalogEntry[];
   roleCatalog: RoleCatalogEntry[]; requester: CatalogEntry | null; excludedRolePrincipals: string[]; roleOrigin: { established: boolean; submissionId: string | null }; roleCatalogTruncated: boolean;
-  task: { id: string; title: string; status: string; project: { id: string; name: string } | null; goal: { id: string; title: string } | null };
+  task: { id: string; title: string; status: string; source?: string | null; project: { id: string; name: string } | null; goal: { id: string; title: string } | null;
+    retiredGoal?: { id: string; title: string; mandateVersion: number | null } | null };
   agent: { id: string; name: string; role: string; eligible: boolean; competencies: string[]; tools: string[]; permissions: string[] } | null;
   applications: { id: string; name: string }[]; applicationId: string | null;
   projects: { id: string; name: string }[]; goals: { id: string; title: string }[]; agents: { id: string; name: string }[];

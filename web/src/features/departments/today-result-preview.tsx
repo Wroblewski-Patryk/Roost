@@ -7,9 +7,9 @@ import { useLanguage } from "../../i18n/i18n";
 import { validateTaskNavigation } from "../../owner-record-navigation";
 import type { InformationResult } from "./company-information-result";
 
-type PreviewTask = { id: string; title: string; status: string };
+type PreviewTask = { id: string; title: string; status: string; goalRetired?: boolean };
 type PreviewResult = InformationResult & { nextResponsible?: { role: "owner" | "manager" | "verifier"; name: string | null } };
-type PreviewState = { kind: "loading" } | { kind: "error" } | { kind: "stale" } | { kind: "ready"; task: PreviewTask; result: PreviewResult };
+type PreviewState = { kind: "loading" } | { kind: "error" } | { kind: "stale" } | { kind: "retired"; task: PreviewTask } | { kind: "ready"; task: PreviewTask; result: PreviewResult };
 
 export function todayResultReturnPath(taskId: string, executionId: string) {
   return `/areas?area=00-ogolny&view=overview&attentionTaskId=${encodeURIComponent(taskId)}&attentionExecutionId=${encodeURIComponent(executionId)}`;
@@ -17,8 +17,10 @@ export function todayResultReturnPath(taskId: string, executionId: string) {
 
 export async function readExactTodayResult(taskId: string, executionId: string,
   readTask: (id: string) => Promise<PreviewTask>, readResult: (id: string) => Promise<PreviewResult>) {
-  const [task, result] = await Promise.all([readTask(taskId), readResult(taskId)]);
+  const task = await readTask(taskId);
   await validateTaskNavigation(taskId, async () => task);
+  if (task.goalRetired) return { kind: "retired", task } as const;
+  const result = await readResult(taskId);
   if (result.executionId !== executionId || !["failed", "completed"].includes(result.status)
     || ["done", "archived"].includes(task.status) || result.ownerDecision
     || ["accept", "return"].includes(result.review?.decision || "")) return { kind: "stale" } as const;
@@ -52,15 +54,18 @@ export function TodayResultPreview({ taskId, executionId, onOpenTask }: { taskId
       : pl ? "Weryfikator wskazany w Ready" : "Verifier named in Ready");
 
   return <CcRecordEditorModal titleId="today-result-preview-title" eyebrow={pl ? "Today · wynik" : "Today · result"}
-    title={state.kind === "ready" ? state.task.title : pl ? "Wynik zadania" : "Task result"}
+    title={state.kind === "ready" || state.kind === "retired" ? state.task.title : pl ? "Wynik zadania" : "Task result"}
     description={pl ? "Podgląd ostatniej próby przypiętej do tej karty Today." : "Preview of the latest attempt pinned to this Today card."}
     closeLabel={pl ? "Wróć do Today" : "Return to Today"} onClose={() => window.location.assign(todayPath)}
     onSubmit={event => event.preventDefault()} maxWidthClassName="max-w-3xl"
     actions={<><CcButton href={todayPath} variant="ghost">{pl ? "Wróć do Today" : "Return to Today"}</CcButton>
-      {state.kind === "ready" && !failed ? <CcButton onClick={onOpenTask} variant="primary">{pl ? "Otwórz odbiór w zadaniu" : "Open review in task"}</CcButton> : null}</>}>
+      {state.kind === "ready" && !failed ? <CcButton onClick={onOpenTask} variant="primary">{pl ? "Otwórz odbiór w zadaniu" : "Open review in task"}</CcButton> : null}
+      {state.kind === "retired" ? <CcButton onClick={onOpenTask} variant="primary">{pl ? "Otwórz historię zadania" : "Open task history"}</CcButton> : null}</>}>
     {state.kind === "loading" ? <p role="status">{pl ? "Wczytywanie zadania i próby…" : "Loading task and attempt…"}</p> : null}
     {state.kind === "error" ? <CcNotice live tone="error" title={pl ? "Nie można odczytać zadania lub wyniku w tym workspace." : "The task or result cannot be read in this workspace."} /> : null}
     {state.kind === "stale" ? <CcNotice live tone="warning" title={pl ? "Karta Today jest nieaktualna." : "This Today card is out of date."} detail={pl ? "Ostatnia próba zmieniła się. Wróć do Today, aby zobaczyć bieżący wpis." : "The latest attempt changed. Return to Today for the current item."} /> : null}
+    {state.kind === "retired" ? <CcNotice live tone="warning" title={pl ? "Cel i mandat tego zadania wycofano." : "This task's goal and mandate were retired."}
+      detail={pl ? "Ten wynik nie wymaga już bieżącej reakcji w Today. Zadanie i dawna próba pozostają w historii; otwórz je, aby sprawdzić zapis." : "This result no longer calls for current attention in Today. The task and prior attempt remain in history; open them to inspect the record."} /> : null}
     {state.kind === "ready" ? <>
       <CcRecordEditorSection title={pl ? "Co się stało" : "What happened"}>
         <p className="text-sm leading-6">{failed ? reason || (pl ? "Próba nie powiodła się. Nie zapisano szczegółowej przyczyny." : "The attempt failed. No detailed reason was recorded.")

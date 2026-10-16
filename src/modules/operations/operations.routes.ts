@@ -364,6 +364,14 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       events: { orderBy: { createdAt: "desc" }, take: 8 }
     }
   });
+  const archivedGoalIds = req.auth!.authType === "user" && req.auth!.workspaceRole === "owner"
+    ? [...new Set(tasks.filter(task => task.goal?.status === "archived").map(task => task.goalId).filter((id): id is string => Boolean(id)))] : [];
+  const retiredVersions = archivedGoalIds.length ? await prisma.goalMandateVersion.findMany({
+    where: { workspaceId, goalId: { in: archivedGoalIds }, status: "retired" },
+    select: { goalId: true, version: true }, orderBy: { version: "desc" }
+  }) : [];
+  const retiredVersionByGoal = new Map<string, number | null>();
+  for (const version of retiredVersions) if (!retiredVersionByGoal.has(version.goalId)) retiredVersionByGoal.set(version.goalId, version.version);
   const clickUpStatusControls = await clickUpStatusControlForTasks(workspaceId, tasks);
 
   const [taskLists, taskCountByList, workspaceMembers, workforceEntities] = await Promise.all([
@@ -535,6 +543,8 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
 
     return {
       informationResult: informationReviewByTaskId.get(task.id) ?? null,
+      retiredGoal: task.goal?.status === "archived" && retiredVersionByGoal.has(task.goal.id)
+        ? { id: task.goal.id, title: task.goal.title, mandateVersion: retiredVersionByGoal.get(task.goal.id) ?? null } : null,
       task: {
         id: task.id,
         title: task.title,

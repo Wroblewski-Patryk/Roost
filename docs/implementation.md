@@ -2,13 +2,13 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Today failed/result preview in local verification. [Evidence](ux/owner-today-result-preview-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** G0 retired Goal Task correction. [Evidence](ux/owner-retired-goal-task-truth-2026-10-16.md). G24c/G25 stopped.
 
-[Goal retirement](ux/owner-goal-retirement-2026-10-16.md): local.
+[Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
 **Outcome 1 Today:** Build `14f576af` deployed; PL/EN Today stayed healthy but had no eligible Decision. Native Decision journey passed; RF-UX-012 remains open. [Proof](ux/owner-today-decision-attention-2026-10-16.md).
 
-**Outcome 1 next slice (local):** Exact failed/result preview and Today return pass native, browser and review checks. Backup/restore passed; release proof remains open. [Checkpoint](ux/owner-today-result-preview-2026-10-16.md).
+**Outcome 1 Today result preview:** deployed. The retired-Goal Task exposed a current/history gap. [Evidence](ux/owner-today-result-preview-2026-10-16.md).
 
 **Outcome 0 architecture-history slice:** Code `801c1ddc` passed native/API/UI fixtures; build `451d2577` deployed. Signed-in production history and a positive archived-record comparison remain unobserved. Outcome 0 stays open. [Proof and limits](ux/owner-architecture-archive-2026-10-15.md).
 

@@ -100,6 +100,10 @@ try {
     assert.equal(await page.getByText(title).count() > 0, true, "retired Goal remains in History");
     await page.getByRole("button", { name: locale === "pl" ? "Bieżące" : "Current" }).click();
     assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Bieżące" : "Current" }).getAttribute("aria-pressed"), "true");
+    await page.goto(`http://127.0.0.1:${server.address().port}/areas?area=01-strategia&view=goals&goalId=${goalId}`);
+    await page.locator("#goal-mandate-title").waitFor();
+    assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Historia" : "History" }).getAttribute("aria-pressed"), "true");
+    assert.match(await page.locator("#goal-mandate-title").innerText(), /Fictional withdrawn goal/);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await page.close();
   }

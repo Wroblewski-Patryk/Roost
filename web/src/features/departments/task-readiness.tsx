@@ -178,6 +178,23 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
       {group === "dependencies" ? selected.map(item => <CcField key={item.id} label={`${tr("dependencyEvidence")}: ${humanizeBusinessValue(catalog.find(row => row.id === item.id)?.label || "dependency", undefined, locale)}`} required>{({ id }) => <textarea id={id} className="textarea textarea-bordered w-full" required maxLength={2000} value={item.evidence ?? ""} onChange={event => update({ ...draft!, refs: { ...draft!.refs, dependencies: selected.map(row => row.id === item.id ? { ...row, evidence: event.target.value } : row) } })} />}</CcField>) : null}
     </section>;
   }
+  if (e?.task.retiredGoal) {
+    const historical = e.task.retiredGoal, pl = locale === "pl";
+    return <CcRecordEditorModal titleId="retired-goal-task-title" eyebrow={pl ? "04 Operacje · historia zadania" : "04 Operations · task history"}
+      title={e.task.title} description={pl ? "Zapis zadania powiązanego z wycofanym celem." : "Task record linked to a retired goal."}
+      closeLabel={tr("close")} onClose={onClose} onSubmit={event => event.preventDefault()} maxWidthClassName="max-w-3xl"
+      actions={<CcButton onClick={onClose} variant="ghost">{tr("close")}</CcButton>}>
+      <CcNotice live tone="warning" title={pl ? "Cel i mandat wycofano. Wykonanie jest wstrzymane." : "Goal and mandate retired. Execution is stopped."}
+        detail={pl ? "Zadanie zachowuje status nadany przez dostawcę. Dawna próba pozostaje poniżej jako historia, bez akcji ponownego Ready, autoryzacji lub uruchomienia." : "The task retains its provider-owned status. The prior attempt remains below as history, without Ready, authorization or launch actions."} />
+      <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <div><dt className="text-company-muted">{pl ? "Cel historyczny" : "Historical goal"}</dt><dd><a className="link link-primary break-words" href={`/areas?area=01-strategia&view=goals&goalId=${encodeURIComponent(historical.id)}`}>{historical.title}</a></dd></div>
+        <div><dt className="text-company-muted">{pl ? "Mandat" : "Mandate"}</dt><dd>{historical.mandateVersion ? `v${historical.mandateVersion} · ${pl ? "wycofany" : "retired"}` : pl ? "Wycofany" : "Retired"}</dd></div>
+        <div><dt className="text-company-muted">{e.task.source === "clickup" ? pl ? "Status zadania ClickUp" : "ClickUp task status" : pl ? "Status zadania" : "Task status"}</dt><dd>{humanizeBusinessValue(e.task.status, undefined, locale)}</dd></div>
+        <div><dt className="text-company-muted">{pl ? "Bieżący mandat" : "Current mandate"}</dt><dd>{pl ? "Brak" : "None"}</dd></div>
+      </dl>
+      {informational ? <CompanyInformationResult taskId={taskId} canStart={false} canAuthorize={false} historical /> : null}
+    </CcRecordEditorModal>;
+  }
   if (reviewOpen) return <TaskReviewModal taskId={taskId} onClose={() => { setReviewOpen(false); void load(); }} onSaved={onSaved}/>;
   if (compositionOpen) return <TaskProcedureCompositionModal taskId={taskId} onClose={()=>{setCompositionOpen(false);void load(e?.applicationId??undefined,true);}}/>;
   if (riskOpen) {

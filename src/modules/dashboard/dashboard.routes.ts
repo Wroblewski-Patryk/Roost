@@ -145,6 +145,11 @@ async function attentionPage(workspaceId: string, offset: number) {
               (SELECT 1 FROM information_owner_decisions o WHERE o.workspace_id=r.workspace_id AND o.execution_id=e.id)))
               OR EXISTS (SELECT 1 FROM task_review_actions a
               WHERE a.workspace_id=r.workspace_id AND a.review_id=r.id AND a.action='return_to_executor')))
+    ), retired_goal_tasks AS (
+      SELECT t.id FROM tasks t JOIN goals g ON g.id=t.goal_id AND g.workspace_id=t.workspace_id
+      WHERE t.workspace_id=${workspaceId}::uuid AND g.status='archived' AND EXISTS (
+        SELECT 1 FROM goal_mandate_versions v WHERE v.workspace_id=g.workspace_id
+          AND v.goal_id=g.id AND v.status='retired')
     ), attention AS (
       SELECT 1 AS rank, d.id, 'decision'::text AS kind, d.title, 'pending'::text AS status, 'high'::text AS severity,
         NULL::timestamp AS due_date, revision.created_at AS updated_at, NULL::uuid AS execution_id
@@ -170,10 +175,12 @@ async function attentionPage(workspaceId: string, offset: number) {
         CASE WHEN e.status='failed' THEN 'high' ELSE 'medium' END, NULL::timestamp, e.updated_at, e.id
       FROM current_result e JOIN tasks t ON t.id=e.task_id AND t.workspace_id=${workspaceId}::uuid
         AND t.status IN ('todo', 'in_progress', 'blocked')
+      WHERE NOT EXISTS (SELECT 1 FROM retired_goal_tasks r WHERE r.id=t.id)
       UNION ALL
       SELECT 3, t.id, 'blocker', t.title, 'blocked', 'high', t.due_date, t.updated_at, NULL::uuid
       FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.status='blocked'
         AND NOT EXISTS (SELECT 1 FROM current_result e WHERE e.task_id=t.id)
+        AND NOT EXISTS (SELECT 1 FROM retired_goal_tasks r WHERE r.id=t.id)
       UNION ALL
       SELECT 5, c.id, 'incident', c.title, c.status, c.priority, NULL::timestamp, c.updated_at, NULL::uuid
       FROM company_records c WHERE c.workspace_id=${workspaceId}::uuid AND c.record_type='technical_incident'
@@ -182,6 +189,7 @@ async function attentionPage(workspaceId: string, offset: number) {
       SELECT 4, t.id, 'task', t.title, t.status::text, 'medium', t.due_date, t.updated_at, NULL::uuid
       FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.status IN ('todo', 'in_progress')
         AND t.due_date < ${startOfToday()} AND NOT EXISTS (SELECT 1 FROM current_result e WHERE e.task_id=t.id)
+        AND NOT EXISTS (SELECT 1 FROM retired_goal_tasks r WHERE r.id=t.id)
     )
     SELECT id, kind, title, status, severity, due_date AS "dueDate", updated_at AS "updatedAt", execution_id AS "executionId",
       count(*) OVER() AS "totalCount", count(*) FILTER (WHERE kind='decision') OVER() AS "decisionCount"

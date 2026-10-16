@@ -37,7 +37,14 @@ export function registerGoalMandateTests(deps: { request: Request;
     const project = await prisma.project.create({ data: { workspaceId, name: "Fictional retirement project" } });
     const goal = await prisma.goal.create({ data: { workspaceId, projectId: project.id, title: "Retire fictional test goal" } });
     const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, goalId: goal.id,
-      title: "Preserved external task", source: "clickup", externalId: "fixture-external-task" } });
+      title: "Preserved external task", source: "clickup", externalId: "fixture-external-task",
+      dueDate: new Date(Date.now() - 2 * 86_400_000) } });
+    const activeTask = await prisma.task.create({ data: { workspaceId, projectId: project.id,
+      title: "Unrelated active blocker", status: "blocked" } });
+    const ordinaryArchivedGoal = await prisma.goal.create({ data: { workspaceId, projectId: project.id,
+      title: "Ordinary archived goal without a retired mandate", status: "archived" } });
+    const ordinaryArchivedTask = await prisma.task.create({ data: { workspaceId, goalId: ordinaryArchivedGoal.id,
+      title: "Blocker still requiring response", status: "blocked" } });
     const draft = await createGoalMandateDraft(workspaceId, owner.ownerUserId, goal.id, {
       result: "One fictional result", metric: "Verified cases", unit: "cases", targetValue: 1,
       evidenceSource: "Fictional task evidence", accountableUserId: owner.ownerUserId,
@@ -49,6 +56,10 @@ export function registerGoalMandateTests(deps: { request: Request;
       requestedByType: "user", requestedById: owner.ownerUserId, status: "failed", attempt: 0,
       metadata: { executionContract: { executionClass: "roost-company-information-v1" },
         readyContextPin: { preparationOnly: true, modelExecutionQualified: false } } } });
+    const beforeAttention = data(await deps.request("/v1/dashboard/attention", { headers: human })).items;
+    assert.ok(beforeAttention.some((item: any) => item.id === task.id && item.kind === "task"));
+    assert.ok(beforeAttention.some((item: any) => item.id === activeTask.id && item.kind === "blocker"));
+    assert.ok(beforeAttention.some((item: any) => item.id === ordinaryArchivedTask.id && item.kind === "blocker"));
     const previewPath = `/v1/goal-mandates/goals/${goal.id}/retirement-preview`;
     const retirePath = `/v1/goal-mandates/goals/${goal.id}/actions/retire`;
     assert.equal((await deps.request(previewPath, { headers: otherHuman })).status, 404);
@@ -77,6 +88,32 @@ export function registerGoalMandateTests(deps: { request: Request;
     assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
     assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).externalId, "fixture-external-task");
     assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: historical.id } })).mandateVersionIdAtQueue, adopted.id);
+    const afterAttention = data(await deps.request("/v1/dashboard/attention", { headers: human })).items;
+    assert.equal(afterAttention.some((item: any) => item.id === task.id), false);
+    assert.ok(afterAttention.some((item: any) => item.id === activeTask.id && item.kind === "blocker"));
+    assert.ok(afterAttention.some((item: any) => item.id === ordinaryArchivedTask.id && item.kind === "blocker"));
+    const readyHistory = data(await deps.request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1`, { headers: human }));
+    assert.equal(readyHistory.reason, "goal_retired");
+    assert.equal(readyHistory.canSubmit, false);
+    assert.equal(readyHistory.executionEnabled, false);
+    assert.equal(readyHistory.editor.task.retiredGoal.id, goal.id);
+    assert.equal(readyHistory.editor.task.retiredGoal.mandateVersion, 1);
+    assert.equal(readyHistory.editor.task.status, "todo");
+    assert.equal(readyHistory.editor.task.source, "clickup");
+    assert.equal((await deps.request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1`, { headers: otherHuman })).status, 404);
+    const ownerTask = data(await deps.request(`/v1/tasks/${task.id}`, { headers: human }));
+    assert.equal(ownerTask.goal.status, "archived");
+    assert.equal(ownerTask.goalRetired, true);
+    const { createAuthToken } = await import("../auth/token");
+    const member = await prisma.user.create({ data: { email: `retirement-member-${randomUUID()}@example.test`, passwordHash: "fixture-not-a-login" } });
+    await prisma.workspaceMembership.create({ data: { workspaceId, userId: member.id, role: "member" } });
+    const memberHeaders = { Authorization: `Bearer ${createAuthToken({ workspaceId, userId: member.id })}` };
+    const memberTask = data(await deps.request(`/v1/tasks/${task.id}`, { headers: memberHeaders }));
+    assert.equal(memberTask.goal, null);
+    assert.equal(memberTask.goalRetired, false);
+    assert.equal(data(await deps.request("/v1/tasks", { headers: memberHeaders })).find((item: any) => item.id === task.id).goal, null);
+    const memberReady = data(await deps.request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1`, { headers: memberHeaders }));
+    assert.equal(memberReady.editor.task.retiredGoal, null);
     assert.equal(data(await deps.request(`/v1/goal-mandates/goals/${goal.id}`, { headers: human })).current, null);
     assert.equal(data(await deps.request(`/v1/goal-mandates/goals/${goal.id}`, { headers: human })).versions[0].status, "retired");
     const taskContext = data(await deps.request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers: human }));
@@ -86,6 +123,8 @@ export function registerGoalMandateTests(deps: { request: Request;
     assert.equal(taskContext.goalMandate, null);
     const workItems = data(await deps.request("/v1/operations/work-items?limit=50", { headers: human })).workItems;
     assert.equal(workItems.find((item: any) => item.task.id === task.id).hierarchy.goal, null);
+    assert.deepEqual(workItems.find((item: any) => item.task.id === task.id).retiredGoal,
+      { id: goal.id, title: goal.title, mandateVersion: 1 });
     const projectWorkspace = data(await deps.request(`/v1/projects/${project.id}/workspace`, { headers: human }));
     assert.equal(projectWorkspace.delivery.tasks.find((item: any) => item.id === task.id).goal, null);
     assert.equal(data(await deps.request("/v1/goals?archive=exclude", { headers: human })).some((item: any) => item.id === goal.id), false);

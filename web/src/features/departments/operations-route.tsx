@@ -24,6 +24,7 @@ import { navigateApp } from "../../app-navigation";
 import { TaskReviewModal } from "./task-review";
 import { reviewMessages } from "./task-review-messages";
 import { TaskHistoryWorkbench, TaskScopeSwitch, taskScopeHref } from "./task-history-workbench";
+import { humanizeBusinessValue } from "./shared";
 
 type OperationsView = "tasks" | "calendar" | "procedures";
 type CalendarMode = "day" | "week" | "month";
@@ -137,6 +138,9 @@ function statusTone(status?: string) {
 function informationResultBadge(row: OperationsWorkItem, locale: string) {
   const result = row.informationResult;
   if (!result) return null;
+  if (row.retiredGoal) return {
+    label: locale === "pl" ? "Historia próby Workera" : "Worker attempt history", tone: "badge-outline"
+  };
   if (result.executionStatus === "completed" && result.reviewDecision === "accept") return {
     label: locale === "pl" ? "Wynik Workera: zaakceptowany" : "Worker result: accepted", tone: "badge-success"
   };
@@ -633,14 +637,20 @@ export function TaskPreviewModal({
     }
   }
 
-  if (reviewOpen) return <TaskReviewModal taskId={item.id} onClose={()=>setReviewOpen(false)} onSaved={onSaved}/>;
+  if (reviewOpen && !item.retiredGoal) return <TaskReviewModal taskId={item.id} onClose={()=>setReviewOpen(false)} onSaved={onSaved}/>;
   return (
     <CcRecordEditorModal
-      actions={<>{onStudy && item.task.status !== "archived" ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)} onClick={() => { onClose(); onStudy(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">{locale === "pl" ? "Badanie stron" : "Site study"}</CcButton> : null}{!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject") ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}<CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton disabled={statusRequestBusy} loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      actions={<>
+        {!item.retiredGoal && onStudy && item.task.status !== "archived" ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy || Boolean(item.clickUpStatusControl?.governedList && requestedStatus && requestedStatus !== item.task.status)} onClick={() => { onClose(); onStudy(item.id, item.task.title || t("operations.taskPreview")); }} type="button" variant="outline">{locale === "pl" ? "Badanie stron" : "Site study"}</CcButton> : null}
+        {!item.retiredGoal && (!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject")) ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
+        {item.retiredGoal ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={() => { onClose(); onReady(item.id); }} type="button" variant="outline">{locale === "pl" ? "Otwórz historię próby" : "Open attempt history"}</CcButton>
+          : <CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton>}
+        <CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton disabled={statusRequestBusy} loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton>
+      </>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
       eyebrow={locale === "pl" ? "04 Operacje · Zadanie" : "04 Operations · Task"}
       maxWidthClassName="max-w-5xl"
-      meta={<span>{item.task.status}</span>}
+      meta={<span>{humanizeBusinessValue(item.task.status, undefined, locale)}</span>}
       onClose={onClose}
       onSubmit={onSubmit}
       title={item.task.title || t("operations.taskPreview")}
@@ -648,6 +658,9 @@ export function TaskPreviewModal({
     >
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]" onChangeCapture={(event) => { if ((event.target as HTMLInputElement).name !== "clickUpStatusRequest") setEdited(true); }}>
           <section className="grid gap-4">
+            {item.retiredGoal ? <CcNotice tone="warning" title={locale === "pl" ? "Zadanie ma wycofany cel i mandat" : "Task goal and mandate retired"}
+              detail={locale === "pl" ? `Historyczny cel: ${item.retiredGoal.title}. Mandat v${item.retiredGoal.mandateVersion ?? "?"} wycofano. Status zadania pozostaje ${humanizeBusinessValue(item.task.status, undefined, locale)}; wcześniejsza próba jest dostępna w historii, bez ponownego Ready ani uruchomienia.` : `Historical goal: ${item.retiredGoal.title}. Mandate v${item.retiredGoal.mandateVersion ?? "?"} is retired. Task status remains ${humanizeBusinessValue(item.task.status, undefined, locale)}; the prior attempt is available in history without Ready or launch.`} /> : null}
+            {item.retiredGoal ? <CcButton href={`/areas?area=01-strategia&view=goals&goalId=${encodeURIComponent(item.retiredGoal.id)}`} size="sm" variant="ghost">{locale === "pl" ? "Otwórz cel w Historii" : "Open goal in History"}</CcButton> : null}
             <TaskFields assignmentOptions={assignmentOptions} item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
             {error ? <CcNotice tone="error" title={error} live /> : null}
           </section>
@@ -658,7 +671,7 @@ export function TaskPreviewModal({
               <dl className="mt-3 grid gap-3 text-sm">
                 <div><dt className="font-bold text-company-muted">{t("table.list")}</dt><dd>{item.hierarchy?.taskList?.name || t("operations.unassigned")}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.project")}</dt><dd>{item.hierarchy?.project?.name || "-"}</dd></div>
-                <div><dt className="font-bold text-company-muted">{item.task.source === "clickup" ? (locale === "pl" ? "Status zadania ClickUp" : "ClickUp task status") : t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">{item.task.source === "clickup" ? (locale === "pl" ? "Status zadania ClickUp" : "ClickUp task status") : t("table.status")}</dt><dd>{humanizeBusinessValue(item.task.status, undefined, locale)}</dd></div>
                 {item.clickUpStatusControl && (item.clickUpStatusControl.governedList || closableIntent) ? <div><dt className="font-bold text-company-muted">{t("operations.clickupStatusSource")}</dt><dd>{item.clickUpStatusControl.providerStatusName || item.clickUpStatusControl.providerStatus || "—"}{item.clickUpStatusControl.providerUpdatedAt ? <span className="block text-xs text-company-muted">{formatAppDate(item.clickUpStatusControl.providerUpdatedAt, { dateStyle: "medium", timeStyle: "short" })}</span> : null}</dd></div> : null}
                 {item.clickUpStatusControl?.providerMismatch ? <div><dt className="font-bold text-company-muted">{t("operations.clickupProviderMismatch")}</dt><dd><span className="badge badge-error badge-outline">{t("operations.clickupProviderMismatch")}</span><span className="mt-1 block text-xs text-company-muted">{t("operations.clickupProviderMismatchHint")}</span></dd></div> : null}
                 {item.clickUpStatusControl?.providerErrorCode ? <div><dt className="font-bold text-company-muted">{t("operations.clickupProviderUnavailable")}</dt><dd><span className="badge badge-warning badge-outline">{t("operations.clickupProviderUnavailable")}</span><span className="mt-1 block text-xs text-company-muted">{t("operations.clickupProviderUnavailableHint")}</span><code className="mt-1 block break-all text-xs text-company-muted">{item.clickUpStatusControl.providerErrorCode}</code></dd></div> : null}

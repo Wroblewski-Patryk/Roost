@@ -67,15 +67,15 @@ const nativeClickUpSyncSchema = z.object({
 
 export const tasksRouter = Router();
 
-const taskInclude = { taskList: { select: { id: true, name: true, externalId: true, source: true } }, project: { select: { id: true, name: true } }, goal: { select: { id: true, title: true } }, target: { select: { id: true, title: true } } };
-async function serializeTasks(workspaceId: string, tasks: Array<{ id: string; source: string | null; taskListId: string | null; status: TaskStatus } & Record<string, any>>) { const [contexts, statusControls] = await Promise.all([organizationalContextsForEntities(workspaceId, "task", tasks.map((task) => task.id)), clickUpStatusControlForTasks(workspaceId, tasks)]); return tasks.map((task) => ({ ...task, organizationalContext: contexts.get(task.id), clickUpStatusControl: statusControls.get(task.id) ?? null })); }
+const taskInclude = { taskList: { select: { id: true, name: true, externalId: true, source: true } }, project: { select: { id: true, name: true } }, goal: { select: { id: true, title: true, status: true } }, target: { select: { id: true, title: true } } };
+async function serializeTasks(workspaceId: string, tasks: Array<{ id: string; source: string | null; taskListId: string | null; status: TaskStatus } & Record<string, any>>, ownerHistory = false) { const [contexts, statusControls] = await Promise.all([organizationalContextsForEntities(workspaceId, "task", tasks.map((task) => task.id)), clickUpStatusControlForTasks(workspaceId, tasks)]); return tasks.map((task) => ({ ...task, goal: !ownerHistory && task.goal?.status === "archived" ? null : task.goal, organizationalContext: contexts.get(task.id), clickUpStatusControl: statusControls.get(task.id) ?? null })); }
 function apiKeyTaskView(task: Record<string, any>) {
   const { executionReadiness, executionRoleProvenance: _roleProvenance,
     organizationalContext: _organizationalContext, raw: _raw,
     taskList, project, goal, target, ...rest } = task;
   const status = executionReadiness && typeof executionReadiness === "object" && !Array.isArray(executionReadiness) ? executionReadiness.status : undefined;
   return { ...rest, taskList: taskList ? { id: taskList.id } : null,
-    project: project ? { id: project.id } : null, goal: goal ? { id: goal.id } : null,
+    project: project ? { id: project.id } : null, goal: goal && goal.status !== "archived" ? { id: goal.id } : null,
     target: target ? { id: target.id } : null,
     executionReadiness: { status: typeof status === "string" ? status : "draft" } };
 }
@@ -105,7 +105,7 @@ tasksRouter.get("/", asyncHandler(async (req, res) => {
     where: { workspaceId, ...(req.auth!.agentId ? { assignedWorkforceEntityId: req.auth!.agentId } : {}), ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
     orderBy: { createdAt: "desc" }
   });
-  const data = req.auth!.authType === "api_key" ? tasks.map(apiKeyTaskView) : await serializeTasks(workspaceId, tasks);
+  const data = req.auth!.authType === "api_key" ? tasks.map(apiKeyTaskView) : await serializeTasks(workspaceId, tasks, req.auth!.workspaceRole === "owner");
   res.json({ data });
 }));
 
@@ -130,8 +130,11 @@ tasksRouter.get("/:id", asyncHandler(async (req, res) => {
   }
 
   const data = req.auth!.authType === "api_key" ? apiKeyTaskView(task)
-    : (await serializeTasks(req.auth!.workspaceId, [task]))[0];
-  res.json({ data });
+    : (await serializeTasks(req.auth!.workspaceId, [task], req.auth!.workspaceRole === "owner"))[0];
+  const goalRetired = req.auth!.authType === "user" && req.auth!.workspaceRole === "owner" && task.goal?.status === "archived"
+    && await prisma.goal.count({ where: { id: task.goalId!, workspaceId: req.auth!.workspaceId,
+      status: "archived", mandateVersions: { some: { status: "retired" } } } }) > 0;
+  res.json({ data: { ...data, goalRetired: Boolean(goalRetired) } });
 }));
 
 tasksRouter.post("/", asyncHandler(async (req, res) => {

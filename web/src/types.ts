@@ -170,6 +170,7 @@ export type DashboardCommandPacket = {
 
 export type OperationsWorkItem = {
   id: string;
+  retiredGoal?: { id: string; title: string; mandateVersion: number | null } | null;
   informationResult?: { taskId: string; executionStatus: string; reviewDecision: "accept" | "reject" | "return" | null } | null;
   clickUpStatusControl?: {
     governedList: boolean;

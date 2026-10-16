@@ -139,13 +139,15 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   const { t, locale } = useLanguage();
   const polish = locale === "pl";
   const requestedDepartment = canonical ? new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null : departmentKey || null;
+  const requestedHistoryGoalId = canonical ? new URLSearchParams(window.location.search).get("goalId") : null;
   const scoped = Boolean(requestedDepartment);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editing, setEditing] = useState<Goal | null | undefined>(undefined);
   const [selected, setSelected] = useState<Goal | null>(null);
   const [archiveGoal, setArchiveGoal] = useState<Goal | null>(null);
   const [archiveBusy, setArchiveBusy] = useState(false);
-  const [archiveView, setArchiveView] = useState<"exclude" | "only">("exclude");
+  const [archiveView, setArchiveView] = useState<"exclude" | "only">(requestedHistoryGoalId ? "only" : "exclude");
+  const openedHistoryLink = useRef(false);
   const [focusHistoryAfterRetirement, setFocusHistoryAfterRetirement] = useState(false);
   const historyButton = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
@@ -167,6 +169,12 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   const packet = useOwnerPacket<Goal[]>(`/v1/goals?${query.toString()}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t);
   const rows = packet.data || [];
+  useEffect(() => {
+    if (openedHistoryLink.current || !requestedHistoryGoalId || packet.status !== "ready" || archiveView !== "only") return;
+    openedHistoryLink.current = true;
+    const historical = packet.data?.find(goal => goal.id === requestedHistoryGoalId && goal.status === "archived");
+    if (historical) setSelected(historical);
+  }, [requestedHistoryGoalId, packet.status, packet.data, archiveView]);
   const tableLabels = useTranslatedTableLabels();
   const visibleTitle = scoped ? t("goals.departmentGoals", { department: departmentLabel(requestedDepartment!, t) }) : t("goals.allGoals");
   const departmentOptions = departmentPacket.data?.departments || [];

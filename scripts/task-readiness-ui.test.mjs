@@ -11,7 +11,7 @@ import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 
 const output = process.env.ROOST_QA_OUTPUT || path.join(os.tmpdir(), "roost-ready-workbench-qa");
 await mkdir(output, { recursive: true });
-const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{TasksWorkbench}from'./web/src/features/departments/tasks-workbench';import{TaskCard,TaskPreviewModal}from'./web/src/features/departments/operations-route';createRoot(document.getElementById('root')).render(<LanguageProvider>{window.cardPreview ? <TaskCard row={window.cardPreview} onOpen={()=>window.cardOpened=true} draggable={false}/> : window.readyPreview ? <TaskPreviewModal item={window.readyPreview} taskLists={[]} statuses={[]} onSaved={()=>window.readySaved=true} onClose={()=>{}} onReady={id=>window.readyOpened=id}/> : <TasksWorkbench departmentKey="04-operacje" canonical/>}</LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' } });
+const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{TasksWorkbench}from'./web/src/features/departments/tasks-workbench';import{TaskCard,TaskPreviewModal}from'./web/src/features/departments/operations-route';import{TaskReadinessModal}from'./web/src/features/departments/task-readiness';createRoot(document.getElementById('root')).render(<LanguageProvider>{window.retiredTaskId ? <TaskReadinessModal taskId={window.retiredTaskId} onClose={()=>window.retiredClosed=true}/> : window.cardPreview ? <TaskCard row={window.cardPreview} onOpen={()=>window.cardOpened=true} draggable={false}/> : window.readyPreview ? <TaskPreviewModal item={window.readyPreview} taskLists={[]} statuses={[]} onSaved={()=>window.readySaved=true} onClose={()=>{}} onReady={id=>window.readyOpened=id}/> : <TasksWorkbench departmentKey="04-operacje" canonical/>}</LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' } });
 const cssName = (await readdir("public/react/assets")).find(name => /^index-.*\.css$/.test(name));
 const css = await readFile(path.join("public/react/assets", cssName));
 const server = createServer(async (req, res) => {
@@ -134,6 +134,7 @@ try {
   await page.screenshot({ path: path.join(output, "en-reflow-720.png"), fullPage: true });
   await page.close(); checked++;
   const preview = await browser.newPage({ viewport: { width: 834, height: 1000 } });
+  preview.on("pageerror", error => process.stderr.write(`Ready preview page error: ${error.message}\n`));
   await preview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, description: "Original description", priority: "normal" } }; }, packet.editor.task);
   let savedTitle;
   await preview.route("**/v1/**", async route => {
@@ -141,6 +142,10 @@ try {
     return route.fulfill({ json: { data: {} } });
   });
   await preview.goto(`http://127.0.0.1:${server.address().port}`);
+  await preview.locator('input[name="title"]').waitFor({ timeout: 5000 }).catch(async error => {
+    process.stderr.write(`Ready preview did not render: ${(await preview.locator('body').innerText()).slice(0, 1200)}\n`);
+    throw error;
+  });
   await preview.locator('input[name="title"]').fill("Saved before Ready");
   await preview.getByRole("button", { name: "Save and prepare execution", exact: true }).click();
   await preview.waitForFunction(() => window.readyOpened && window.readySaved);
@@ -495,5 +500,74 @@ try {
     assert.deepEqual(errors,[]);await checklistPage.close();checked++;
   }
 
+  for (const locale of ["pl", "en"]) for (const width of [390, 1440]) {
+    const historicalPage = await browser.newPage({ viewport: { width, height: 900 } });
+    const { packet: historicalPacket } = fixture("changed");
+    historicalPacket.error = "goal_retired";
+    historicalPacket.canSubmit = false;
+    historicalPacket.executionEnabled = false;
+    historicalPacket.preparationEnabled = false;
+    historicalPacket.editor.executionClass = "roost-company-information-runtime-v1";
+    historicalPacket.editor.task.goal = null;
+    historicalPacket.editor.task.source = "clickup";
+    historicalPacket.editor.task.retiredGoal = { id: "00000000-0000-4000-8000-000000000901", title: "Fictional retired goal", mandateVersion: 1 };
+    const readMethods = [], pageErrors = [];
+    historicalPage.on("pageerror", error => pageErrors.push(error.message));
+    await historicalPage.addInitScript(({ language, taskId }) => {
+      localStorage.setItem("companycoreLocale", language); window.retiredTaskId = taskId;
+    }, { language: locale, taskId: historicalPacket.editor.task.id });
+    await historicalPage.route("**/v1/**", route => {
+      readMethods.push(route.request().method()); assert.equal(route.request().method(), "GET");
+      const url = route.request().url();
+      if (url.includes("/specialist-offer")) return route.fulfill({ status: 404, json: { error: "task_specialist_offer_not_found" } });
+      if (url.includes("/execution-readiness")) return route.fulfill({ json: { data: historicalPacket } });
+      if (url.includes("/information-result")) return route.fulfill({ json: { data: {
+        status: "failed", executionId: "00000000-0000-4000-8000-000000000902", summary: null, finalResponse: null,
+        reason: "information_lease_lost", canReview: false, materialVersion: null, review: null,
+        sources: [{ id: "00000000-0000-4000-8000-000000000903", title: "Fictional retained source", revision: "2026-10-16T00:00:00Z" }],
+        budget: { maxAttempts: 1, maxDurationSeconds: 600, maxOutputTokensIntent: 1200, tokenCostEnforcement: "unavailable" },
+        execution: { attempt: 1, checkpoint: "claimed", startedAt: null, completedAt: null, events: [], eventsTruncated: false }
+      } } });
+      return route.fulfill({ json: { data: {} } });
+    });
+    await historicalPage.goto(`http://127.0.0.1:${server.address().port}`);
+    await historicalPage.getByRole("heading", { name: historicalPacket.editor.task.title }).waitFor();
+    await historicalPage.getByText("Fictional retired goal").waitFor();
+    assert.match(await historicalPage.getByRole("link", { name: "Fictional retired goal" }).getAttribute("href"), /view=goals&goalId=/);
+    await historicalPage.getByText(locale === "pl" ? "Historia próby informacyjnej" : "Information attempt history", { exact: true }).first().waitFor();
+    await historicalPage.getByText("Fictional retained source").waitFor();
+    await historicalPage.getByText(locale === "pl" ? "Status zadania ClickUp" : "ClickUp task status").waitFor();
+    await historicalPage.getByText(locale === "pl" ? "Do zrobienia" : "Todo", { exact: true }).waitFor();
+    await historicalPage.getByText(locale === "pl" ? "v1 · wycofany" : "v1 · retired", { exact: true }).waitFor();
+    await historicalPage.getByText(locale === "pl" ? "Bieżący mandat" : "Current mandate").waitFor();
+    await historicalPage.getByText(locale === "pl" ? "Brak" : "None", { exact: true }).waitFor();
+    assert.equal(await historicalPage.getByRole("button", { name: /Autoryzuj|Authorize|Uruchom|Run|Przekaż do wykonania|Submit for execution|Queue accepted|Dodaj zaakceptowane/ }).count(), 0);
+    assert.equal(await historicalPage.locator("form textarea").count(), 0);
+    assert.equal(await historicalPage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${locale}/${width}: retired history overflow`);
+    assert.deepEqual(pageErrors, []);
+    await historicalPage.keyboard.press("Escape");
+    await historicalPage.waitForFunction(() => window.retiredClosed === true);
+    assert.ok(readMethods.length >= 3);
+    await historicalPage.close(); checked++;
+  }
+  for (const locale of ["pl", "en"]) for (const width of [390, 1440]) {
+    const previewPage = await browser.newPage({ viewport: { width, height: 900 } });
+    const { packet } = fixture("changed");
+    await previewPage.addInitScript(({ language, task }) => {
+      localStorage.setItem("companycoreLocale", language);
+      window.readyPreview = { id: task.id, task: { ...task, source: "clickup", priority: "normal" },
+        retiredGoal: { id: "00000000-0000-4000-8000-000000000901", title: "Fictional retired goal", mandateVersion: 1 },
+        informationResult: { executionStatus: "failed", reviewDecision: null } };
+    }, { language: locale, task: packet.editor.task });
+    await previewPage.route("**/v1/**", route => { assert.equal(route.request().method(), "GET"); return route.fulfill({ json: { data: {} } }); });
+    await previewPage.goto(`http://127.0.0.1:${server.address().port}`);
+    await previewPage.getByText("Fictional retired goal", { exact: false }).first().waitFor();
+    await previewPage.getByRole("link", { name: locale === "pl" ? "Otwórz cel w Historii" : "Open goal in History" }).waitFor();
+    await previewPage.getByRole("button", { name: locale === "pl" ? "Otwórz historię próby" : "Open attempt history" }).click();
+    await previewPage.waitForFunction(() => window.readyOpened);
+    assert.equal(await previewPage.getByRole("button", { name: /Przygotuj wykonanie|Prepare execution|Oceń wynik|Review result|Autoryzuj|Authorize/ }).count(), 0);
+    assert.equal(await previewPage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${locale}/${width}: retired preview overflow`);
+    await previewPage.close(); checked++;
+  }
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

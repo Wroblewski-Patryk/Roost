@@ -25,7 +25,7 @@ const browser = await chromium.launch({ headless: true });
 const origin = `http://127.0.0.1:${server.address().port}`;
 let checked = 0;
 try {
-  for (const locale of ['pl', 'en']) for (const width of [390, 1440]) for (const mode of ['failed', 'other_failure', 'completed', 'stale', 'foreign', 'error', 'paginated', 'reviewed', 'closed']) {
+  for (const locale of ['pl', 'en']) for (const width of [390, 1440]) for (const mode of ['failed', 'other_failure', 'completed', 'stale', 'retired', 'foreign', 'error', 'paginated', 'reviewed', 'closed']) {
     const page = await browser.newPage({ viewport: { width, height: 900 } });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(value => localStorage.setItem('companycoreLocale', value), locale);
@@ -51,7 +51,8 @@ try {
       }
       if (url.includes(`/v1/tasks/${taskId}`)) return route.fulfill(mode === 'foreign'
         ? { status: 404, json: { error: 'not_found' } }
-        : { json: { data: { id: taskId, title: 'Review fictional Worker finding', status: mode === 'closed' ? 'done' : 'todo' } } });
+        : { json: { data: { id: taskId, title: 'Review fictional Worker finding', status: mode === 'closed' ? 'done' : 'todo',
+          goalRetired: mode === 'retired' } } });
       if (url.includes('/v1/tasks?')) return route.fulfill({ json: { data: [] } });
       if (url.includes('/v1/departments')) return route.fulfill({ json: { data: { departments: [] } } });
       if (url.includes('/v1/task-proposals')) return route.fulfill({ json: { data: { items: [], page: 0, hasMore: false } } });
@@ -64,7 +65,11 @@ try {
       await page.locator(`a[href="${target}"]`).click();
     }
     await page.getByRole('dialog').waitFor();
-    if (['stale', 'reviewed', 'closed'].includes(mode)) {
+    if (mode === 'retired') {
+      await page.getByText(locale === 'pl' ? 'Cel i mandat tego zadania wycofano.' : "This task's goal and mandate were retired.").waitFor();
+      await page.getByRole('button', { name: locale === 'pl' ? 'Otwórz historię zadania' : 'Open task history' }).waitFor();
+      assert.equal(await page.getByText('Fictional source').count(), 0);
+    } else if (['stale', 'reviewed', 'closed'].includes(mode)) {
       await page.getByText(locale === 'pl' ? 'Karta Today jest nieaktualna.' : 'This Today card is out of date.').waitFor();
       assert.equal(await page.getByText('Fictional source').count(), 0);
     } else if (mode === 'foreign' || mode === 'error') {

@@ -37,7 +37,7 @@ if (g23Comparison && (!g22Native || !g23Case || !['local', 'codex'].includes(pro
 
 test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences',
   { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR || g22Native ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000
-    : process.env.ROOST_G12_CONTINUATION === '1' ? 300000 : 150000 }, async t => {
+    : process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_RETIRED_GOAL_TODAY === '1' ? 300000 : 150000 }, async t => {
   const server = createApp().listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -217,7 +217,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const { createAuthToken } = require('../dist/auth/token.js');
       const memberToken = createAuthToken({ workspaceId, userId: wrongActor.id });
       let verifierToken, managerToken, verifierEntity;
-      if (process.env.ROOST_G11_REVIEW_ACTION) {
+      if (process.env.ROOST_G11_REVIEW_ACTION || process.env.ROOST_RETIRED_GOAL_TODAY === '1') {
         const verifierUser = agentInformationReview ? null : await prisma.user.create({ data: { email: 'verifier@g11.example.test', passwordHash: 'synthetic-not-a-login' } });
         if (verifierUser) await prisma.workspaceMembership.create({ data: { workspaceId, userId: verifierUser.id, role: 'member' } });
         const humanManager = await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human manager', slug: 'g11-manager', type: 'human', source: 'user', externalId: wrongActor.id,
@@ -393,9 +393,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(memberScope.status, 403, JSON.stringify(memberScope.body));
       const riskScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_G11_REVIEW_ACTION ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: c, prompt: g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_RETIRED_GOAL_TODAY === '1' || process.env.ROOST_G11_REVIEW_ACTION ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
-      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_G11_REVIEW_ACTION ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
+      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, g24cVerifierQualification || process.env.ROOST_G12_CONTINUATION === '1' || process.env.ROOST_RETIRED_GOAL_TODAY === '1' || process.env.ROOST_G11_REVIEW_ACTION ? null : g23Case?.prompt ?? 'Use only the selected current source and cite its revision.');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const premature = await request(`${root}/information-approval-candidate`, token);
@@ -1122,6 +1122,42 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const failedBoard = await request('/v1/operations/work-items?limit=200', token);
       const failedBoardTask = failedBoard.body.data.workItems.find(item => item.task.id === runtimeTask.id);
       assert.equal(failedBoardTask.informationResult.executionStatus, 'failed');
+      if (process.env.ROOST_RETIRED_GOAL_TODAY === '1') {
+        const { createGoalMandateDraft, previewGoalMandateDraft, adoptGoalMandateDraft } = require('../dist/modules/goals/goal-mandate.js');
+        const { digest } = require('../dist/auth/owner-action-proof.js');
+        const ownerUserId = (await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } })).ownerUserId;
+        const goalId = runtimeTask.goalId;
+        const draft = await createGoalMandateDraft(workspaceId, ownerUserId, goalId, {
+          result: 'One fictional verified result', metric: 'Verified cases', unit: 'cases', targetValue: 1,
+          evidenceSource: 'Isolated runtime fixture', accountableUserId: ownerUserId,
+          provenance: 'Isolated retirement attention proof' });
+        const adoption = await previewGoalMandateDraft(workspaceId, ownerUserId, goalId, draft.id);
+        await adoptGoalMandateDraft(workspaceId, ownerUserId, goalId, draft.id,
+          adoption.previewId, null, adoption.impactDigest);
+        const retirePath = `/v1/goal-mandates/goals/${goalId}/actions/retire`;
+        const retirementPreview = await request(`/v1/goal-mandates/goals/${goalId}/retirement-preview`, token);
+        assert.equal(retirementPreview.status, 200, JSON.stringify(retirementPreview.body));
+        assert.deepEqual(retirementPreview.body.data.blockers, []);
+        const command = { requestId: randomUUID(), previewToken: retirementPreview.body.data.previewToken,
+          reason: 'The fictional runtime direction is withdrawn.' };
+        const proof = await request('/v1/auth/reauth', token, { method: 'POST', path: retirePath,
+          bodyDigest: digest(JSON.stringify(command)), password: 'synthetic-test-password-only' });
+        assert.equal(proof.status, 200, JSON.stringify(proof.body));
+        const retirement = await request(retirePath, { Authorization: `Bearer ${token}`,
+          'X-Owner-Action-Proof': proof.body.data.proof }, command);
+        assert.equal(retirement.status, 200, JSON.stringify(retirement.body));
+        const afterAttention = await request('/v1/dashboard/command', token);
+        assert.equal(afterAttention.status, 200, JSON.stringify(afterAttention.body));
+        assert.equal(afterAttention.body.data.priorityItems.some(item => item.id === runtimeTask.id), false);
+        const afterBoard = await request('/v1/operations/work-items?limit=200', token);
+        const historicalTask = afterBoard.body.data.workItems.find(item => item.task.id === runtimeTask.id);
+        assert.equal(historicalTask.task.status, 'todo');
+        assert.equal(historicalTask.informationResult.executionStatus, 'failed');
+        assert.equal(historicalTask.retiredGoal.id, goalId);
+        assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } })).status, 'failed');
+        process.stdout.write('Retired Goal Today native proof: failed result left current attention, Task and execution retained; providerInvoked=false\n');
+        return;
+      }
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const recoveryCandidate = await request(`${root}/information-approval-candidate`, token);

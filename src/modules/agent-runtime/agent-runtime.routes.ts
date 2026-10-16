@@ -733,9 +733,11 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   const result = await retryContextRead(() => readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
     if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;
-    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined, req.query.executionClass ? z.enum(["application", "roost-company-information-v1", "roost-company-information-runtime-v1"]).parse(req.query.executionClass) : undefined);
+    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined, req.query.executionClass ? z.enum(["application", "roost-company-information-v1", "roost-company-information-runtime-v1"]).parse(req.query.executionClass) : undefined,
+      req.auth!.authType === "user" && req.auth!.workspaceRole === "owner");
     if (editor && "error" in editor) return { error: editor.error };
-    return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled(), preparationEnabled: true } };
+    const retired = ready.error === "goal_retired";
+    return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: !retired && req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: !retired && executionEnabled(), preparationEnabled: !retired } };
   }));
   if ("error" in result && result.error === "task_not_found") return sendApiError(res, 404, result.error);
   if ("error" in result && result.error === "application_not_found") return sendApiError(res, 404, result.error);
