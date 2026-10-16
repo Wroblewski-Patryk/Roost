@@ -55,6 +55,29 @@ async function serialize(workspaceId: string, records: Array<Record<string, any>
   return records.map((record) => ({ ...record, activeSuspensionCount:suspensionCounts.find(s=>s.incident_id===record.id)?.count??0, evidenceCount: countMap.get(record.id) ?? 0, organizationalContext: contexts.get(record.id) }));
 }
 
+const registrySelect = { id: true, title: true, key: true, recordType: true, status: true,
+  priority: true, functionalState: true, verificationState: true,
+  source: true, metadata: true, createdAt: true, updatedAt: true } satisfies Prisma.CompanyRecordSelect;
+
+async function registryItems(workspaceId: string, records: Array<Prisma.CompanyRecordGetPayload<{ select: typeof registrySelect }>>) {
+  const detailed = await serialize(workspaceId, records);
+  return records.map(({ metadata }, index) => {
+    const fields = metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? metadata as Record<string, unknown> : {};
+    const sourceField = (key: string) => {
+      const value = fields[key];
+      if (typeof value !== "string") return null;
+      return value.length > 160 ? `${value.slice(0, 157)}…` : value;
+    };
+    const ownerDepartment = detailed[index].organizationalContext?.ownerDepartment;
+    return { ...detailed[index], organizationalContext: { ownerDepartment: ownerDepartment
+      ? { id: ownerDepartment.id, key: ownerDepartment.key, name: ownerDepartment.name } : null },
+      metadata: { sourceKind: sourceField("sourceKind"),
+      sourceSystem: sourceField("sourceSystem"), sourceId: sourceField("sourceId"),
+      filePath: sourceField("filePath") } };
+  });
+}
+
 companyRecordsRouter.get("/", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
   const ids = departmentKey ? await contextualEntityIds(workspaceId, "company_record", departmentKey, req.query.includeCompanyWide !== "false") : null;
@@ -95,30 +118,50 @@ companyRecordsRouter.get("/registry", asyncHandler(async (req, res) => {
   const [total, records] = await prisma.$transaction([
     prisma.companyRecord.count({ where }),
     prisma.companyRecord.findMany({ where,
-      select: { id: true, title: true, key: true, recordType: true, status: true,
-        priority: true, functionalState: true, verificationState: true,
-        source: true, metadata: true, createdAt: true, updatedAt: true },
+      select: registrySelect,
       orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
       skip: (input.page - 1) * input.pageSize, take: input.pageSize
     })
   ], { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
-  const detailed = await serialize(workspaceId, records);
-  const items = records.map(({ metadata }, index) => {
-    const fields = metadata && typeof metadata === "object" && !Array.isArray(metadata)
-      ? metadata as Record<string, unknown> : {};
-    const sourceField = (key: string) => {
-      const value = fields[key];
-      if (typeof value !== "string") return null;
-      return value.length > 160 ? `${value.slice(0, 157)}…` : value;
-    };
-    const ownerDepartment = detailed[index].organizationalContext?.ownerDepartment;
-    return { ...detailed[index], organizationalContext: { ownerDepartment: ownerDepartment
-      ? { id: ownerDepartment.id, key: ownerDepartment.key, name: ownerDepartment.name } : null },
-      metadata: { sourceKind: sourceField("sourceKind"),
-      sourceSystem: sourceField("sourceSystem"), sourceId: sourceField("sourceId"),
-      filePath: sourceField("filePath") } };
-  });
+  const items = await registryItems(workspaceId, records);
   res.json({ data: { items, total, page: input.page, pageSize: input.pageSize } });
+}));
+// Owner inventory for records with neither a department relation nor company scope.
+// It is read-only and never grants source eligibility or changes ordinary agent reads.
+companyRecordsRouter.get("/registry/unassigned", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId;
+  if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner")
+    return res.status(403).json({ error: "company_register_owner_required" });
+  const owner = await prisma.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId }, select: { id: true } });
+  if (!owner) return res.status(403).json({ error: "company_register_owner_required" });
+  const input = z.object({
+    scope: z.enum(["current", "history"]).default("current"),
+    q: z.string().trim().max(120).default(""),
+    page: z.coerce.number().int().min(1).max(10000).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(50)
+  }).strict().parse(req.query);
+  const status = input.scope === "history" ? Prisma.sql`r.status = 'archived'` : Prisma.sql`r.status <> 'archived'`;
+  const filter = Prisma.sql`
+    r.workspace_id = ${workspaceId}::uuid AND ${status}
+    AND NOT EXISTS (SELECT 1 FROM organizational_department_relations relation
+      WHERE relation.workspace_id = r.workspace_id AND relation.entity_type = 'company_record' AND relation.entity_id = r.id)
+    AND NOT EXISTS (SELECT 1 FROM organizational_scopes scope
+      WHERE scope.workspace_id = r.workspace_id AND scope.entity_type = 'company_record'
+        AND scope.entity_id = r.id AND scope.scope_type = 'company')
+    AND (${input.q} = '' OR position(lower(${input.q}) in lower(r.title)) > 0
+      OR position(lower(${input.q}) in lower(r.key)) > 0
+      OR position(lower(${input.q}) in lower(coalesce(r.description, ''))) > 0)`;
+  const { total, records } = await prisma.$transaction(async transaction => {
+    const count = await transaction.$queryRaw<Array<{ total: number }>>`
+      SELECT count(*)::int AS total FROM company_records r WHERE ${filter}`;
+    const pageIds = await transaction.$queryRaw<Array<{ id: string }>>`
+      SELECT r.id FROM company_records r WHERE ${filter}
+      ORDER BY r.updated_at DESC, r.id DESC LIMIT ${input.pageSize} OFFSET ${(input.page - 1) * input.pageSize}`;
+    const pageRecords = await transaction.companyRecord.findMany({ where: { workspaceId, id: { in: pageIds.map(row => row.id) } }, select: registrySelect });
+    const byId = new Map(pageRecords.map(record => [record.id, record]));
+    return { total: count[0]?.total ?? 0, records: pageIds.flatMap(row => { const record = byId.get(row.id); return record ? [record] : []; }) };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  res.json({ data: { items: await registryItems(workspaceId, records), total, page: input.page, pageSize: input.pageSize } });
 }));
 // A bounded owner-only picker for an ordinary Task. It carries no record body.
 companyRecordsRouter.get("/task-source-options", asyncHandler(async (req, res) => {

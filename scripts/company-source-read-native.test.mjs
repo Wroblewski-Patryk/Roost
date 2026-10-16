@@ -345,6 +345,55 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
           workspaceId, entityType: 'company_record', entityId: id, scopeType: 'company'
         })) });
       }
+      const unassignedIds = Array.from({ length: 5 }, () => randomUUID());
+      await prisma.companyRecord.createMany({ data: [
+        { id: unassignedIds[0], workspaceId, recordType: 'architecture_section', key: 'triage-proof-legacy',
+          title: 'Triage proof legacy import', description: 'Private triage phrase',
+          rationale: 'Do not expose this body in the list', source: 'documentation-import',
+          metadata: { sourceKind: 'legacy_assumption', hiddenBody: 'Never project this body' } },
+        { id: unassignedIds[1], workspaceId, recordType: 'requirement', key: 'triage-proof-owner',
+          title: 'Triage proof owner note', source: 'companycore', status: 'blocked', verificationState: 'pending' },
+        { id: unassignedIds[2], workspaceId, recordType: 'architecture_document', key: 'triage-proof-history',
+          title: 'Triage proof history', source: 'documentation-import', status: 'archived' },
+        { id: unassignedIds[3], workspaceId, recordType: 'architecture_section', key: 'triage-proof-department',
+          title: 'Triage proof department', source: 'companycore' },
+        { id: unassignedIds[4], workspaceId, recordType: 'architecture_section', key: 'triage-proof-company',
+          title: 'Triage proof company-wide', source: 'companycore' }
+      ] });
+      const productDepartment = await prisma.workspaceDepartment.findFirstOrThrow({ where: { workspaceId, key: '02-produkt' } });
+      await prisma.organizationalDepartmentRelation.create({ data: { workspaceId, entityType: 'company_record',
+        entityId: unassignedIds[3], departmentId: productDepartment.id, relationshipRole: 'owner' } });
+      await prisma.organizationalScope.create({ data: { workspaceId, entityType: 'company_record',
+        entityId: unassignedIds[4], scopeType: 'company' } });
+      const triage = '/v1/company-records/registry/unassigned?q=triage-proof&pageSize=1';
+      const triageFirst = await request(`${triage}&scope=current&page=1`, owner);
+      const triageSecond = await request(`${triage}&scope=current&page=2`, owner);
+      assert.equal(triageFirst.status, 200, JSON.stringify(triageFirst.body));
+      assert.equal(triageFirst.body.data.total, 2, 'current includes blocked but excludes archived records without context');
+      assert.equal(triageFirst.body.data.items.length, 1);
+      assert.equal(triageSecond.body.data.items.length, 1);
+      assert.deepEqual(new Set([...triageFirst.body.data.items, ...triageSecond.body.data.items].map(row => row.id)),
+        new Set(unassignedIds.slice(0, 2)));
+      assert.equal((await request('/v1/company-records/registry/unassigned?q=triage-proof-owner', owner)).body.data.items[0].status, 'blocked');
+      const triageHistory = await request(`${triage}&scope=history`, owner);
+      assert.equal(triageHistory.body.data.total, 1);
+      assert.deepEqual(triageHistory.body.data.items.map(row => row.id), [unassignedIds[2]]);
+      const privateSearch = await request('/v1/company-records/registry/unassigned?q=Private%20triage%20phrase', owner);
+      assert.deepEqual(privateSearch.body.data.items.map(row => row.id), [unassignedIds[0]]);
+      assert.equal(privateSearch.body.data.items[0].metadata.sourceKind, 'legacy_assumption');
+      assert.equal(privateSearch.body.data.items[0].verificationState, 'not_started');
+      for (const row of [...triageFirst.body.data.items, ...triageSecond.body.data.items]) {
+        assert.equal('description' in row, false);
+        assert.equal('rationale' in row, false);
+        assert.equal('hiddenBody' in row.metadata, false);
+      }
+      const exactTriage = await request(`/v1/company-records/${unassignedIds[0]}`, owner);
+      assert.equal(exactTriage.body.data.description, 'Private triage phrase');
+      assert.equal((await request(`${triage}&pageSize=101`, owner)).status, 400);
+      assert.equal((await request(`${triage}&unexpected=1`, owner)).status, 400);
+      assert.equal((await request(triage, agentKey)).status, 403);
+      assert.equal((await request(triage, generalKey)).status, 403);
+      assert.equal((await request(triage, null)).status, 401);
       const path = '/v1/company-records/registry?recordType=requirement&departmentKey=02-produkt&pageSize=50';
       const first = await request(`${path}&scope=current&page=1`, owner);
       assert.equal(first.status, 200, JSON.stringify(first.body));
@@ -404,6 +453,7 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       const foreignRead = await request(path, other.body.data.token);
       assert.equal(foreignRead.status, 200);
       assert.equal(foreignRead.body.data.total, 0);
+      assert.equal((await request(triage, other.body.data.token)).body.data.total, 0);
       await prisma.workspaceMembership.create({ data: { workspaceId,
         userId: other.body.data.user.id, role: 'member' } });
       const member = await request('/auth/login', null, { email: 'register-foreign@example.test',
@@ -412,6 +462,7 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
       const memberRead = await request(path, member.body.data.token);
       assert.equal(memberRead.status, 200);
       assert.equal(memberRead.body.data.total, 5230);
+      assert.equal((await request(triage, member.body.data.token)).status, 403);
       assert.equal((await request(`/v1/company-records/${ids[0]}/source-audit?projection=summary`, member.body.data.token)).status, 403);
       const viewerAccount = await request('/auth/register', null, { email: 'register-viewer@example.test',
         password: 'synthetic-test-password-only', name: 'Viewer', workspaceName: 'Viewer own workspace' });
@@ -422,6 +473,7 @@ test('G9a native HTTP and global MCP enforce task-bound CompanyRecord reads', { 
         password: 'synthetic-test-password-only', workspaceId });
       assert.equal(viewer.status, 200);
       assert.equal((await request(path, viewer.body.data.token)).body.data.total, 5230);
+      assert.equal((await request(triage, viewer.body.data.token)).status, 403);
       const scopedAccount = await request('/auth/register', null, { email: 'register-scoped@example.test',
         password: 'synthetic-test-password-only', name: 'Scoped member', workspaceName: 'Scoped own workspace' });
       assert.equal(scopedAccount.status, 201);

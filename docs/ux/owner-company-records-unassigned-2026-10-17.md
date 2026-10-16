@@ -1,0 +1,104 @@
+# Owner inventory for CompanyRecords without context
+
+## Approved boundary
+
+The owner approved one bounded Outcome 0 delivery on 2026-10-17. The existing
+CompanyRecord catalog gains an owner-only **Do uporządkowania / To organize**
+view for records with neither a department relation nor a company-wide scope.
+The view searches across record types on the server, pages non-archived Current
+and archived History separately, shows provenance, source kind, status and record verification, and
+opens exact read-only detail plus the existing task-specific source audit.
+It does not approve a record, grant agent context, classify a record as
+disposable, change company data, or add a main navigation section.
+
+Allowed delivery effects are Roost API/web code, tests, canonical documentation,
+one scoped push and at most one standard Coolify deployment after safe preflight.
+No production CompanyRecord write, migration, Worker/model call, portfolio
+change, VPS image/container/volume removal, purchase or usage reset is included.
+G24c/G25 remain stopped.
+
+## Entry evidence and implementation
+
+Production build and remote main were both `1836b518`. Read-only SQL found
+5,231 CompanyRecords: 2,403 active and 2,828 archived. Of the active set,
+2,400 were `documentation-import`; 2,402 had
+`verification_state=not_started`. None of the active records had a
+`company_record` department relation or company-wide scope. The existing
+department register uses only those relations/scopes and therefore could not
+show this active set. The first eight active metadata rows showed several
+`architecture_section` imports marked `legacy_assumption`; no record body
+was used to infer trust or a deletion decision.
+
+The new `GET /v1/company-records/registry/unassigned` is owner-only and
+workspace-bound. It uses literal server search across title, key and
+description, deterministic `updated_at, id` order, count/page read in one
+repeatable-read transaction, and a maximum of 100 compact metadata rows.
+The predicate excludes records with any department relation or a company-wide
+scope; History selects archived unassigned records separately. Current retains
+blocked as well as active records for owner triage. The response
+does not contain record body or source-review receipts. Exact detail uses the
+existing workspace-scoped record read. The source audit remains explicitly
+task-bound. The ordinary department register and agent/MCP/Worker source
+eligibility paths are unchanged.
+
+The existing catalog offers the owner a button into this mode. Its default
+page is 25 rows. PL/EN copy explains that catalog presence is not task approval,
+while an individual record may separately be approved for one Task. Detail is
+read-only and shows the canonical content fields, scope IDs, state,
+metadata and timestamps, with an action to open the existing source audit.
+Loading, empty, search, history, pagination and retry states are part of the
+same owner journey. Mobile cards display both title and key. Changing filters
+or opening audit cancels a pending detail read so dialogs cannot stack.
+
+## Verification and release
+
+- Local native PostgreSQL/API test: `ROOST_G9_SOURCE_READ_ONLY=1 npm run
+  test:company-information:local` passed 9/9 after all migrations. The added
+  case covers mixed record types, department/company exclusion, Current and
+  History, literal search, compact projection versus exact detail, paging,
+  malformed queries, member/viewer/agent/anonymous refusals and workspace
+  isolation. Its disposable database and role were removed, and the local
+  PostgreSQL container's prior stopped state was restored.
+- `node scripts/company-records-unassigned-ui.test.mjs` passed 4/4 PL/EN
+  owner journeys at 390/1280 CSS pixels plus member refusal: entry from the
+  catalog, paging, search, error/retry, exact detail, source audit and History.
+  The fixture also covers a delayed detail response after switching to audit,
+  mobile record identity and translated record type.
+  The pre-existing register fixture passed 6/6.
+- `npm run validate`, `npm run codex:check` and `git diff --check` passed.
+  A direct TypeScript check of the web component found only four existing
+  errors in `cc-button.tsx` and `cc-data-table.tsx`; the repository's
+  `typecheck` script covers `src/`, while Vite compiled the web bundle.
+- Independent Security review found no authorization, workspace or SQL
+  injection blocker. Its Current/status wording concern is resolved by the
+  explicit non-archived meaning and a blocked-record native assertion.
+  Independent UX review identified mobile identity, incomplete detail,
+  overlapping dialogs, overbroad approval copy and untranslated type labels;
+  each was repaired and rerun in the browser fixture. The existing source
+  panel's error detail prop was corrected while wiring its recovery path.
+- Read-only release preflight matched remote `main`, the running backend and
+  public health at `1836b518`. PostgreSQL was healthy on its retained named
+  volume with 160 finished migrations and zero unresolved. Coolify's latest
+  deployment `6452` was finished and no build container was running; the
+  current and predecessor backend images were retained. The VPS initially had
+  10,596,200,448 B available, below the documented 12,884,901,888 B build
+  planning allowance. One previously authorized `docker builder prune -f`
+  removed 1.978 GB of unused build cache only. Available bytes then measured
+  12,606,976,000 B, still 277,925,888 B below the allowance; reclaimable
+  build cache was 0 B. PostgreSQL stayed healthy. No image, container, volume
+  or business record was removed or changed. No release backup, push,
+  deployment or signed-in production read-back was attempted at this stop.
+
+The smaller next decision is capacity: add physical free space without
+removing retained images, or separately approve an exact unused older backend
+image for deletion after another ownership/reference check. The identified
+older image `13f17f26` had image ID
+`sha256:a4fecb73a011ed5564e2b6e67ce32012330c582a7c5415f047d645c83dd2eec2`
+and zero container references at this checkpoint; it is neither the running
+build nor its immediate predecessor. This is only a candidate, not deletion
+authority or a guaranteed physical-space gain. Recheck free space, queue,
+backup/recovery readiness, exact build and image references before any release.
+
+This slice addresses owner discovery of unassigned records. It does not
+classify 2,400 imports, make them globally approved, prove a live agent packet
+for one of them, or complete all RF-UX-010/012 and RF-CTX-027 clauses.

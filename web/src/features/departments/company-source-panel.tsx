@@ -202,10 +202,10 @@ export function CompanySourcePanel({ recordId, recordTitle, onClose }: { recordI
       </label>
       {hasMoreTasks ? <p className="mt-2 text-sm text-company-muted">{c.refineSearch}</p> : null}
       {!loadingTasks && !taskError && !tasks.length ? <p className="mt-2 text-sm text-company-muted">{c.noTaskMatches}</p> : null}
-      {taskError ? <CcNotice live tone="error" title={c.taskError} description={taskError} /> : null}
+      {taskError ? <CcNotice live tone="error" title={c.taskError} detail={taskError} /> : null}
     </CcRecordEditorSection>
     {loading ? <p aria-live="polite" className="text-sm text-company-muted">{c.loading}</p> : null}
-    {auditError ? <CcNotice live tone="error" title={c.loadError} description={auditError} /> : null}
+    {auditError ? <CcNotice live tone="error" title={c.loadError} detail={auditError} /> : null}
     {audit ? <>
       <section aria-live="polite" className={`rounded-company border p-4 ${statusTone}`}>
         <h3 className="font-black text-company-ink">{statusText}</h3>

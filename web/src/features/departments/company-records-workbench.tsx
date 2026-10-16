@@ -20,6 +20,7 @@ import { RuntimeRedactionNotice, type RedactionIncident } from "./runtime-redact
 import { recordIdFromQuery } from "../../owner-record-navigation";
 import { navigateApp } from "../../app-navigation";
 import { CompanySourcePanel } from "./company-source-panel";
+import { UnassignedCompanyRecords } from "./company-records-unassigned";
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
 type CompanyRecord = {
@@ -151,7 +152,7 @@ function HistoricalRecordDetail({ record, recordType, ownerRole, onClose, onSour
   </CcRecordEditorModal>;
 }
 
-export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { departmentKey: CoreAreaKey; recordType: string; title?: string }) {
+function DepartmentCompanyRecordsWorkbench({ departmentKey, recordType, title }: { departmentKey: CoreAreaKey; recordType: string; title?: string }) {
   const { locale, t } = useLanguage();
   const polish = locale === "pl";
   const requestedDepartment = new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null;
@@ -283,7 +284,7 @@ export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { 
     <span aria-live={position === "top" ? "polite" : undefined} className="font-bold text-company-muted">{polish ? `${start}–${end} z ${total}` : `${start}–${end} of ${total}`}</span>
     <div className="flex items-center gap-2"><span className="text-company-muted">{polish ? `Strona ${page} z ${totalPages}` : `Page ${page} of ${totalPages}`}</span><CcButton disabled={registryStatus !== "ready" || page <= 1} onClick={() => setPage(value => value - 1)} size="sm" variant="outline">{polish ? "Poprzednia" : "Previous"}</CcButton><CcButton disabled={registryStatus !== "ready" || page >= totalPages} onClick={() => setPage(value => value + 1)} size="sm" variant="outline">{polish ? "Następna" : "Next"}</CcButton></div>
   </nav>;
-  return <><CcPageHeader actions={<><DepartmentScopeControl baseHref={`/areas?area=${departmentKey}&view=${encodeURIComponent(new URLSearchParams(window.location.search).get("view") || "overview")}`} value={requestedDepartment} />{ownerRole !== null && !ownerCheckError ? <CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{polish ? "Utwórz" : "Create"}</CcButton> : null}</>} description={polish ? `Wspólne rekordy „${recordName.toLowerCase()}” widoczne w tym dziale przez kontekst organizacyjny. Rekord kanoniczny nigdy nie jest kopiowany.` : `Shared ${label(recordType).toLowerCase()} records visible here through organizational context. The canonical object is never copied.`} eyebrow={departmentLabel(effectiveDepartment, t)} title={polish ? recordName : title || recordName} />
+  return <><CcPageHeader actions={<><DepartmentScopeControl baseHref={`/areas?area=${departmentKey}&view=${encodeURIComponent(new URLSearchParams(window.location.search).get("view") || "overview")}`} value={requestedDepartment} />{ownerRole === true ? <CcButton href={`${registerPath}&catalog=unassigned`} size="sm" variant="outline">{polish ? "Do uporządkowania" : "To organize"}</CcButton> : null}{ownerRole !== null && !ownerCheckError ? <CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{polish ? "Utwórz" : "Create"}</CcButton> : null}</>} description={polish ? `Wspólne rekordy „${recordName.toLowerCase()}” widoczne w tym dziale przez kontekst organizacyjny. Rekord kanoniczny nigdy nie jest kopiowany.` : `Shared ${label(recordType).toLowerCase()} records visible here through organizational context. The canonical object is never copied.`} eyebrow={departmentLabel(effectiveDepartment, t)} title={polish ? recordName : title || recordName} />
     {navigationError ? <CcNotice live tone="error" title={polish ? "Wskazany rekord jest niedostępny w tym workspace." : "The requested record is unavailable in this workspace."} action={<CcButton href={registerPath} variant="outline">{polish ? "Otwórz rejestr" : "Open register"}</CcButton>} /> : null}
     {sourceAuditRequested && ownerRole === false ? <CcNotice live tone="warning" title={polish ? "Audyt źródła jest dostępny tylko właścicielowi workspace." : "Source audit is available only to the workspace owner."} action={<CcButton href={registerPath} variant="outline">{polish ? "Otwórz rejestr" : "Open register"}</CcButton>} /> : null}
     {fromAttention ? <CcButton href="/areas?area=00-ogolny&view=overview" variant="ghost">{polish ? "Wróć do uwag" : "Back to attention"}</CcButton> : null}
@@ -310,4 +311,15 @@ export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { 
     {editing !== undefined ? editing?.status === "archived" ? <HistoricalRecordDetail onClose={() => { setEditing(undefined); if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); else if (requestedRecordId) navigateApp(registerPath); }} onSource={() => { setEditing(undefined); setAuditRecord(editing); navigateApp(`${registerPath}&recordId=${encodeURIComponent(editing.id)}&sourceAudit=1`); }} ownerRole={ownerRole === true} record={editing} recordType={recordType} /> : <RecordEditor departmentKey={effectiveDepartment} departments={departmentPacket.data?.departments || []} onArchive={record => { setEditing(undefined); setArchiveRecord(record); }} onClose={() => { setEditing(undefined); if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); else if (requestedRecordId) navigateApp(registerPath); }} onSaved={refresh} record={editing} recordType={recordType} /> : null}
     {auditRecord ? <CompanySourcePanel onClose={() => { setAuditRecord(null); if (sourceAuditRequested) navigateApp(registerPath); }} recordId={auditRecord.id} recordTitle={auditRecord.title} /> : null}
     {archiveRecord ? <CcConfirmDialog busy={archiveBusy} confirmIcon="ph-archive" confirmLabel={polish ? "Archiwizuj" : "Archive"} confirmTone="warning" description={polish ? "Rekord pozostanie dostępny w historii i audycie." : "The record remains available in history and audit."} detail={<div className="grid gap-2"><strong>{archiveRecord.title}</strong>{archiveError ? <span role="alert" className="text-sm text-error">{polish ? "Nie udało się zarchiwizować: " : "Could not archive: "}{archiveError}</span> : null}</div>} eyebrow={label(recordType)} onCancel={() => { setArchiveRecord(null); setArchiveError(""); }} onConfirm={confirmArchive} title={polish ? "Zarchiwizować rekord?" : "Archive record?"} /> : null}</>;
+}
+
+export function CompanyRecordsWorkbench(props: { departmentKey: CoreAreaKey; recordType: string; title?: string }) {
+  if (new URLSearchParams(window.location.search).get("catalog") === "unassigned") {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("catalog");
+    params.delete("recordId");
+    params.delete("sourceAudit");
+    return <UnassignedCompanyRecords backHref={`/areas?${params}`} />;
+  }
+  return <DepartmentCompanyRecordsWorkbench {...props} />;
 }
