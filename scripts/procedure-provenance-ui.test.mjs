@@ -37,6 +37,8 @@ try {
       const request = route.request(), pathname = new URL(request.url()).pathname;
       if (request.method() !== 'GET') { writes.push(pathname); return route.fulfill({ status: 405 }); }
       if (pathname === '/v1/auth/me') return route.fulfill({ json: { data: { authType: 'user', workspaces: [{ active: true, role: mode === 'readonly' ? 'viewer' : 'owner' }] } } });
+      if (pathname === '/v1/projects') return route.fulfill({ json: { data: [] } });
+      if (pathname === `/v1/process-core/procedures/${id}/runs`) return route.fulfill({ json: { data: [] } });
       if (pathname === '/v1/process-core/procedures') return route.fulfill({ json: { data: [procedure] } });
       if (pathname === `/v1/process-core/procedures/${id}/provenance`) { provenanceReads++; return mode === 'error' ? route.fulfill({ status: 503, json: { error: 'unavailable' } }) : route.fulfill({ json: { data } }); }
       if (pathname === '/v1/company-os/processes' || pathname === '/v1/company-os/tool-adapters' || pathname === '/v1/company-os/integration-capabilities') return route.fulfill({ json: { data: [] } });

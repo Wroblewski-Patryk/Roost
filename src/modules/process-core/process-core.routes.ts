@@ -14,6 +14,7 @@ import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForE
 import { isReferenceSiteChecklist } from "../product-engineering/reference-site-checklist-contract";
 import { archiveProcedure, procedureArchivePreview } from "./procedure-archive";
 import { procedureProvenanceView } from "./procedure-provenance";
+import { launchProcedure, listProcedureRuns, procedureLaunchPreview, procedureRunView, recordProcedureStepOutcome } from "./procedure-launch";
 
 type CoverageStatus = "covered" | "partial" | "missing" | "deferred";
 
@@ -329,6 +330,46 @@ processCoreRouter.get("/procedures/:id/provenance", asyncHandler(async (req, res
   const result = await procedureProvenanceView(req.auth!.workspaceId, z.string().uuid().parse(req.params.id));
   if ("error" in result) return sendApiError(res, 404, String(result.error));
   res.json({ data: result });
+}));
+
+processCoreRouter.post("/procedures/:id/launch-preview", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await procedureLaunchPreview(req.auth!.workspaceId, req.auth!.userId!, z.string().uuid().parse(req.params.id), req.body);
+  if ("error" in result && result.error) return sendApiError(res, 404, result.error);
+  res.json({ data: result });
+}));
+
+processCoreRouter.post("/procedures/:id/actions/launch", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await launchProcedure(req.auth!.workspaceId, req.auth!.userId!, z.string().uuid().parse(req.params.id), req.body);
+  if ("error" in result && result.error) return sendApiError(res, result.error === "procedure_not_found" || result.error === "project_not_found" ? 404 : 409, result.error);
+  if (!("replayed" in result)) return sendApiError(res, 409, "procedure_launch_conflict");
+  res.status(result.replayed ? 200 : 201).json({ data: result });
+}));
+
+processCoreRouter.get("/procedures/:id/runs", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const procedureId = z.string().uuid().parse(req.params.id);
+  if (!await prisma.procedure.count({ where: { id: procedureId, workspaceId: req.auth!.workspaceId } }))
+    return sendApiError(res, 404, "procedure_not_found");
+  res.json({ data: await listProcedureRuns(req.auth!.workspaceId, procedureId) });
+}));
+
+processCoreRouter.get("/procedure-runs/:id", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await procedureRunView(req.auth!.workspaceId, z.string().uuid().parse(req.params.id));
+  if ("error" in result && result.error) return sendApiError(res, 404, result.error);
+  res.json({ data: result });
+}));
+
+processCoreRouter.post("/procedure-runs/:id/steps/:stepId/outcomes", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const result = await recordProcedureStepOutcome(req.auth!.workspaceId, req.auth!.userId!,
+    z.string().uuid().parse(req.params.id), z.string().uuid().parse(req.params.stepId), req.body);
+  if ("error" in result && result.error) return sendApiError(res,
+    result.error === "procedure_run_step_not_found" || result.error === "procedure_task_not_found" ? 404 :
+      result.error === "procedure_outcome_forbidden" ? 403 : 409, result.error);
+  res.status(result.replayed ? 200 : 201).json({ data: result });
 }));
 
 processCoreRouter.post("/procedures", asyncHandler(async (req, res) => {

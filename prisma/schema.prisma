@@ -611,6 +611,8 @@ model OwnerActionProof {
 }
 
 model Workspace {
+  procedureRunOutcomes ProcedureRunStepOutcome[]
+  procedureRuns ProcedureRun[]
   goalMandateVersions GoalMandateVersion[]
   goalMandateHeads GoalMandateHead[]
   goalMandatePreviews GoalMandatePreview[]
@@ -1185,6 +1187,7 @@ model Pipeline {
 }
 
 model Procedure {
+  runs                ProcedureRun[]
   admissionScopes TaskAdmissionScope[]
   id                  String                 @id @default(uuid()) @db.Uuid
   familyId            String                 @default(uuid()) @map("family_id") @db.Uuid
@@ -1238,6 +1241,73 @@ model ProcedureStep {
   @@unique([procedureId, stepOrder])
   @@index([procedureId])
   @@map("procedure_steps")
+}
+
+model ProcedureRun {
+  id                 String             @id @default(uuid()) @db.Uuid
+  workspaceId        String             @map("workspace_id") @db.Uuid
+  workspace          Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  procedureId        String             @map("procedure_id") @db.Uuid
+  procedure          Procedure          @relation(fields: [procedureId], references: [id], onDelete: Restrict)
+  projectId          String             @map("project_id") @db.Uuid
+  project            Project            @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  requestId          String             @map("request_id") @db.Uuid
+  launchedByUserId   String             @map("launched_by_user_id") @db.Uuid
+  previewDigest      String             @map("preview_digest")
+  procedureFamilyId  String             @map("procedure_family_id") @db.Uuid
+  procedureVersion   Int                @map("procedure_version")
+  procedureName      String             @map("procedure_name")
+  procedureUpdatedAt DateTime           @map("procedure_updated_at")
+  projectName        String             @map("project_name")
+  ownerRoleName      String             @map("owner_role_name")
+  inputSnapshot      Json               @map("input_snapshot")
+  steps              ProcedureRunStep[]
+  createdAt          DateTime           @default(now()) @map("created_at")
+
+  @@unique([workspaceId, requestId])
+  @@unique([workspaceId, procedureFamilyId, projectId])
+  @@index([workspaceId, createdAt])
+  @@map("procedure_runs")
+}
+
+model ProcedureRunStep {
+  outcomes            ProcedureRunStepOutcome[]
+  id                  String            @id @default(uuid()) @db.Uuid
+  runId               String            @map("run_id") @db.Uuid
+  run                 ProcedureRun      @relation(fields: [runId], references: [id], onDelete: Restrict)
+  procedureStepId     String            @map("procedure_step_id") @db.Uuid
+  stepOrder           Int               @map("step_order")
+  instruction         String
+  stepType            ProcedureStepType @map("step_type")
+  expectedInput       Json              @map("expected_input")
+  expectedOutput      Json              @map("expected_output")
+  validationRule      Json              @map("validation_rule")
+  rollbackInstruction String?           @map("rollback_instruction")
+  taskId              String            @unique @map("task_id") @db.Uuid
+  task                Task              @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  createdAt           DateTime          @default(now()) @map("created_at")
+
+  @@unique([runId, stepOrder])
+  @@map("procedure_run_steps")
+}
+
+model ProcedureRunStepOutcome {
+  id            String           @id @default(uuid()) @db.Uuid
+  workspaceId   String           @map("workspace_id") @db.Uuid
+  workspace     Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  runStepId     String           @map("run_step_id") @db.Uuid
+  runStep       ProcedureRunStep @relation(fields: [runStepId], references: [id], onDelete: Restrict)
+  requestId     String           @map("request_id") @db.Uuid
+  requestHash   String           @map("request_hash")
+  actorUserId   String           @map("actor_user_id") @db.Uuid
+  decision      String
+  evidence      Json
+  reason        String?
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  @@unique([workspaceId, requestId])
+  @@index([runStepId, createdAt])
+  @@map("procedure_run_step_outcomes")
 }
 
 model Resource {
@@ -2420,6 +2490,7 @@ model WorkspaceInvitation {
 }
 
 model Project {
+  procedureRuns  ProcedureRun[]
   id             String               @id @default(uuid()) @db.Uuid
   workspaceId    String?              @map("workspace_id") @db.Uuid
   workspace      Workspace?           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -3124,6 +3195,7 @@ model TaskList {
 }
 
 model Task {
+  procedureRunSteps ProcedureRunStep[]
   googleDocMandate GoogleDocMandate?
   clickUpStatusState ClickUpStatusState?
   clickUpStatusIntents ClickUpStatusIntent[]

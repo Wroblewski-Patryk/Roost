@@ -1,4 +1,5 @@
 import { ProcedureContractsModal } from "./procedure-composition";
+import { ProcedureLaunchPanel } from "./procedure-launch-panel";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -328,6 +329,7 @@ function ProcedureDetail({ procedure, provenance, provenanceStatus, provenanceEr
             ))}
           </dl>
           {canArchive ? <ProcedureProvenancePanel value={provenance} status={provenanceStatus} error={provenanceError} onRefresh={onRefreshProvenance} /> : null}
+          {canArchive ? <ProcedureLaunchPanel procedure={procedure} /> : null}
           <section className="mt-6">
             <div className="flex items-end justify-between gap-3 border-b border-base-300 pb-2"><div><h3 className="font-black text-company-ink">{pl ? "Kroki" : "Steps"}</h3><p className="text-sm text-company-muted">{pl ? "Kolejność wykonania pracy." : "The executable order of work."}</p></div><span className="text-xs font-bold text-company-muted">{procedure.steps.length} {pl ? "kroków" : procedure.steps.length === 1 ? "step" : "steps"}</span></div>
             <ol>{procedure.steps.map((step) => <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-base-300 py-4" key={step.id}><span className="text-right text-sm font-black tabular-nums text-primary">{String(step.stepOrder).padStart(2, "0")}</span><div className="min-w-0"><p className="text-sm font-bold leading-6 text-company-ink">{step.instruction}</p>{step.rollbackInstruction ? <p className="mt-1 text-xs text-warning">{pl ? "Wycofanie:" : "Rollback:"} {step.rollbackInstruction}</p> : null}</div></li>)}</ol>

@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 procedure provenance and use delivered at bounded owner-read level; STOP at this gate boundary. [Evidence](ux/owner-procedure-provenance-2026-10-16.md). G24c/G25 stopped; no next gate authorized.
+**Active gate:** G0 native procedure launch has passed local/native checks; release is stopped at the 2026-10-16 VPS capacity preflight. [Scope, proof and stop](architecture/procedure-launch-g0.md). No production push or migration. G24c/G25 stopped.
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 

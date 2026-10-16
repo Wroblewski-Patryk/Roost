@@ -50,6 +50,7 @@ import { registerReferenceSiteG24bTests } from "./reference-site-g24b-api";
 import { registerExpiredWorkerRotationApiTests } from "./expired-worker-rotation-api";
 import { registerProcedureArchiveApiTests } from "./procedure-archive-api";
 import { registerProcedureProvenanceApiTests } from "./procedure-provenance-api";
+import { registerProcedureLaunchApiTests } from "./procedure-launch-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerTaskProposalTests({ request, registerOwner });
@@ -62,6 +63,7 @@ registerReferenceSiteG24bTests({ request, registerOwner });
 registerExpiredWorkerRotationApiTests({ request, registerOwner });
 registerProcedureArchiveApiTests({ request, registerOwner });
 registerProcedureProvenanceApiTests({ request, registerOwner });
+registerProcedureLaunchApiTests({ request, registerOwner });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
