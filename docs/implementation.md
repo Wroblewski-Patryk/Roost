@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Procedure launch/manual Task review for one owner-approved run: local proof passed; release blocked by VPS capacity. [Evidence](ux/owner-procedure-launch-human-review-2026-10-16.md). G24c/G25 stopped.
+**Active gate:** none (STOP). G0 manual Task review deployed and signed-in PL/EN verified; no second production run. [Evidence](ux/owner-procedure-launch-human-review-2026-10-16.md). G24c/G25 stopped.
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
@@ -814,7 +814,7 @@ The accepted direction is one Windows Host running separate role-scoped Hermes i
 | 0. Inventory and cleanup design | Classify business, test, audit and unknown data; prove repeated imports preserve the active/history split. RF-UX-010/012. | **Partial:** repeat-import preservation and the architecture current/history slice have native and deployed evidence; signed-in production architecture history, broader provenance and cleanup remain open. [Slice evidence](ux/owner-architecture-archive-2026-10-15.md). |
 | 1. Owner work surface | Actionable home; linked tasks, files, blockers and results; history separate. PL/EN, responsive and accessible. RF-OUT-001, RF-UX-012. | **Partial, deployed Today slice:** signed-in PL/EN result navigation passed; no current Decision row existed for a fresh production Today click. Full owner journey and RF-UX-012 remain open. [Slice evidence](ux/owner-today-local-checkpoint-2026-10-15.md). |
 | 2. Questions and goals | Show material questions with recommendation; make goals measurable, owned and linked to work. RF-OUT-003/007/008, RF-CTX-016. | **Partial:** models exist; owner journey unproved. |
-| 3. Procedures that create work | Preview and launch a versioned procedure into one run and linked tasks; track results and improvement. RF-CTX-029. | **Missing:** catalog exists, launch/run unproved. |
+| 3. Procedures that create work | Preview and launch a versioned procedure into one run and linked tasks; track results and improvement. RF-CTX-029. | **Partial:** one real run and linked Task; exact-run owner path deployed. Full lifecycle and reviewed improvement unproved. [Evidence](ux/owner-procedure-launch-human-review-2026-10-16.md). |
 | 4. Application work system | Existing-app audit or new-app definition; one lifecycle from requirements to readiness with visible gaps. RF-APP-003/010/014. | **Partial:** records/G21 path exist; both journeys unproved. |
 | 5. Windows companion | Install, pair, status, stop, update, remove; disposable first-run smoke through admitted model with cleanup. RF-HOST-023. | **Partial:** native proofs exist; clean install unproved. |
 | 6. Agent work and handoff | Ordinary task → scoped execution → independent review when needed → owner result, with recovery. RF-GOV-006/010, RF-CTX-008/013. | **Partial:** reliable everyday loop unproved. |
