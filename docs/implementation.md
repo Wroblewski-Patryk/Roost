@@ -4,6 +4,8 @@ Current delivery status and evidence.
 
 **Active gate:** G0 Today failed/result preview in local verification. [Evidence](ux/owner-today-result-preview-2026-10-16.md). G24c/G25 stopped.
 
+[Goal retirement](ux/owner-goal-retirement-2026-10-16.md): local.
+
 **Outcome 1 Today:** Build `14f576af` deployed; PL/EN Today stayed healthy but had no eligible Decision. Native Decision journey passed; RF-UX-012 remains open. [Proof](ux/owner-today-decision-attention-2026-10-16.md).
 
 **Outcome 1 next slice (local):** Exact failed/result preview and Today return pass native, browser and review checks. Backup/restore passed; release proof remains open. [Checkpoint](ux/owner-today-result-preview-2026-10-16.md).

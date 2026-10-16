@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
@@ -136,7 +136,8 @@ function GoalEditor({ goal, departmentKey, departments, onClose, onSaved }: {
 }
 
 export function GoalsWorkbench({ departmentKey, canonical = false }: { departmentKey?: CoreAreaKey; canonical?: boolean }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const polish = locale === "pl";
   const requestedDepartment = canonical ? new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null : departmentKey || null;
   const scoped = Boolean(requestedDepartment);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -144,13 +145,26 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   const [selected, setSelected] = useState<Goal | null>(null);
   const [archiveGoal, setArchiveGoal] = useState<Goal | null>(null);
   const [archiveBusy, setArchiveBusy] = useState(false);
+  const [archiveView, setArchiveView] = useState<"exclude" | "only">("exclude");
+  const [focusHistoryAfterRetirement, setFocusHistoryAfterRetirement] = useState(false);
+  const historyButton = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (!focusHistoryAfterRetirement || archiveView !== "only") return;
+    // The confirmation dialog restores its prior focus on unmount. Move focus after that cleanup.
+    const timer = window.setTimeout(() => { historyButton.current?.focus(); setFocusHistoryAfterRetirement(false); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [archiveView, focusHistoryAfterRetirement]);
   useEffect(() => {
     if (!selected) return;
     const frame = window.requestAnimationFrame(() => document.getElementById("goal-mandate-title")?.scrollIntoView({ block: "start" }));
     return () => window.cancelAnimationFrame(frame);
   }, [selected]);
-  const query = requestedDepartment ? `?departmentKey=${requestedDepartment}&includeCompanyWide=false` : "";
-  const packet = useOwnerPacket<Goal[]>(`/v1/goals${query}${query ? "&" : "?"}refresh=${refreshKey}`, true, t);
+  const query = new URLSearchParams({ archive: archiveView, refresh: String(refreshKey) });
+  if (requestedDepartment) {
+    query.set("departmentKey", requestedDepartment);
+    query.set("includeCompanyWide", "false");
+  }
+  const packet = useOwnerPacket<Goal[]>(`/v1/goals?${query.toString()}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t);
   const rows = packet.data || [];
   const tableLabels = useTranslatedTableLabels();
@@ -169,14 +183,15 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   async function confirmArchive() {
     if (!archiveGoal) return;
     setArchiveBusy(true);
-    try { await api(`/v1/goals/${archiveGoal.id}`, { method: "DELETE" }); setArchiveGoal(null); refresh(); } finally { setArchiveBusy(false); }
+    try { await api(`/v1/goals/${archiveGoal.id}`, { method: "DELETE" }); setArchiveGoal(null); setArchiveView("only"); refresh(); } finally { setArchiveBusy(false); }
   }
 
   return <>
     <CcPageHeader actions={<><DepartmentScopeControl baseHref="/areas?area=01-strategia&view=goals" value={requestedDepartment} /><CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{t("goals.create")}</CcButton></>} description={scoped ? t("goals.contextualDescription") : t("goals.canonicalDescription")} eyebrow={scoped ? t("goals.contextualEyebrow") : t("goals.canonicalEyebrow")} title={visibleTitle} />
+    <div aria-label={polish ? "Widok celów" : "Goal view"} className="mb-3 flex flex-wrap gap-2" role="group"><button aria-pressed={archiveView === "exclude"} className={`btn btn-sm ${archiveView === "exclude" ? "btn-primary" : "btn-outline"}`} onClick={() => { setArchiveView("exclude"); setSelected(null); }} type="button">{polish ? "Bieżące" : "Current"}</button><button aria-pressed={archiveView === "only"} className={`btn btn-sm ${archiveView === "only" ? "btn-primary" : "btn-outline"}`} onClick={() => { setArchiveView("only"); setSelected(null); }} ref={historyButton} type="button">{polish ? "Historia" : "History"}</button></div>
     {packet.status === "error" ? <CcNotice live tone="error" title={packet.error || t("goals.loadError")} /> : null}
-    <CcDataTable columns={columns} rows={rows} emptyDetail={canonical ? t("goals.emptyCanonicalDetail") : t("goals.emptyContextualDetail")} emptyTitle={t("goals.emptyTitle")} error={packet.status === "error" ? packet.error || t("goals.loadError") : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
-    {selected ? <GoalMandatePanel key={selected.id} goalId={selected.id} onClose={() => setSelected(null)} onChanged={() => setRefreshKey(value => value + 1)} onEditLegacy={() => { setEditing(selected); setSelected(null); }} onArchiveLegacy={() => { setArchiveGoal(selected); setSelected(null); }} /> : null}
+    <CcDataTable columns={columns} rows={rows} emptyDetail={archiveView === "only" ? (polish ? "Zarchiwizowane cele pojawią się tutaj, zachowując powiązania i historię." : "Archived goals appear here with their links and history.") : canonical ? t("goals.emptyCanonicalDetail") : t("goals.emptyContextualDetail")} emptyTitle={archiveView === "only" ? (polish ? "Brak celów w historii" : "No goals in history") : t("goals.emptyTitle")} error={packet.status === "error" ? packet.error || t("goals.loadError") : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
+    {selected ? <GoalMandatePanel key={selected.id} goalId={selected.id} onClose={() => setSelected(null)} onChanged={() => setRefreshKey(value => value + 1)} onRetired={() => { setArchiveView("only"); setFocusHistoryAfterRetirement(true); setRefreshKey(value => value + 1); }} onEditLegacy={() => { setEditing(selected); setSelected(null); }} onArchiveLegacy={() => { setArchiveGoal(selected); setSelected(null); }} /> : null}
     {editing !== undefined ? <GoalEditor departmentKey={requestedDepartment || departmentKey} departments={departmentOptions} goal={editing} onClose={() => setEditing(undefined)} onSaved={refresh} /> : null}
     {archiveGoal ? <CcConfirmDialog busy={archiveBusy} confirmIcon="ph-archive" confirmLabel={t("goals.archive")} confirmTone="warning" description={t("goals.archiveDescription")} detail={<strong>{archiveGoal.title}</strong>} eyebrow={t("goals.eyebrow")} onCancel={() => setArchiveGoal(null)} onConfirm={confirmArchive} title={t("goals.archiveTitle")} /> : null}
   </>;

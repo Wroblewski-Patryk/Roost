@@ -28,9 +28,13 @@ async function scopedEvidenceWhere(workspaceId: string, departmentKey: string): 
   return matches.length ? { OR: matches } : { id: { in: [] } };
 }
 
-async function resolveEntity(workspaceId: string, entityType: string, entityId: string) {
-  if (entityType === "goal") return prisma.goal.findFirst({ where: { id: entityId, workspaceId } });
-  if (entityType === "task") return prisma.task.findFirst({ where: { id: entityId, workspaceId }, include: { project: true, goal: true, taskList: true } });
+async function resolveEntity(workspaceId: string, entityType: string, entityId: string, ownerHistory = false) {
+  if (entityType === "goal") return prisma.goal.findFirst({ where: { id: entityId, workspaceId,
+    ...(!ownerHistory ? { status: { not: "archived" as const } } : {}) } });
+  if (entityType === "task") {
+    const task = await prisma.task.findFirst({ where: { id: entityId, workspaceId }, include: { project: true, goal: true, taskList: true } });
+    return task && !ownerHistory && task.goal?.status === "archived" ? { ...task, goal: null } : task;
+  }
   if (entityType === "task_list") return prisma.taskList.findFirst({ where: { id: entityId, workspaceId }, include: { project: true } });
   if (entityType === "project") return prisma.project.findFirst({ where: { id: entityId, workspaceId } });
   if (entityType === "procedure") return prisma.procedure.findFirst({ where: { id: entityId, workspaceId }, include: { steps: { orderBy: { stepOrder: "asc" } } } });
@@ -46,7 +50,10 @@ async function resolveEntity(workspaceId: string, entityType: string, entityId: 
   if (entityType === "pipeline_stage") return prisma.pipelineStage.findFirst({ where: { id: entityId, workspaceId }, include: { pipeline: true, assignedRole: true, procedure: true } });
   if (entityType === "standard") return prisma.standard.findFirst({ where: { id: entityId, workspaceId }, include: { ownerRole: true, procedures: true } });
   if (entityType === "control") return prisma.control.findFirst({ where: { id: entityId, workspaceId }, include: { ownerRole: true, risk: true } });
-  if (entityType === "target") return prisma.target.findFirst({ where: { id: entityId, workspaceId }, include: { goal: true, pipeline: true, metricRef: true } });
+  if (entityType === "target") {
+    const target = await prisma.target.findFirst({ where: { id: entityId, workspaceId }, include: { goal: true, pipeline: true, metricRef: true } });
+    return target && !ownerHistory && target.goal?.status === "archived" ? { ...target, goal: null } : target;
+  }
   if (entityType === "capability") return prisma.applicationCapability.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { capabilityDefinition: { include: { domain: true } }, application: true, features: { include: { featureDefinition: true } }, evidence: true } });
   if (entityType === "feature") return prisma.applicationFeature.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { featureDefinition: true, application: true } });
   if (entityType === "implementation") return prisma.applicationArchitectureComponent.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { application: true, technologyDefinition: true } });
@@ -321,7 +328,8 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
 companyIntelligenceRouter.get("/entities/:entityType/:id", asyncHandler(async (req, res) => {
   if (req.params.entityType === "evidence" && !requireWorkspaceRole(req, res, "viewer")) return;
   const workspaceId = req.auth!.workspaceId; const requestedType = String(req.params.entityType); const entityType = requestedType === "requirement" ? "company_record" : requestedType;
-  const record = await resolveEntity(workspaceId, requestedType, String(req.params.id)); if (!record) return res.status(404).json({ error: "entity_not_found" });
+  const ownerHistory = req.auth!.authType === "user" && req.auth!.workspaceRole === "owner";
+  const record = await resolveEntity(workspaceId, requestedType, String(req.params.id), ownerHistory); if (!record) return res.status(404).json({ error: "entity_not_found" });
   const [contexts, relations, evidence] = await Promise.all([
     organizationalContextsForEntities(workspaceId, entityType, [record.id]),
     prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: { in: [entityType, requestedType] }, fromEntityId: record.id }, { toEntityType: { in: [entityType, requestedType] }, toEntityId: record.id }] }, orderBy: { updatedAt: "desc" } }),
@@ -330,7 +338,7 @@ companyIntelligenceRouter.get("/entities/:entityType/:id", asyncHandler(async (r
   const relatedRefs = relations.map((relation) => relation.fromEntityId === record.id && [entityType, requestedType].includes(relation.fromEntityType || "")
     ? { entityType: relation.toEntityType!, entityId: relation.toEntityId! }
     : { entityType: relation.fromEntityType!, entityId: relation.fromEntityId! });
-  const related = (await Promise.all(relatedRefs.slice(0, 80).map(async (reference) => ({ ...reference, record: await resolveEntity(workspaceId, reference.entityType, reference.entityId) })))).filter((item) => item.record);
+  const related = (await Promise.all(relatedRefs.slice(0, 80).map(async (reference) => ({ ...reference, record: await resolveEntity(workspaceId, reference.entityType, reference.entityId, ownerHistory) })))).filter((item) => item.record);
   res.json({ data: { entityType: requestedType, record, organizationalContext: contexts.get(record.id), relations, related, evidence } });
 }));
 

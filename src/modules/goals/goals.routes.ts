@@ -77,6 +77,8 @@ const goalInclude = {
 
 goalsRouter.get("/", asyncHandler(async (req, res) => {
   const archive = z.enum(["exclude", "only", "all"]).default("exclude").parse(req.query.archive);
+  if (archive !== "exclude" && (req.auth!.authType !== "user" || req.auth!.workspaceRole !== "owner"))
+    return res.status(403).json({ error: "goal_history_owner_required" });
   const workspaceId = req.auth!.workspaceId;
   const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
   if (departmentKey && !isCanonicalDepartmentKey(departmentKey)) return res.status(400).json({ error: "invalid_department_key" });
@@ -93,6 +95,8 @@ goalsRouter.get("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const goal = await prisma.goal.findFirst({ where: { id: String(req.params.id), workspaceId }, include: goalInclude });
   if (!goal) return res.status(404).json({ error: "not_found" });
+  if (goal.status === "archived" && (req.auth!.authType !== "user" || req.auth!.workspaceRole !== "owner"))
+    return res.status(404).json({ error: "not_found" });
   res.json({ data: (await serializeGoals(workspaceId, [goal]))[0] });
 }));
 
@@ -118,6 +122,9 @@ goalsRouter.patch("/:id", asyncHandler(async (req, res) => {
   const input = updateGoalSchema.parse(req.body);
   const existing = await prisma.goal.findFirst({ where: { id: String(req.params.id), workspaceId } });
   if (!existing) return res.status(404).json({ error: "not_found" });
+  if (existing.status === "archived" && await prisma.goalMandateVersion.count({
+    where: { workspaceId, goalId: existing.id, status: "retired" } }))
+    return res.status(409).json({ error: "goal_retirement_immutable" });
   if (await prisma.goalMandateHead.findFirst({ where: { workspaceId, goalId: existing.id } }))
     return res.status(409).json({ error: "goal_mandate_change_requires_adoption" });
   const relationError = await invalidRelation(workspaceId, input, existing.id);
@@ -138,6 +145,9 @@ goalsRouter.delete("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.goal.findFirst({ where: { id: String(req.params.id), workspaceId } });
   if (!existing) return res.status(404).json({ error: "not_found" });
+  if (existing.status === "archived" && await prisma.goalMandateVersion.count({
+    where: { workspaceId, goalId: existing.id, status: "retired" } }))
+    return res.status(409).json({ error: "goal_retirement_immutable" });
   if (await prisma.goalMandateHead.findFirst({ where: { workspaceId, goalId: existing.id } }))
     return res.status(409).json({ error: "goal_mandate_change_requires_adoption" });
   const goal = await prisma.goal.update({ where: { id: existing.id }, data: { status: "archived" }, include: goalInclude });

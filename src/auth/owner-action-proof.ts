@@ -13,6 +13,7 @@ export function proofEligibleAction(method: string, path: string) {
   return path === "/v1/api-keys/agent-credentials"
     || /^\/v1\/strategy\/direction\/drafts\/[0-9a-f-]{36}\/adopt$/.test(path)
     || /^\/v1\/goal-mandates\/goals\/[0-9a-f-]{36}\/drafts\/[0-9a-f-]{36}\/adopt$/.test(path)
+    || /^\/v1\/goal-mandates\/goals\/[0-9a-f-]{36}\/actions\/retire$/.test(path)
     || /^\/v1\/strategy\/direction\/comparisons\/[0-9a-f-]{36}\/actions\/resolve$/.test(path)
     || /^\/v1\/api-keys\/[0-9a-f-]{36}\/actions\/(?:rotate|revoke)$/.test(path)
     || /^\/v1\/api-keys\/worker-credentials\/(?:enroll|rotate|revoke)$/.test(path)

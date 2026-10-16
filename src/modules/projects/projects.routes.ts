@@ -56,7 +56,7 @@ projectsRouter.get("/:id/workspace", asyncHandler(async (req, res) => {
     prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "project", fromEntityId: project.id }, { toEntityType: "project", toEntityId: project.id }] }, orderBy: { updatedAt: "desc" } }),
     prisma.goal.findMany({ where: { workspaceId, projectId: project.id, status: { not: "archived" } }, orderBy: { updatedAt: "desc" } }),
     prisma.taskList.findMany({ where: { workspaceId, projectId: project.id, status: { not: "archived" } }, orderBy: { updatedAt: "desc" } }),
-    prisma.task.findMany({ where: { workspaceId, projectId: project.id, status: { not: "archived" } }, include: { taskList: { select: { id: true, name: true } }, goal: { select: { id: true, title: true } }, assignedWorkforceEntity: { select: { id: true, name: true, type: true } } }, orderBy: { updatedAt: "desc" } }),
+    prisma.task.findMany({ where: { workspaceId, projectId: project.id, status: { not: "archived" } }, include: { taskList: { select: { id: true, name: true } }, goal: { select: { id: true, title: true, status: true } }, assignedWorkforceEntity: { select: { id: true, name: true, type: true } } }, orderBy: { updatedAt: "desc" } }),
     prisma.applicationProject.findMany({ where: { projectId: project.id, application: { workspaceId } }, include: { application: { include: {
       architecture: true,
       repositories: true,
@@ -104,7 +104,8 @@ projectsRouter.get("/:id/workspace", asyncHandler(async (req, res) => {
   res.json({ data: {
     schemaVersion: "project-workspace-v1", project, organizationalContext: contexts.get(project.id),
     health: { status: blockedTasks.length ? "attention" : "healthy", openTasks: openTasks.length, blockedTasks: blockedTasks.length, requirements: requirements.length, verifiedRequirements: requirements.filter((item) => item.verificationState === "passed").length, evidence: allEvidence.length, verifiedEvidence: verifiedEvidence.length },
-    intent: { goals }, delivery: { taskLists, tasks }, applications,
+    intent: { goals }, delivery: { taskLists, tasks: tasks.map(task => ({ ...task,
+      goal: task.goal?.status === "archived" ? null : task.goal })) }, applications,
     product: { capabilities, features, architecture, repositories, interfaces, technologies, dependencies: applicationDependencies },
     records, requirements, deliverables: records.filter((record) => record.recordType === "deliverable"), issues: records.filter((record) => record.recordType === "operational_issue"), incidents: records.filter((record) => record.recordType === "technical_incident"),
     procedures, decisions: allDecisions, resources, risks, metrics, relations: [...relations, ...applicationDependencies], evidence: allEvidence, activity: events

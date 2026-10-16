@@ -153,6 +153,9 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   };
   const task = await at("task_lock", () => lockReadyTask(db, workspaceId, taskId));
   if (!task) return { error: "task_not_found" };
+  if (task.goalId && await db.goal.count({ where: { id: task.goalId, workspaceId, status: "archived",
+    mandateVersions: { some: { status: "retired" } } } }))
+    return { error: "goal_retired" };
   if (actor.requestedByType !== "user" || !actor.requestedById || !await db.workspaceMembership.findFirst({ where: { workspaceId, userId: actor.requestedById, role: { in: ["owner", "admin", "member"] } } })) return { error: "forbidden" };
   if (await at("suspension", () => suspensionBlocks(db,workspaceId,taskId,input.applicationId,"runtime_execute",task.assignedWorkforceEntityId))) return {error:"native_capability_suspended"};
   const reviewError = await at("review_admission", () => reviewAdmissionError(db, workspaceId, taskId, input.contract));
@@ -231,6 +234,9 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
 export async function inspectReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, execution?: AgentExecution, readOnly = false) {
   const task = readOnly ? await db.task.findFirst({ where: { id: taskId, workspaceId } }) : await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
+  if (task.goalId && await db.goal.count({ where: { id: task.goalId, workspaceId, status: "archived",
+    mandateVersions: { some: { status: "retired" } } } }))
+    return { error: "goal_retired", readiness: { status: "needs_revalidation", reason: "goal_retired" } };
   if(execution&&!(await db.$queryRaw<any[]>`SELECT finding_task_current(${taskId}::uuid) AS value`)[0].value){
     if (!readOnly) await db.$executeRaw`SELECT finding_invalidate(${workspaceId}::uuid)`;
     return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"finding_context_changed"}};

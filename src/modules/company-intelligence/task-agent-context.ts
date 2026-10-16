@@ -73,9 +73,10 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
   // Task identity and its own instructions are the admitted work order. Linked
   // planning objects can contain separate mutable prose, so only their IDs
   // accompany an execution until they have a source-review contract.
+  const visibleGoal = task.goal?.status === "archived" ? null : task.goal;
   const executionTask = execution ? { ...task,
     project: task.project ? { id: task.project.id, workspaceId: task.project.workspaceId } : null,
-    goal: task.goal ? { id: task.goal.id, workspaceId: task.goal.workspaceId } : null,
+    goal: visibleGoal ? { id: visibleGoal.id, workspaceId: visibleGoal.workspaceId } : null,
     target: task.target ? { id: task.target.id, workspaceId: task.target.workspaceId } : null,
     taskList: task.taskList ? { id: task.taskList.id, workspaceId: task.taskList.workspaceId } : null,
     assignedWorkforceEntity: task.assignedWorkforceEntity ? {
@@ -84,7 +85,7 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
       role: task.assignedWorkforceEntity.role, skillIndex: task.assignedWorkforceEntity.skillIndex,
       toolIndex: task.assignedWorkforceEntity.toolIndex, authorityScope: task.assignedWorkforceEntity.authorityScope,
       runtimeMode: task.assignedWorkforceEntity.runtimeMode
-    } : null } : task;
+    } : null } : { ...task, goal: visibleGoal };
   return {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task: executionTask, organizationalContext: execution ? null : contexts.get(task.id),...(decisionAuthorities.length?{decisionAuthorities}:{}),
     companyDirection: await currentCompanyDirection(db, workspaceId),

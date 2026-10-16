@@ -8,6 +8,7 @@ import { resolveReviewPrincipal } from "../../auth/agent-principal";
 import { taskSourceScope } from "../agent-runtime/task-source-trust";
 import { GoalMandateError, adoptGoalMandateDraft, createGoalMandateDraft, currentGoalMandate,
   decideGoalMeasurement, ownerGoalMandateView, previewGoalMandateDraft, proposeGoalMeasurement } from "./goal-mandate";
+import { previewGoalRetirement, retireGoal } from "./goal-retirement";
 
 export const goalMandateRouter = Router();
 const uuid = z.string().uuid();
@@ -37,6 +38,25 @@ function responseError(res: Response, error: unknown) {
 goalMandateRouter.get("/goals/:goalId", asyncHandler(async (req, res) => {
   if (!owner(req)) return sendApiError(res, 403, "goal_owner_required");
   try { res.json({ data: await ownerGoalMandateView(req.auth!.workspaceId, uuid.parse(req.params.goalId)) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+goalMandateRouter.get("/goals/:goalId/retirement-preview", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId) return sendApiError(res, 403, "goal_owner_required");
+  res.setHeader("Cache-Control", "no-store");
+  try { res.json({ data: await previewGoalRetirement(req.auth!.workspaceId, userId, uuid.parse(req.params.goalId)) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+goalMandateRouter.post("/goals/:goalId/actions/retire", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId || !req.header("X-Owner-Action-Proof") || !req.auth!.authenticatedAt ||
+    Math.floor(Date.now() / 1000) - req.auth!.authenticatedAt > 90)
+    return sendApiError(res, 403, "goal_fresh_owner_required");
+  res.setHeader("Cache-Control", "no-store");
+  try { res.json({ data: await retireGoal(req.auth!.workspaceId, userId,
+    uuid.parse(req.params.goalId), req.body) }); }
   catch (error) { return responseError(res, error); }
 }));
 

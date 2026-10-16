@@ -393,6 +393,8 @@ export const adapterManifest = {
     ],
     goalMandates: [
       { method: "GET", path: "/v1/goal-mandates/goals/:goalId", capability: "goals:read" },
+      { method: "GET", path: "/v1/goal-mandates/goals/:goalId/retirement-preview", capability: "goals:read" },
+      { method: "POST", path: "/v1/goal-mandates/goals/:goalId/actions/retire", capability: "goals:write" },
       { method: "POST", path: "/v1/goal-mandates/goals/:goalId/drafts", capability: "goals:write" },
       { method: "POST", path: "/v1/goal-mandates/goals/:goalId/drafts/:draftId/preview", capability: "goals:write" },
       { method: "POST", path: "/v1/goal-mandates/goals/:goalId/drafts/:draftId/adopt", capability: "goals:write" },

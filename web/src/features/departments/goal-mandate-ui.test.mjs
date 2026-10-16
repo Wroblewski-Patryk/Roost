@@ -18,7 +18,7 @@ const taskId = "88888888-8888-4888-8888-888888888888";
 const now = "2026-10-12T10:00:00.000Z";
 
 const bundle = await build({
-  stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{GoalMandatePanel}from'./web/src/features/departments/goal-mandate-panel';createRoot(document.getElementById('root')).render(<LanguageProvider><GoalMandatePanel goalId='${goalId}' onClose={()=>{}} onChanged={()=>{}} onEditLegacy={()=>{}} onArchiveLegacy={()=>{}}/></LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" },
+  stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{GoalMandatePanel}from'./web/src/features/departments/goal-mandate-panel';createRoot(document.getElementById('root')).render(<LanguageProvider><GoalMandatePanel goalId='${goalId}' onClose={()=>{}} onChanged={()=>{}} onRetired={()=>{}} onEditLegacy={()=>{}} onArchiveLegacy={()=>{}}/></LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" },
   bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' }
 });
 const cssName = (await readdir("public/react/assets")).find(name => /^index-.*\.css$/.test(name));

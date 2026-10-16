@@ -9,6 +9,7 @@ import { prepareExecutionPacket } from "../modules/agent-runtime/execution-packe
 import { watchReadySources } from "../modules/agent-runtime/ready-source-watch";
 import { adoptGoalMandateDraft, createGoalMandateDraft, currentGoalMandate, goalEvidenceDigest,
   previewGoalMandateDraft, proposeGoalMeasurement } from "../modules/goals/goal-mandate";
+import { submitReady } from "../modules/agent-runtime/task-execution-readiness";
 
 type Response = { status: number; body: any };
 type Request = (path: string, init?: RequestInit) => Promise<Response>;
@@ -16,6 +17,110 @@ type Request = (path: string, init?: RequestInit) => Promise<Response>;
 export function registerGoalMandateTests(deps: { request: Request;
   registerOwner: (email: string, workspaceName: string) => Promise<{ token: string; workspace: { id: string } }>;
   runMcpBridgeSmoke: (apiKey: string, options?: any) => Promise<any> }) {
+  test("Goal retirement preserves history and blocks linked agent execution", async () => {
+    const first = await deps.registerOwner(`retire-goal-${randomUUID()}@example.test`, "Retirement fixture");
+    const foreign = await deps.registerOwner(`foreign-retire-${randomUUID()}@example.test`, "Foreign fixture");
+    const workspaceId = first.workspace.id;
+    const owner = await prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId } });
+    const human = { Authorization: `Bearer ${first.token}` };
+    const otherHuman = { Authorization: `Bearer ${foreign.token}` };
+    const data = (response: Response) => { assert.ok(response.status >= 200 && response.status < 300,
+      `${response.status} ${JSON.stringify(response.body)}`); return response.body.data; };
+    const post = (path: string, body: unknown, headers: Record<string, string> = human) =>
+      deps.request(path, { method: "POST", headers, body: JSON.stringify(body) });
+    const proofed = async (path: string, body: unknown) => {
+      const encoded = JSON.stringify(body);
+      const proof = data(await post("/v1/auth/reauth", { method: "POST", path,
+        bodyDigest: digest(encoded), password: "very-strong-password" })).proof;
+      return deps.request(path, { method: "POST", headers: { ...human, "X-Owner-Action-Proof": proof }, body: encoded });
+    };
+    const project = await prisma.project.create({ data: { workspaceId, name: "Fictional retirement project" } });
+    const goal = await prisma.goal.create({ data: { workspaceId, projectId: project.id, title: "Retire fictional test goal" } });
+    const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, goalId: goal.id,
+      title: "Preserved external task", source: "clickup", externalId: "fixture-external-task" } });
+    const draft = await createGoalMandateDraft(workspaceId, owner.ownerUserId, goal.id, {
+      result: "One fictional result", metric: "Verified cases", unit: "cases", targetValue: 1,
+      evidenceSource: "Fictional task evidence", accountableUserId: owner.ownerUserId,
+      provenance: "Isolated owner fixture" });
+    const adoptionPreview = await previewGoalMandateDraft(workspaceId, owner.ownerUserId, goal.id, draft.id);
+    const adopted = await adoptGoalMandateDraft(workspaceId, owner.ownerUserId, goal.id, draft.id,
+      adoptionPreview.previewId, null, adoptionPreview.impactDigest);
+    const historical = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id,
+      requestedByType: "user", requestedById: owner.ownerUserId, status: "failed", attempt: 0,
+      metadata: { executionContract: { executionClass: "roost-company-information-v1" },
+        readyContextPin: { preparationOnly: true, modelExecutionQualified: false } } } });
+    const previewPath = `/v1/goal-mandates/goals/${goal.id}/retirement-preview`;
+    const retirePath = `/v1/goal-mandates/goals/${goal.id}/actions/retire`;
+    assert.equal((await deps.request(previewPath, { headers: otherHuman })).status, 404);
+    assert.equal((await post(retirePath, { requestId: randomUUID(), previewToken: "invalid-token", reason: "Test withdrawal" }, otherHuman)).status, 403);
+    const preview = data(await deps.request(previewPath, { headers: human }));
+    assert.equal(preview.version.id, adopted.id);
+    assert.deepEqual(preview.blockers, []);
+    assert.equal(preview.impact.tasks.length, 1);
+    assert.equal(preview.impact.executionCount, 1);
+    const firstCommand = { requestId: randomUUID(), previewToken: preview.previewToken,
+      reason: "This fictional test direction is withdrawn." };
+    assert.equal((await post(retirePath, firstCommand)).status, 403);
+    await prisma.task.update({ where: { id: task.id }, data: { title: "Changed external task" } });
+    assert.equal((await proofed(retirePath, firstCommand)).status, 409);
+    assert.equal((await prisma.goal.findUniqueOrThrow({ where: { id: goal.id } })).status, "active");
+    const fresh = data(await deps.request(previewPath, { headers: human }));
+    const command = { requestId: randomUUID(), previewToken: fresh.previewToken,
+      reason: "The test goal has no accepted business outcome." };
+    const retired = data(await proofed(retirePath, command));
+    assert.equal(retired.status, "archived");
+    assert.equal(retired.retiredMandateVersionId, adopted.id);
+    assert.equal(data(await proofed(retirePath, command)).replayed, true);
+    assert.equal((await proofed(retirePath, { ...command, reason: "Different reason on reused request." })).status, 409);
+    assert.equal((await prisma.goalMandateHead.findFirst({ where: { goalId: goal.id } })), null);
+    assert.equal((await prisma.goalMandateVersion.findUniqueOrThrow({ where: { id: adopted.id } })).status, "retired");
+    assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+    assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).externalId, "fixture-external-task");
+    assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: historical.id } })).mandateVersionIdAtQueue, adopted.id);
+    assert.equal(data(await deps.request(`/v1/goal-mandates/goals/${goal.id}`, { headers: human })).current, null);
+    assert.equal(data(await deps.request(`/v1/goal-mandates/goals/${goal.id}`, { headers: human })).versions[0].status, "retired");
+    const taskContext = data(await deps.request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers: human }));
+    assert.equal(taskContext.task.goalId, goal.id);
+    assert.equal(taskContext.task.goal, null);
+    assert.equal(taskContext.intent.objective, null);
+    assert.equal(taskContext.goalMandate, null);
+    const workItems = data(await deps.request("/v1/operations/work-items?limit=50", { headers: human })).workItems;
+    assert.equal(workItems.find((item: any) => item.task.id === task.id).hierarchy.goal, null);
+    const projectWorkspace = data(await deps.request(`/v1/projects/${project.id}/workspace`, { headers: human }));
+    assert.equal(projectWorkspace.delivery.tasks.find((item: any) => item.id === task.id).goal, null);
+    assert.equal(data(await deps.request("/v1/goals?archive=exclude", { headers: human })).some((item: any) => item.id === goal.id), false);
+    assert.equal(data(await deps.request("/v1/goals?archive=only", { headers: human })).some((item: any) => item.id === goal.id), true);
+    assert.equal((await deps.request(`/v1/goals/${goal.id}`, { method: "PATCH", headers: human,
+      body: JSON.stringify({ status: "active" }) })).status, 409);
+    await assert.rejects(prisma.goal.update({ where: { id: goal.id }, data: { status: "active" } }),
+      /goal_retirement_immutable/);
+    const alternate = await prisma.goal.create({ data: { workspaceId, title: "Unrelated active goal" } });
+    assert.equal((await deps.request(`/v1/tasks/${task.id}`, { method: "PATCH", headers: human,
+      body: JSON.stringify({ goalId: alternate.id }) })).status, 409);
+    assert.equal((await deps.request(`/v1/operations/work-items/${task.id}`, { method: "PATCH", headers: human,
+      body: JSON.stringify({ goalId: alternate.id }) })).status, 409);
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { goalId: null } }),
+      /goal_retirement_task_link_immutable/);
+    await assert.rejects(prisma.task.create({ data: { workspaceId, goalId: goal.id,
+      title: "New task must not inherit retired goal" } }), /goal_retired/);
+    assert.equal((await post("/v1/tasks", { goalId: goal.id, title: "Rejected new Task" })).status, 409);
+    assert.equal((await post("/v1/operations/work-items", { goalId: goal.id,
+      title: "Rejected new Operations work item" })).status, 409);
+    assert.equal(await prisma.$transaction(tx => currentGoalMandate(tx, workspaceId, goal.id)), null);
+    assert.equal((await prisma.$transaction(tx => submitReady(tx, workspaceId, task.id, {},
+      { requestedByType: "user", requestedById: owner.ownerUserId })) as any).error, "goal_retired");
+    await assert.rejects(prisma.agentExecution.create({ data: { workspaceId, taskId: task.id,
+      requestedByType: "user", requestedById: owner.ownerUserId, status: "failed", attempt: 0,
+      metadata: { executionContract: { executionClass: "roost-company-information-v1" },
+        readyContextPin: { preparationOnly: true, modelExecutionQualified: false } } } }), /goal_retired/);
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: {
+      executionReadiness: { status: "ready" } } }), /goal_retired/);
+    const events = await prisma.event.findMany({ where: { workspaceId, resourceType: "Goal", resourceId: goal.id,
+      type: "goal_retired" } });
+    assert.equal(events.length, 1);
+    assert.equal(await prisma.auditLog.count({ where: { workspaceId, action: "goal.retire", resourceId: goal.id } }), 1);
+  });
+
   test("G20 owner goal adoption, verified progress and task-bound agent proposal", async () => {
     const { request, registerOwner } = deps;
     const first = await registerOwner(`goal-${randomUUID()}@example.test`, "Goal fixture");

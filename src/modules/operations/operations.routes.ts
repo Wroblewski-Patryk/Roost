@@ -242,6 +242,9 @@ export const operationsRouter = Router();
 operationsRouter.post("/work-items", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const input = createWorkItemSchema.parse(req.body);
+  if (input.goalId && await prisma.goal.count({ where: { id: input.goalId, workspaceId,
+    status: "archived", mandateVersions: { some: { status: "retired" } } } }))
+    return res.status(409).json({ error: "goal_retired" });
   if (!await visibleWorkItemRelations(workspaceId, input)) {
     return res.status(404).json({ error: "not_found" });
   }
@@ -589,7 +592,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       },
       hierarchy: {
         project: task.project ? { id: task.project.id, name: task.project.name, status: task.project.status } : null,
-        goal: task.goal ? { id: task.goal.id, title: task.goal.title, status: task.goal.status } : null,
+        goal: task.goal && task.goal.status !== "archived" ? { id: task.goal.id, title: task.goal.title, status: task.goal.status } : null,
         target: task.target ? { id: task.target.id, title: task.target.title, status: task.target.status } : null,
         taskList: task.taskList ? { id: task.taskList.id, name: task.taskList.name, status: task.taskList.status } : null
       },
@@ -955,6 +958,17 @@ operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
   if (!existing) {
     return res.status(404).json({ error: "not_found" });
   }
+
+  if (input.goalId !== undefined && input.goalId !== existing.goalId && existing.goalId &&
+      await prisma.goalMandateVersion.findFirst({ where: {
+        workspaceId, goalId: existing.goalId, status: "retired"
+      }, select: { id: true } })) {
+    return res.status(409).json({ error: "goal_retired" });
+  }
+  if (input.goalId && input.goalId !== existing.goalId && await prisma.goal.count({ where: {
+    id: input.goalId, workspaceId, status: "archived",
+    mandateVersions: { some: { status: "retired" } } } }))
+    return res.status(409).json({ error: "goal_retired" });
 
   const governed = await governedClickUpListForTask(existing);
   if (input.taskListId !== undefined) {

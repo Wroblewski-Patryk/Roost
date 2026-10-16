@@ -195,7 +195,7 @@ async function attentionPage(workspaceId: string, offset: number) {
   const executionIds = pageRows.filter(row => row.kind === "result" && row.executionId).map(row => row.executionId!);
   const [tasks, decisions, incidents, executions, workspace] = await Promise.all([
     prisma.task.findMany({ where: { workspaceId, id: { in: taskIds } }, select: {
-      id: true, source: true, description: true, project: { select: { name: true } }, goal: { select: { title: true } },
+      id: true, source: true, description: true, project: { select: { name: true } }, goal: { select: { title: true, status: true } },
       ownerUser: { select: { name: true } },
       assignedWorkforceEntity: { select: { name: true } }
     } }),
@@ -245,7 +245,7 @@ async function attentionPage(workspaceId: string, offset: number) {
       : row.kind === "result" && row.status === "failed" ? managerByTask.get(row.id) ?? null
       : row.kind === "result" ? null
       : taskById.get(row.id)?.ownerUser?.name ?? taskById.get(row.id)?.assignedWorkforceEntity?.name ?? null,
-    related: taskById.get(row.id)?.project?.name ?? taskById.get(row.id)?.goal?.title
+    related: taskById.get(row.id)?.project?.name ?? (taskById.get(row.id)?.goal?.status === "archived" ? null : taskById.get(row.id)?.goal?.title)
       ?? decisionById.get(row.id)?.project?.name ?? null,
     provenance: taskById.get(row.id)?.source ?? decisionById.get(row.id)?.source ?? incidentById.get(row.id)?.source ?? null,
     provenanceConfirmed: false,

@@ -37,6 +37,8 @@ async function adoptedGoalMandate(db: Db, workspaceId: string, goalId: string) {
 }
 
 export async function currentGoalMandate(db: Db, workspaceId: string, goalId: string) {
+  const goal = await db.goal.findFirst({ where: { id: goalId, workspaceId, status: { not: "archived" } }, select: { id: true } });
+  if (!goal) return null;
   const version = await adoptedGoalMandate(db, workspaceId, goalId);
   if (!version) return null;
   const accountable = await db.workspaceMembership.findFirst({ where: { workspaceId,

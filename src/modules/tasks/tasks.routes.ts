@@ -138,6 +138,9 @@ tasksRouter.post("/", asyncHandler(async (req, res) => {
   const input = createTaskSchema.parse(req.body);
   const { organizationalContext, ...taskInput } = input;
   if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
+  if (input.goalId && await prisma.goal.count({ where: { id: input.goalId,
+    workspaceId: req.auth!.workspaceId, status: "archived", mandateVersions: { some: { status: "retired" } } } }))
+    return res.status(409).json({ error: "goal_retired" });
   if (!await visibleTaskRelations(req.auth!.workspaceId, input)) {
     return res.status(404).json({ error: "not_found" });
   }
@@ -221,6 +224,14 @@ tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
   if (!existing) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (taskInput.goalId !== undefined && taskInput.goalId !== existing.goalId && existing.goalId &&
+    await prisma.goalMandateVersion.count({ where: { workspaceId: req.auth!.workspaceId,
+      goalId: existing.goalId, status: "retired" } }))
+    return res.status(409).json({ error: "goal_retirement_task_link_immutable" });
+  if (taskInput.goalId && taskInput.goalId !== existing.goalId && await prisma.goal.count({ where: {
+    id: taskInput.goalId, workspaceId: req.auth!.workspaceId, status: "archived",
+    mandateVersions: { some: { status: "retired" } } } }))
+    return res.status(409).json({ error: "goal_retired" });
 
   const governed = await governedClickUpListForTask(existing);
   if (taskInput.taskListId !== undefined) {
