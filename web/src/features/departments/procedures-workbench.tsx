@@ -1,5 +1,5 @@
 import { ProcedureContractsModal } from "./procedure-composition";
-import { ProcedureLaunchPanel } from "./procedure-launch-panel";
+import { ProcedureLaunchPanel, procedureLaunchMessage } from "./procedure-launch-panel";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -29,7 +29,7 @@ type ProcedureStep = {
   rollbackInstruction?: string | null;
 };
 
-type ProcedureStepDraft = Omit<ProcedureStep, "id" | "stepOrder"> & { clientId: string };
+type ProcedureStepDraft = Omit<ProcedureStep, "id" | "stepOrder"> & { clientId: string; inputNamesText: string; outputText: string };
 
 type ToolAdapter = {
   id: string;
@@ -50,6 +50,11 @@ type ProcessDefinition = {
   department?: string | null;
 };
 
+type ProjectOption = { id: string; name: string; status: string };
+type RoleOption = { id: string; name: string; type: string; permissions: unknown; escalationTargetId?: string | null };
+type ProcedureContext = { ownerDepartment?: { key: string } | null; relatedDepartments: Array<{ key: string }>;
+  applicableDepartments: Array<{ key: string }>; scopes: Array<{ type: string; entityId?: string | null; label?: string | null }> };
+
 type Procedure = {
   id: string;
   familyId: string;
@@ -63,6 +68,7 @@ type Procedure = {
   version: number;
   process?: ProcessDefinition | null;
   ownerRole?: { id: string; name: string } | null;
+  organizationalContext?: ProcedureContext;
   steps: ProcedureStep[];
   updatedAt: string;
 };
@@ -125,6 +131,24 @@ function statusBadge(status: string) {
   return "badge-ghost";
 }
 
+function activationErrorMessage(error: unknown, pl: boolean) {
+  if (!(error instanceof AppApiError)) return pl ? "Nie udało się aktywować procedury. Odśwież widok." : "Could not activate the procedure. Refresh the view.";
+  const labels: Record<string, [string, string]> = {
+    procedure_activation_exact_review_required: ["Przegląd dokładnej wersji jest wymagany. Odśwież widok.", "Exact version review is required. Refresh the view."],
+    procedure_activation_stale: ["Szkic zmienił się. Odśwież widok i sprawdź wersję ponownie.", "The draft changed. Refresh and review this version again."],
+    procedure_project_scope_stale: ["Projekt nie jest już aktywny. Wybierz aktywny projekt w szkicu.", "The project is no longer active. Select an active project in the draft."],
+    procedure_activation_requirements_missing: ["Uzupełnij kroki i oczekiwany wynik w szkicu.", "Add steps and an expected result to the draft."],
+    only_draft_procedure_can_be_activated: ["Ta wersja nie jest już szkicem. Odśwież widok.", "This version is no longer a draft. Refresh the view."]
+  };
+  if (error.code === "procedure_activation_incomplete") {
+    const blockers = error.details && typeof error.details === "object" && "blockers" in error.details && Array.isArray(error.details.blockers)
+      ? error.details.blockers.filter((value): value is string => typeof value === "string") : [];
+    const intro = pl ? "Uzupełnij definicję przed aktywacją." : "Complete the definition before activation.";
+    return blockers.length ? `${intro} ${blockers.map(code => procedureLaunchMessage(code, pl)).join(" ")}` : intro;
+  }
+  return labels[error.code]?.[pl ? 0 : 1] || (pl ? "Nie udało się aktywować procedury. Odśwież widok." : "Could not activate the procedure. Refresh the view.");
+}
+
 function updatedLabel(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "Unknown" : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(date);
@@ -143,13 +167,21 @@ function newStep(index: number): ProcedureStepDraft {
     expectedInput: {},
     expectedOutput: {},
     validationRule: {},
-    rollbackInstruction: null
+    rollbackInstruction: null,
+    inputNamesText: "",
+    outputText: ""
   };
 }
 
-function ProcedureStepsEditor({ steps, onChange }: { steps: ProcedureStepDraft[]; onChange: (steps: ProcedureStepDraft[]) => void }) {
+function ProcedureStepsEditor({ steps, onChange, pl }: { steps: ProcedureStepDraft[]; onChange: (steps: ProcedureStepDraft[]) => void; pl: boolean }) {
   function update(index: number, patch: Partial<ProcedureStepDraft>) {
     onChange(steps.map((step, stepIndex) => stepIndex === index ? { ...step, ...patch } : step));
+  }
+
+  function updateInputNames(index: number, raw: string) {
+    const previous = steps[index].expectedInput || {};
+    const keys = [...new Set(raw.split("\n").map(value => value.trim()).filter(Boolean))];
+    update(index, { inputNamesText: raw, expectedInput: Object.fromEntries(keys.map(key => [key, previous[key] ?? {}])) });
   }
 
   function move(index: number, direction: -1 | 1) {
@@ -162,7 +194,7 @@ function ProcedureStepsEditor({ steps, onChange }: { steps: ProcedureStepDraft[]
 
   return (
     <div className="grid gap-3">
-      <input name="stepsJson" type="hidden" value={JSON.stringify(steps.map(({ clientId: _clientId, ...step }) => step))} />
+      <input name="stepsJson" type="hidden" value={JSON.stringify(steps.map(({ clientId: _clientId, inputNamesText: _inputNamesText, outputText: _outputText, ...step }) => step))} />
       <ol className="grid gap-2">
         {steps.map((step, index) => (
           <li className="roost-work-panel-muted grid gap-3 rounded-company p-3" key={step.clientId}>
@@ -170,36 +202,56 @@ function ProcedureStepsEditor({ steps, onChange }: { steps: ProcedureStepDraft[]
               <div className="flex items-center gap-2">
                 <span className="text-sm font-black tabular-nums text-primary">{String(index + 1).padStart(2, "0")}</span>
                 <CcSelect
-                  aria-label={`Execution type for step ${index + 1}`}
+                  aria-label={pl ? `Typ wykonawcy kroku ${index + 1}` : `Execution type for step ${index + 1}`}
                   className="select-sm"
                   onChange={(event) => update(index, { stepType: event.target.value })}
                   value={step.stepType}
                 >
-                  <option value="manual">Manual</option>
-                  <option value="agent">Agent</option>
-                  <option value="human_review">Human review</option>
-                  <option value="automated">Automated</option>
-                  <option value="integration_call">Integration call</option>
+                  <option value="manual">{pl ? "Ręcznie" : "Manual"}</option>
+                  <option value="agent">{pl ? "Agent" : "Agent"}</option>
+                  <option value="human_review">{pl ? "Ocena człowieka" : "Human review"}</option>
+                  <option value="automated">{pl ? "Automatycznie" : "Automated"}</option>
+                  <option value="integration_call">{pl ? "Integracja" : "Integration call"}</option>
                 </CcSelect>
               </div>
               <div className="flex items-center gap-1">
-                <button aria-label={`Move step ${index + 1} up`} className="btn btn-ghost btn-xs btn-square" disabled={index === 0} onClick={() => move(index, -1)} title="Move up" type="button"><i className="ph-bold ph-arrow-up" aria-hidden="true"></i></button>
-                <button aria-label={`Move step ${index + 1} down`} className="btn btn-ghost btn-xs btn-square" disabled={index === steps.length - 1} onClick={() => move(index, 1)} title="Move down" type="button"><i className="ph-bold ph-arrow-down" aria-hidden="true"></i></button>
-                <button aria-label={`Remove step ${index + 1}`} className="btn btn-ghost btn-xs btn-square text-error" disabled={steps.length === 1} onClick={() => onChange(steps.filter((_, stepIndex) => stepIndex !== index))} title="Remove step" type="button"><i className="ph-bold ph-trash" aria-hidden="true"></i></button>
+                <button aria-label={pl ? `Przenieś krok ${index + 1} w górę` : `Move step ${index + 1} up`} className="btn btn-ghost btn-xs btn-square" disabled={index === 0} onClick={() => move(index, -1)} type="button"><i className="ph-bold ph-arrow-up" aria-hidden="true"></i></button>
+                <button aria-label={pl ? `Przenieś krok ${index + 1} w dół` : `Move step ${index + 1} down`} className="btn btn-ghost btn-xs btn-square" disabled={index === steps.length - 1} onClick={() => move(index, 1)} type="button"><i className="ph-bold ph-arrow-down" aria-hidden="true"></i></button>
+                <button aria-label={pl ? `Usuń krok ${index + 1}` : `Remove step ${index + 1}`} className="btn btn-ghost btn-xs btn-square text-error" disabled={steps.length === 1} onClick={() => onChange(steps.filter((_, stepIndex) => stepIndex !== index))} type="button"><i className="ph-bold ph-trash" aria-hidden="true"></i></button>
               </div>
             </div>
             <textarea
-              aria-label={`Instruction for step ${index + 1}`}
+              aria-label={pl ? `Instrukcja kroku ${index + 1}` : `Instruction for step ${index + 1}`}
               className="textarea textarea-bordered min-h-20 w-full"
               onChange={(event) => update(index, { instruction: event.target.value })}
-              placeholder="Describe one clear action and its expected outcome."
+              placeholder={pl ? "Opisz jedną czynność i jej oczekiwany wynik." : "Describe one clear action and its expected outcome."}
               required
               value={step.instruction}
             />
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1 text-sm font-semibold">{pl ? "Pola wejściowe (po jednym w wierszu)" : "Input field names (one per line)"}
+                <textarea aria-label={pl ? `Pola wejściowe kroku ${index + 1}` : `Input fields for step ${index + 1}`} className="textarea textarea-bordered min-h-20 w-full font-mono text-sm" value={step.inputNamesText} onChange={event => updateInputNames(index, event.target.value)} />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">{pl ? "Wymagany wynik lub dowód" : "Required output or evidence"}
+                <textarea aria-label={pl ? `Wynik kroku ${index + 1}` : `Output for step ${index + 1}`} className="textarea textarea-bordered min-h-20 w-full" value={step.outputText} onChange={event => { const { description: _old, ...rest } = step.expectedOutput || {}; update(index, { outputText: event.target.value, expectedOutput: event.target.value.trim() ? { ...rest, description: event.target.value.trim() } : rest }); }} />
+              </label>
+            </div>
+            {Object.keys(step.expectedOutput || {}).some(key => key !== "description") ? <p className="text-xs text-company-muted">{pl ? "Pozostałe pola złożonego wyniku zostaną zachowane." : "Other structured output fields will be preserved."}</p> : null}
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_10rem]">
+              <label className="grid gap-1 text-sm font-semibold">{pl ? "Warunek sukcesu" : "Success condition"}
+                <textarea aria-label={pl ? `Warunek sukcesu kroku ${index + 1}` : `Success condition for step ${index + 1}`} className="textarea textarea-bordered min-h-20 w-full" value={typeof step.validationRule?.success === "string" ? step.validationRule.success : ""} onChange={event => update(index, { validationRule: { ...step.validationRule, success: event.target.value } })} />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">{pl ? "Maks. prób (1–3)" : "Maximum attempts (1–3)"}
+                <input aria-label={pl ? `Limit prób kroku ${index + 1}` : `Attempt limit for step ${index + 1}`} className="input input-bordered w-full" type="number" min={1} max={3} value={typeof step.validationRule?.maxAttempts === "number" ? step.validationRule.maxAttempts : ""} onChange={event => { const { maxAttempts: _old, ...rest } = step.validationRule || {}; update(index, { validationRule: event.target.value ? { ...rest, maxAttempts: Number(event.target.value) } : rest }); }} />
+              </label>
+            </div>
+            <label className="grid gap-1 text-sm font-semibold">{pl ? "Plan awaryjny i droga wyjątku" : "Fallback and exception path"}
+              <textarea aria-label={pl ? `Plan awaryjny kroku ${index + 1}` : `Fallback for step ${index + 1}`} className="textarea textarea-bordered min-h-20 w-full" value={step.rollbackInstruction || ""} onChange={event => update(index, { rollbackInstruction: event.target.value || null })} />
+            </label>
           </li>
         ))}
       </ol>
-      <CcButton iconLeft="ph-plus" onClick={() => onChange([...steps, newStep(steps.length)])} size="sm" variant="outline">Add step</CcButton>
+      <CcButton iconLeft="ph-plus" onClick={() => onChange([...steps, newStep(steps.length)])} size="sm" variant="outline">{pl ? "Dodaj krok" : "Add step"}</CcButton>
     </div>
   );
 }
@@ -214,11 +266,30 @@ function ProcedureEditor({ procedure, processes, toolOptions, permissionOptions,
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  const { locale } = useLanguage();
+  const pl = locale === "pl";
   const isImprovement = Boolean(procedure && procedure.status !== "draft");
+  const savedProjectId = procedure?.organizationalContext?.scopes.length === 1 && procedure.organizationalContext.scopes[0].type === "project"
+    ? procedure.organizationalContext.scopes[0].entityId || "" : "";
+  const [scopeMode, setScopeMode] = useState<"preserve" | "company" | "project">(procedure ? savedProjectId ? "project" : "preserve" : "project");
+  const [projectScopeId, setProjectScopeId] = useState(savedProjectId);
+  const [ownerRoleId, setOwnerRoleId] = useState(procedure?.ownerRole?.id || "");
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [roles, setRoles] = useState<RoleOption[]>([]);
+  const [optionsError, setOptionsError] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    void Promise.all([api<{ data: ProjectOption[] }>("/v1/projects"), api<{ data: RoleOption[] }>("/v1/company-os/company-roles?limit=100")])
+      .then(([projectResponse, roleResponse]) => { if (alive) { setProjects(projectResponse.data); setRoles(roleResponse.data); setOptionsError(false); } })
+      .catch(() => { if (alive) setOptionsError(true); });
+    return () => { alive = false; };
+  }, []);
   const [requiredTools, setRequiredTools] = useState(procedure?.requiredTools || []);
   const [requiredPermissions, setRequiredPermissions] = useState(procedure?.requiredPermissions || []);
   const [steps, setSteps] = useState<ProcedureStepDraft[]>(procedure?.steps.length
-    ? procedure.steps.map(({ id, stepOrder: _stepOrder, ...step }) => ({ ...step, clientId: id }))
+    ? procedure.steps.map(({ id, stepOrder: _stepOrder, ...step }) => ({ ...step, clientId: id,
+      inputNamesText: Object.keys(step.expectedInput || {}).join("\n"),
+      outputText: typeof step.expectedOutput?.description === "string" ? step.expectedOutput.description : "" }))
     : [newStep(0)]);
   const completeToolOptions = useMemo(() => {
     const known = new Set(toolOptions.map((option) => option.value));
@@ -230,45 +301,86 @@ function ProcedureEditor({ procedure, processes, toolOptions, permissionOptions,
   }, [permissionOptions, requiredPermissions]);
   return (
     <CcRecordEditorModal
-      actions={<><CcButton onClick={onClose} type="button" variant="ghost">Cancel</CcButton><CcButton loading={saving} type="submit" variant="primary">Save draft</CcButton></>}
-      description={isImprovement ? "Saving creates a new draft version. The active procedure stays unchanged until the draft is activated." : "Define the reusable method, its operating scope, expected result, and executable steps."}
-      eyebrow="04 Operations · Procedures"
+      actions={<><CcButton onClick={onClose} type="button" variant="ghost">{pl ? "Anuluj" : "Cancel"}</CcButton><CcButton disabled={saving || optionsError} loading={saving} type="submit" variant="primary">{pl ? "Zapisz szkic" : "Save draft"}</CcButton></>}
+      description={isImprovement ? pl ? "Zapis utworzy nową wersję roboczą. Aktywna procedura pozostanie bez zmian do osobnego przeglądu i aktywacji." : "Saving creates a new draft. The active procedure stays unchanged until separate review and activation." : pl ? "Opisz rzeczywisty zakres, odpowiedzialność, wejście, wynik i kroki." : "Define the real scope, accountability, inputs, outcome, and steps."}
+      eyebrow={pl ? "04 Operacje · Procedury" : "04 Operations · Procedures"}
       maxWidthClassName="max-w-5xl"
-      meta={procedure ? <span>Version {procedure.version}</span> : null}
+      meta={procedure ? <span>{pl ? "Wersja" : "Version"} {procedure.version}</span> : null}
       onClose={onClose}
+      closeLabel={pl ? "Zamknij edytor" : "Close editor"}
       onSubmit={onSubmit}
-      title={procedure ? (isImprovement ? `Improve ${procedure.name}` : `Edit ${procedure.name}`) : "New procedure"}
+      title={procedure ? (isImprovement ? `${pl ? "Szkic ulepszenia" : "Improve"} ${procedure.name}` : `${pl ? "Edytuj" : "Edit"} ${procedure.name}`) : pl ? "Nowa procedura" : "New procedure"}
       titleId="procedure-editor-title"
     >
       {error ? <CcNotice tone="error" title={error} live /> : null}
-      <CcRecordEditorSection title="Definition" description="The short operating contract people and agents see before they start work.">
+      {optionsError ? <CcNotice tone="error" title={pl ? "Nie udało się odczytać projektów i ról. Zamknij i spróbuj ponownie." : "Could not load projects and roles. Close and retry."} live /> : null}
+      <CcRecordEditorSection title={pl ? "Definicja" : "Definition"} description={pl ? "Kontrakt pracy widoczny przed uruchomieniem." : "The operating contract shown before launch."}>
         <div className="grid gap-4 md:grid-cols-2">
-          <CcField label="Name" required>{({ id, describedBy, invalid }) => <CcTextInput aria-describedby={describedBy} autoFocus defaultValue={procedure?.name || ""} id={id} invalid={invalid} name="name" required />}</CcField>
-          <CcField label="Related process" hint="The process supplies the department lens. A cross-department process can expose this procedure in several departments.">
-            {({ id, describedBy, invalid }) => <CcSelect aria-describedby={describedBy} defaultValue={procedure?.process?.id || ""} id={id} invalid={invalid} name="processId"><option value="">All departments / no process</option>{processes.map((process) => <option key={process.id} value={process.id}>{process.name}{process.department ? ` · ${process.department}` : ""}</option>)}</CcSelect>}
+          <CcField label={pl ? "Nazwa" : "Name"} required>{({ id, describedBy, invalid }) => <CcTextInput aria-describedby={describedBy} autoFocus defaultValue={procedure?.name || ""} id={id} invalid={invalid} name="name" required />}</CcField>
+          <CcField label={pl ? "Powiązany proces" : "Related process"} hint={pl ? "Proces określa działy, w których widać procedurę." : "The process supplies the department lens."}>
+            {({ id, describedBy, invalid }) => <CcSelect aria-describedby={describedBy} defaultValue={procedure?.process?.id || ""} id={id} invalid={invalid} name="processId"><option value="">{pl ? "Wszystkie działy / bez procesu" : "All departments / no process"}</option>{processes.map((process) => <option key={process.id} value={process.id}>{process.name}{process.department ? ` · ${process.department}` : ""}</option>)}</CcSelect>}
           </CcField>
-          <div className="md:col-span-2"><CcField label="Purpose" required>{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" defaultValue={procedure?.purpose || ""} id={id} name="purpose" required />}</CcField></div>
-          <CcField label="Scope">{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" defaultValue={procedure?.scope || ""} id={id} name="scope" />}</CcField>
-          <CcField label="Expected result" required>{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" defaultValue={procedure?.expectedResult || ""} id={id} name="expectedResult" required />}</CcField>
+          <div className="md:col-span-2"><CcField label={pl ? "Cel procedury" : "Purpose"} required>{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" defaultValue={procedure?.purpose || ""} id={id} name="purpose" required />}</CcField></div>
+          <CcField label={pl ? "Opis zakresu" : "Scope description"}>{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" defaultValue={procedure?.scope || ""} id={id} name="scope" />}</CcField>
+          <CcField label={pl ? "Oczekiwany wynik" : "Expected result"} required>{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" defaultValue={procedure?.expectedResult || ""} id={id} name="expectedResult" required />}</CcField>
+          <CcField label={pl ? "Zakres uruchomienia" : "Launch applicability"} hint={pl ? "Sam opis zakresu nie przypina procedury do projektu." : "A scope description alone does not bind the procedure to a project."}>
+            {({ id, describedBy }) => <CcSelect id={id} aria-describedby={describedBy} name="applicabilityMode" value={scopeMode} onChange={event => setScopeMode(event.target.value as typeof scopeMode)}>
+              {procedure ? <option value="preserve">{pl ? "Zachowaj dotychczasowy zakres" : "Keep saved applicability"}</option> : null}
+              <option value="project">{pl ? "Dokładny projekt" : "Exact project"}</option>
+              <option value="company">{pl ? "Cała firma" : "Company-wide"}</option>
+            </CcSelect>}
+          </CcField>
+          {scopeMode === "project" ? <CcField label={pl ? "Projekt" : "Project"} required>{({ id, describedBy }) => <CcSelect id={id} aria-describedby={describedBy} name="projectScopeId" value={projectScopeId} onChange={event => setProjectScopeId(event.target.value)} required><option value="">{pl ? "Wybierz dokładny projekt" : "Choose an exact project"}</option>{projects.filter(project => project.status === "active" || project.id === savedProjectId).map(project => <option key={project.id} value={project.id}>{project.name} · {project.id}</option>)}</CcSelect>}</CcField> : null}
+          <CcField label={pl ? "Odpowiedzialna rola" : "Accountable role"} hint={pl ? "Uruchomienie z zadaniami wymaga roli człowieka i eskalacji lub końcowej decyzji właściciela." : "Task launch needs a human role and escalation or a final owner decision."}>
+            {({ id, describedBy }) => <CcSelect id={id} aria-describedby={describedBy} name="ownerRoleId" value={ownerRoleId} onChange={event => setOwnerRoleId(event.target.value)}><option value="">{pl ? "Wybierz rolę" : "Choose a role"}</option>{procedure?.ownerRole && !roles.some(role => role.id === procedure.ownerRole?.id) ? <option value={procedure.ownerRole.id}>{procedure.ownerRole.name}</option> : null}{roles.filter(role => role.type === "human" || role.id === procedure?.ownerRole?.id).map(role => <option key={role.id} value={role.id}>{role.name} · {role.type}</option>)}</CcSelect>}
+          </CcField>
         </div>
       </CcRecordEditorSection>
-      <CcRecordEditorSection title="Execution" description="Keep only requirements that change how the procedure can be carried out.">
+      <CcRecordEditorSection title={pl ? "Wykonanie" : "Execution"} description={pl ? "Procedury ręczne mogą tworzyć zadania dopiero po aktywacji i podglądzie bez blokad." : "Manual procedures can create tasks only after activation and a blocker-free preview."}>
         <div className="grid gap-5">
           <div className="grid gap-4 md:grid-cols-2">
-            <CcField label="Required tools" hint="Select registered workspace adapters. Typed values are not accepted.">{({ id }) => <CcMultiSelect id={id} name="requiredTools" onChange={setRequiredTools} options={completeToolOptions} placeholder="No tools required" searchPlaceholder="Search tools..." value={requiredTools} />}</CcField>
-            <CcField label="Required permissions" hint="Select capabilities from the current Roost and integration permission catalogs.">{({ id }) => <CcMultiSelect id={id} name="requiredPermissions" onChange={setRequiredPermissions} options={completePermissionOptions} placeholder="No explicit permissions" searchPlaceholder="Search permissions..." value={requiredPermissions} />}</CcField>
+            <CcField label={pl ? "Wymagane narzędzia" : "Required tools"} hint={pl ? "Ten rodzaj uruchomienia obsługuje tylko Roost, bez zewnętrznych adapterów." : "This launch supports Roost only, without external adapters."}>{({ id }) => <CcMultiSelect id={id} name="requiredTools" onChange={setRequiredTools} options={completeToolOptions} placeholder={pl ? "Bez narzędzi" : "No tools required"} searchPlaceholder={pl ? "Szukaj narzędzia..." : "Search tools..."} value={requiredTools} />}</CcField>
+            <CcField label={pl ? "Wymagane uprawnienia" : "Required permissions"} hint={pl ? "Dodatkowe uprawnienia zablokują ten rodzaj uruchomienia." : "Additional permissions block this launch type."}>{({ id }) => <CcMultiSelect id={id} name="requiredPermissions" onChange={setRequiredPermissions} options={completePermissionOptions} placeholder={pl ? "Bez dodatkowych uprawnień" : "No explicit permissions"} searchPlaceholder={pl ? "Szukaj uprawnienia..." : "Search permissions..."} value={requiredPermissions} />}</CcField>
           </div>
           <div className="border-t border-base-300 pt-4">
             <div className="mb-3">
-              <h4 className="font-black text-company-ink">Steps</h4>
-              <p className="text-sm text-company-muted">Each action is a separate ordered record. Add, remove, or move steps without rewriting the whole procedure.</p>
+              <h4 className="font-black text-company-ink">{pl ? "Kroki" : "Steps"}</h4>
+              <p className="text-sm text-company-muted">{pl ? "Każdy krok ma osobne wejście, wynik, warunek sukcesu, limit prób i plan awaryjny." : "Each step has its own input, output, success condition, attempt limit, and fallback."}</p>
             </div>
-            <ProcedureStepsEditor onChange={setSteps} steps={steps} />
+            <ProcedureStepsEditor onChange={setSteps} steps={steps} pl={pl} />
           </div>
         </div>
       </CcRecordEditorSection>
     </CcRecordEditorModal>
   );
+}
+
+function ProcedureActivationReview({ procedure, busy, error, onClose, onConfirm }: {
+  procedure: Procedure; busy: boolean; error: string | null; onClose: () => void; onConfirm: () => void;
+}) {
+  const { locale } = useLanguage();
+  const pl = locale === "pl";
+  const scopes = procedure.organizationalContext?.scopes || [];
+  return <CcRecordEditorModal titleId="procedure-activation-review" eyebrow={pl ? "Przegląd dokładnej wersji" : "Exact version review"}
+    title={`${procedure.name} · v${procedure.version}`} onClose={onClose} closeLabel={pl ? "Zamknij przegląd" : "Close review"}
+    description={pl ? "Aktywacja udostępni tę wersję do podglądu uruchomienia. Nie tworzy przebiegu ani zadań." : "Activation makes this version available for launch preview. It does not create a run or tasks."}
+    onSubmit={event => { event.preventDefault(); onConfirm(); }}
+    actions={<><CcButton type="button" variant="ghost" onClick={onClose}>{pl ? "Wróć" : "Back"}</CcButton><CcButton type="submit" variant="primary" loading={busy} disabled={busy}>{pl ? "Aktywuj tę wersję" : "Activate this version"}</CcButton></>}>
+    {error ? <CcNotice tone="error" title={error} live /> : null}
+    <dl className="grid gap-2 text-sm">
+      <div><dt className="font-bold">{pl ? "Identyfikator" : "ID"}</dt><dd className="break-all font-mono">{procedure.id}</dd></div>
+      <div><dt className="font-bold">{pl ? "Zakres strukturalny" : "Structured scope"}</dt><dd>{scopes.length ? scopes.map(scope => `${scope.type}: ${scope.entityId || (pl ? "cała firma" : "company")}`).join(" · ") : pl ? "Brak — podgląd uruchomienia będzie zablokowany" : "Missing — launch preview will be blocked"}</dd></div>
+      <div><dt className="font-bold">{pl ? "Odpowiedzialna rola" : "Accountable role"}</dt><dd>{procedure.ownerRole?.name || (pl ? "Brak" : "Missing")}</dd></div>
+      <div><dt className="font-bold">{pl ? "Oczekiwany wynik" : "Expected result"}</dt><dd>{procedure.expectedResult || (pl ? "Brak" : "Missing")}</dd></div>
+    </dl>
+    <ol className="grid gap-3">{procedure.steps.map(step => <li className="rounded-company border border-base-300 p-3 text-sm" key={step.id}>
+      <p className="font-bold">{step.stepOrder}. {step.instruction}</p>
+      <p>{pl ? "Wykonawca" : "Executor"}: {step.stepType} · {pl ? "Wejścia" : "Inputs"}: {Object.keys(step.expectedInput || {}).join(", ") || (pl ? "brak" : "none")}</p>
+      <p>{pl ? "Wynik" : "Output"}: {JSON.stringify(step.expectedOutput || {})}</p>
+      <p>{pl ? "Sukces" : "Success"}: {String(step.validationRule?.success || (pl ? "brak" : "missing"))} · {pl ? "Maks. prób" : "Max attempts"}: {String(step.validationRule?.maxAttempts || (pl ? "brak" : "missing"))}</p>
+      <p>{pl ? "Plan awaryjny" : "Fallback"}: {step.rollbackInstruction || (pl ? "brak" : "missing")}</p>
+    </li>)}</ol>
+  </CcRecordEditorModal>;
 }
 
 function ProcedureDetail({ procedure, provenance, provenanceStatus, provenanceError, onRefreshProvenance, busy, archiveOpen = false, canArchive, onActivate, onArchive, onClose, onEdit }: {
@@ -508,6 +620,8 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmActivate, setConfirmActivate] = useState(false);
+  const [activationError, setActivationError] = useState<string | null>(null);
   const [ownerRole, setOwnerRole] = useState(false);
   const [provenance, setProvenance] = useState<ProcedureProvenance | null>(null);
   const [provenanceStatus, setProvenanceStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -589,16 +703,27 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
     setError(null);
     try {
       const form = new FormData(event.currentTarget);
+      const applicabilityMode = String(form.get("applicabilityMode") || "preserve");
+      const savedContext = editing?.organizationalContext;
+      const organizationalContext = applicabilityMode === "preserve" && editing ? undefined : {
+        ownerDepartmentKey: savedContext?.ownerDepartment?.key ?? effectiveDepartment,
+        relatedDepartmentKeys: savedContext?.relatedDepartments.map(department => department.key) ?? [],
+        applicableDepartmentKeys: savedContext?.applicableDepartments.map(department => department.key) ?? [],
+        scopes: applicabilityMode === "project"
+          ? [{ type: "project", entityId: String(form.get("projectScopeId") || "") }]
+          : [{ type: "company" }]
+      };
       const payload = {
         name: form.get("name"),
         purpose: form.get("purpose"),
         scope: form.get("scope") || null,
         processId: form.get("processId") || null,
+        ownerRoleId: form.get("ownerRoleId") || null,
         expectedResult: form.get("expectedResult"),
         requiredTools: form.getAll("requiredTools").map(String),
         requiredPermissions: form.getAll("requiredPermissions").map(String),
         steps: JSON.parse(String(form.get("stepsJson") || "[]")),
-        ...(!editing ? { organizationalContext: { ownerDepartmentKey: effectiveDepartment, relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: scoped ? [{ type: "department", entityId: effectiveDepartment }] : [{ type: "company" }] } } : {})
+        ...(organizationalContext ? { organizationalContext } : {})
       };
       const response = editing ? await api<{ data: Procedure }>(`/v1/process-core/procedures/${editing.id}`, { method: "PATCH", body: JSON.stringify(payload) }) : await api<{ data: Procedure }>("/v1/process-core/procedures", { method: "POST", body: JSON.stringify(payload) });
       setEditing(undefined);
@@ -610,10 +735,11 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
   }
 
   async function activate() {
-    if (!selected) return;
+    if (!selected || !confirmActivate || selected.status !== "draft" || busy) return;
     setBusy(true);
-    try { await api(`/v1/process-core/procedures/${selected.id}/actions/activate`, { method: "POST", body: "{}" }); await load(selected.id); }
-    catch (caught) { setError(caught instanceof AppApiError ? caught.code : "procedure_activation_failed"); }
+    setActivationError(null);
+    try { await api(`/v1/process-core/procedures/${selected.id}/actions/activate`, { method: "POST", body: JSON.stringify({ expectedVersion: selected.version, expectedUpdatedAt: selected.updatedAt }) }); setConfirmActivate(false); await load(selected.id); }
+    catch (caught) { setActivationError(activationErrorMessage(caught, locale === "pl")); }
     finally { setBusy(false); }
   }
 
@@ -708,7 +834,8 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
         {status === "ready" ? <CcDataTable columns={columns} density="compact" emptyDetail={t("procedures.emptyDetail")} emptyTitle={t("procedures.empty")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(procedure) => procedure.name} initialQuickFilter="current" initialSort={{ key: "name", direction: "asc" }} labels={tableLabels} mobileMode="cards" quickFilters={[{ key: "current", label: t("procedures.current"), predicate: (procedure) => !["archived", "retired"].includes(procedure.status) }, { key: "all", label: t("procedures.all"), predicate: () => true }]} rowActionItems={rowActions} rows={procedures} searchPlaceholder={t("procedures.search")} tableMinWidthClassName="min-w-[920px]" /> : null}
       </div>
       {contractId?<ProcedureContractsModal procedureId={contractId} onClose={()=>setContractId(null)}/>:null}
-      {selected ? <ProcedureDetail archiveOpen={confirmArchive} canArchive={ownerRole} busy={busy} provenance={provenance} provenanceStatus={provenanceStatus} provenanceError={provenanceError} onRefreshProvenance={() => setProvenanceRefresh((value) => value + 1)} onActivate={() => void activate()} onArchive={openArchive} onClose={() => { setSelectedId(null); setArchiveSuccess(false); }} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
+      {selected ? <ProcedureDetail archiveOpen={confirmArchive || confirmActivate} canArchive={ownerRole} busy={busy} provenance={provenance} provenanceStatus={provenanceStatus} provenanceError={provenanceError} onRefreshProvenance={() => setProvenanceRefresh((value) => value + 1)} onActivate={() => { setActivationError(null); setConfirmActivate(true); }} onArchive={openArchive} onClose={() => { setSelectedId(null); setArchiveSuccess(false); }} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
+      {selected && confirmActivate ? <ProcedureActivationReview procedure={selected} busy={busy} error={activationError} onClose={() => { setConfirmActivate(false); setActivationError(null); }} onConfirm={() => void activate()} /> : null}
       {selected && confirmArchive && ownerRole ? <ProcedureArchiveDialog procedure={selected} preview={archivePreview} loading={archiveLoading} busy={busy} stale={archiveStale} error={archiveError} reason={archiveReason} acknowledged={archiveAcknowledged} onReason={setArchiveReason} onAcknowledge={setArchiveAcknowledged} onRefresh={() => void refreshArchive(selected.id, true)} onCancel={closeArchive} onConfirm={() => void archive()} /> : null}
       {editing !== undefined ? <ProcedureEditor error={error} onClose={() => { setEditing(undefined); setError(null); }} onSubmit={(event) => void submit(event)} permissionOptions={permissionOptions} procedure={editing} processes={processes} saving={busy} toolOptions={toolOptions} /> : null}
     </section>

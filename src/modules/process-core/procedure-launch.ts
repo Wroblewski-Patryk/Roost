@@ -52,6 +52,12 @@ function object(value: Prisma.JsonValue): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
+function terminalOwnerDecision(role: { type: string; permissions: Prisma.JsonValue } | null): boolean {
+  const permissions = role?.permissions;
+  if (role?.type !== "human" || !Array.isArray(permissions)) return false;
+  return ["workspace:admin", "approval:decide"].every(permission => permissions.includes(permission));
+}
+
 async function material(db: Db, workspaceId: string, procedureId: string, input: Input) {
   const [procedure, project] = await Promise.all([
     db.procedure.findFirst({ where: { id: procedureId, workspaceId }, include: {
@@ -83,7 +89,8 @@ async function material(db: Db, workspaceId: string, procedureId: string, input:
   if (!procedure.scope?.trim()) blockers.push("procedure_scope_missing");
   if (!procedure.expectedResult?.trim()) blockers.push("procedure_result_missing");
   if (!procedure.ownerRole || procedure.ownerRole.type !== "human") blockers.push("human_owner_role_missing");
-  if (!procedure.ownerRole?.escalationTarget) blockers.push("escalation_role_missing");
+  const ownerDecidesFinally = terminalOwnerDecision(procedure.ownerRole);
+  if (!procedure.ownerRole?.escalationTarget && !ownerDecidesFinally) blockers.push("escalation_role_missing");
   if (!procedure.steps.length) blockers.push("procedure_steps_missing");
   if (Array.isArray(procedure.requiredTools) && procedure.requiredTools.some(tool => tool !== "companycore")) blockers.push("external_tool_required");
   if (Array.isArray(procedure.requiredPermissions) && procedure.requiredPermissions.length) blockers.push("additional_permission_required");
@@ -119,6 +126,7 @@ async function material(db: Db, workspaceId: string, procedureId: string, input:
     project: { id: project.id, name: project.name, status: project.status, updatedAt: project.updatedAt.toISOString() },
     ownerRole: procedure.ownerRole ? { id: procedure.ownerRole.id, name: procedure.ownerRole.name,
       type: procedure.ownerRole.type, escalation: procedure.ownerRole.escalationTarget?.name ?? null,
+      terminalOwnerDecision: ownerDecidesFinally,
       updatedAt: procedure.ownerRole.updatedAt.toISOString() } : null,
     inputs: canonical(input.inputs) as Record<string, string>,
     steps: procedure.steps.map(step => ({ id: step.id, order: step.stepOrder, instruction: step.instruction,

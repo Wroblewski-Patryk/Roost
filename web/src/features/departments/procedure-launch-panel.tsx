@@ -8,7 +8,7 @@ type Project = { id: string; name: string; status: string };
 type Step = { id: string; order: number; instruction: string; executor: string; expectedInput: Record<string, unknown>;
   expectedOutput: Record<string, unknown>; validationRule: Record<string, unknown>; rollbackInstruction: string | null; taskTitle: string };
 type Preview = { procedure: { id: string; name: string; purpose: string; version: number; status: string; scope: string | null; expectedResult: string | null; updatedAt: string };
-  project: Project; ownerRole: { name: string; escalation: string | null } | null; inputs: Record<string, string>;
+  project: Project; ownerRole: { name: string; escalation: string | null; terminalOwnerDecision?: boolean } | null; inputs: Record<string, string>;
   taskAssigneeUserId: string; taskAssigneeLabel: string; applicability: Array<{ type: string; entityId: string | null }>;
   steps: Step[]; blockers: string[]; digest: string; previewToken: string | null; expiresAt: string;
   effects: { roostNativeTasks: number; externalWrites: number; agentExecutions: number } };
@@ -58,6 +58,7 @@ function message(code: string, pl: boolean) {
   }
   return labels[code]?.[pl ? 0 : 1] || (pl ? `Nie można wykonać operacji (${code}). Odśwież widok.` : `The operation could not be completed (${code}). Refresh this view.`);
 }
+export { message as procedureLaunchMessage };
 function runStatus(value: string, pl: boolean) {
   const labels: Record<string, [string, string]> = { tasks_open: ["Zadania otwarte", "Tasks open"], in_progress: ["W toku", "In progress"],
     exception: ["Wyjątek", "Exception"], tasks_done_evidence_pending: ["Zadania wykonane, czeka dowód", "Tasks done, output pending"],
@@ -203,7 +204,9 @@ export function ProcedureLaunchPanel({ procedure }: { procedure: { id: string; n
         <p>{pl ? "Zakres:" : "Scope:"} {preview.procedure.scope || (pl ? "Nieokreślony" : "Unspecified")}</p>
         <p>{pl ? "Zakres strukturalny:" : "Structured applicability:"} {preview.applicability.map(scope => `${scope.type}${scope.entityId ? ` · ${scope.entityId}` : ""}`).join(", ") || (pl ? "Nieokreślony" : "Unspecified")}</p>
         <p>{pl ? "Wynik:" : "Result:"} {preview.procedure.expectedResult || (pl ? "Nieokreślony" : "Unspecified")}</p>
-        <p>{pl ? "Rola odpowiedzialna w procedurze:" : "Procedure's accountable role:"} {preview.ownerRole?.name || (pl ? "Brak" : "Missing")} · {pl ? "Eskalacja:" : "Escalation:"} {preview.ownerRole?.escalation || (pl ? "Brak" : "Missing")}</p>
+        <p>{pl ? "Rola odpowiedzialna w procedurze:" : "Procedure's accountable role:"} {preview.ownerRole?.name || (pl ? "Brak" : "Missing")} · {preview.ownerRole?.terminalOwnerDecision
+          ? pl ? "Decyzja końcowa właściciela; nierozstrzygnięty wyjątek zatrzymuje krok." : "Final owner decision; an unresolved exception stops the step."
+          : <>{pl ? "Eskalacja:" : "Escalation:"} {preview.ownerRole?.escalation || (pl ? "Brak" : "Missing")}</>}</p>
         <p>{pl ? "Zadania zostaną przypisane osobie uruchamiającej:" : "Tasks will be assigned to the launching owner:"} {preview.taskAssigneeLabel} · <span className="break-all font-mono text-xs">{preview.taskAssigneeUserId}</span></p>
         <p>{pl ? "Wpływ:" : "Effects:"} {preview.effects.roostNativeTasks} {pl ? "zadań Roost" : "Roost tasks"}; {preview.effects.externalWrites} {pl ? "zapisów zewnętrznych" : "external writes"}; {preview.effects.agentExecutions} {pl ? "uruchomień agenta" : "agent executions"}.</p>
         <p>{pl ? "Wprowadzone dane:" : "Inputs:"} {Object.keys(preview.inputs).length ? JSON.stringify(preview.inputs) : (pl ? "Brak dodatkowych danych" : "No additional input")}</p>

@@ -37,6 +37,7 @@ organizationalContextRouter.get("/:entityType/:entityId", asyncHandler(async (re
 
 organizationalContextRouter.patch("/:entityType/:entityId", asyncHandler(async (req, res) => {
   const params = paramsSchema.parse(req.params);
+  if (params.entityType === "procedure") return res.status(409).json({ error: "procedure_scope_requires_versioned_revision" });
   const input = contextSchema.parse(req.body);
   const workspaceId = req.auth!.workspaceId;
   if (!departmentKeysAreValid(input)) return res.status(400).json({ error: "invalid_department_key" });

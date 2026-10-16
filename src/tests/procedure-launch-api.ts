@@ -9,6 +9,124 @@ type Harness = {
 };
 
 export function registerProcedureLaunchApiTests({ request, registerOwner }: Harness) {
+  test("RF-CTX-029 owner can review an exact project draft with a terminal owner decision", async () => {
+    const owner = await registerOwner(`procedure-editor-${randomUUID()}@example.test`, "Procedure editor fixture");
+    const foreign = await registerOwner(`procedure-editor-foreign-${randomUUID()}@example.test`, "Foreign editor fixture");
+    const workspaceId = owner.workspace.id;
+    const headers = { Authorization: `Bearer ${owner.token}` };
+    const foreignHeaders = { Authorization: `Bearer ${foreign.token}` };
+    const member = await prisma.workspaceMembership.findFirstOrThrow({ where: { workspaceId, role: "owner" } });
+    const terminal = await prisma.companyRole.create({ data: { workspaceId, name: `Final owner ${randomUUID()}`, type: "human",
+      permissions: ["workspace:admin", "approval:decide"] } });
+    const ordinary = await prisma.companyRole.create({ data: { workspaceId, name: `Ordinary human ${randomUUID()}`, type: "human" } });
+    const agent = await prisma.companyRole.create({ data: { workspaceId, name: `Agent owner claim ${randomUUID()}`, type: "agent",
+      permissions: ["workspace:admin", "approval:decide"] } });
+    const project = await prisma.project.create({ data: { workspaceId, name: `Fictional application ${randomUUID()}`, status: "active" } });
+    const foreignProject = await prisma.project.create({ data: { workspaceId: foreign.workspace.id, name: "Foreign application", status: "active" } });
+    const definition = (roleId: string, projectId: string) => ({ name: `Human review ${randomUUID()}`, purpose: "Inspect one fictional application",
+      scope: "One exact fictional project", expectedResult: "Owner-reviewed finding", ownerRoleId: roleId,
+      organizationalContext: { ownerDepartmentKey: "04-operacje", relatedDepartmentKeys: [], applicableDepartmentKeys: [],
+        scopes: [{ type: "project", entityId: projectId }] }, steps: [
+        { instruction: "Review the fictional baseline", stepType: "manual", expectedInput: { brief: {} },
+          expectedOutput: { description: "Recorded finding" }, validationRule: { success: "Evidence is attached", maxAttempts: 1 },
+          rollbackInstruction: "Stop and ask the owner for a decision" },
+        { instruction: "Record the owner decision", stepType: "manual", expectedOutput: { description: "Owner decision note" },
+          validationRule: { success: "A decision is recorded", maxAttempts: 1 }, rollbackInstruction: "Stop without approval" }
+      ] });
+    const path = "/v1/process-core/procedures";
+    assert.equal((await request(path, { method: "POST", headers, body: JSON.stringify(definition(terminal.id, foreignProject.id)) })).status, 404,
+      "a foreign project cannot become procedure applicability");
+    const created = await request(path, { method: "POST", headers, body: JSON.stringify(definition(terminal.id, project.id)) });
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    const draft = (created.body as any).data;
+    assert.deepEqual(draft.organizationalContext.scopes.map((scope: any) => [scope.type, scope.entityId]), [["project", project.id]]);
+    assert.equal(draft.ownerRoleId, terminal.id);
+    const detail = `/v1/process-core/procedures/${draft.id}`;
+    const preview = () => request(`${detail}/launch-preview`, { method: "POST", headers,
+      body: JSON.stringify({ projectId: project.id, inputs: { brief: "Fictional source" } }) });
+    const before = (await preview()).body as any;
+    assert.ok(before.data.blockers.includes("procedure_not_active"));
+    assert.ok(!before.data.blockers.includes("escalation_role_missing"));
+    assert.equal(before.data.ownerRole.terminalOwnerDecision, true);
+    assert.equal(before.data.previewToken, null);
+    assert.equal((await request(`/v1/organizational-context/procedure/${draft.id}`, { method: "PATCH", headers,
+      body: JSON.stringify({ scopes: [{ type: "company" }] }) })).status, 409, "active scope changes require the versioned procedure route");
+    assert.equal((await request(`${detail}/actions/activate`, { method: "POST", headers, body: "{}" })).status, 409);
+    assert.equal((await request(`${detail}/actions/activate`, { method: "POST", headers,
+      body: JSON.stringify({ expectedVersion: draft.version, expectedUpdatedAt: new Date(0).toISOString() }) })).status, 409);
+    await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "admin" } });
+    assert.equal((await request(`${detail}/actions/activate`, { method: "POST", headers,
+      body: JSON.stringify({ expectedVersion: draft.version, expectedUpdatedAt: draft.updatedAt }) })).status, 403);
+    await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "owner" } });
+    assert.equal((await request(`${detail}/actions/activate`, { method: "POST", headers: foreignHeaders,
+      body: JSON.stringify({ expectedVersion: draft.version, expectedUpdatedAt: draft.updatedAt }) })).status, 404);
+    const activated = await request(`${detail}/actions/activate`, { method: "POST", headers,
+      body: JSON.stringify({ expectedVersion: draft.version, expectedUpdatedAt: draft.updatedAt }) });
+    assert.equal(activated.status, 200, JSON.stringify(activated.body));
+    const ready = (await preview()).body as any;
+    assert.deepEqual(ready.data.blockers, []);
+    assert.equal(ready.data.ownerRole.terminalOwnerDecision, true);
+    assert.equal(ready.data.effects.roostNativeTasks, 2);
+    assert.equal(ready.data.effects.externalWrites, 0);
+    assert.equal(ready.data.steps[0].taskTitle, `${draft.name} · 1. Review the fictional baseline`);
+    assert.equal(ready.data.steps[1].taskTitle, `${draft.name} · 2. Record the owner decision`);
+    const revised = await request(detail, { method: "PATCH", headers,
+      body: JSON.stringify({ purpose: "A separately reviewed fictional revision" }) });
+    assert.equal(revised.status, 200, JSON.stringify(revised.body));
+    assert.equal((revised.body as any).data.version, 2);
+    assert.equal((revised.body as any).data.status, "draft");
+    const pinnedActive = await prisma.procedure.findUniqueOrThrow({ where: { id: draft.id }, include: { steps: true } });
+    assert.equal(pinnedActive.status, "active");
+    assert.equal(pinnedActive.purpose, draft.purpose, "editing an active version creates a separate draft");
+    assert.equal(pinnedActive.steps[0].instruction, "Review the fictional baseline");
+    assert.equal((await request(`${detail}/actions/activate`, { method: "POST", headers,
+      body: JSON.stringify({ expectedVersion: draft.version, expectedUpdatedAt: draft.updatedAt }) })).status, 409,
+      "activation of the same reviewed draft is not replayed");
+    for (const role of [ordinary, agent]) {
+      const result = await request(path, { method: "POST", headers, body: JSON.stringify(definition(role.id, project.id)) });
+      assert.equal(result.status, 201);
+      const invalid = (result.body as any).data;
+      const denied = await request(`${path}/${invalid.id}/actions/activate`, { method: "POST", headers,
+        body: JSON.stringify({ expectedVersion: invalid.version, expectedUpdatedAt: invalid.updatedAt }) });
+      assert.equal(denied.status, 409);
+      assert.ok((denied.body as any).errorDetails.details.blockers.includes(role.id === ordinary.id ? "escalation_role_missing" : "human_owner_role_missing"));
+    }
+    const scopeBypass = await request(path, { method: "POST", headers, body: JSON.stringify(definition(terminal.id, project.id)) });
+    assert.equal(scopeBypass.status, 201);
+    const bypassDraft = (scopeBypass.body as any).data;
+    await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "admin" } });
+    const changedScope = await request(`${path}/${bypassDraft.id}`, { method: "PATCH", headers,
+      body: JSON.stringify({ organizationalContext: { ownerDepartmentKey: "04-operacje", relatedDepartmentKeys: [],
+        applicableDepartmentKeys: [], scopes: [{ type: "company" }] } }) });
+    assert.equal(changedScope.status, 200);
+    assert.equal((await request(`${path}/${bypassDraft.id}/actions/activate`, { method: "POST", headers,
+      body: JSON.stringify({ expectedVersion: bypassDraft.version, expectedUpdatedAt: (changedScope.body as any).data.updatedAt }) })).status, 403,
+      "changing a draft to company scope never bypasses owner activation");
+    await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "owner" } });
+    assert.equal(await prisma.procedureRun.count({ where: { workspaceId } }), 0);
+    assert.equal(await prisma.task.count({ where: { workspaceId, projectId: project.id } }), 0);
+  });
+
+  test("RF-CTX-029 concurrent family activation keeps one active version and complete evidence", async () => {
+    const owner = await registerOwner(`procedure-activation-race-${randomUUID()}@example.test`, "Activation race fixture");
+    const workspaceId = owner.workspace.id;
+    const headers = { Authorization: `Bearer ${owner.token}` };
+    const name = `Fictional family ${randomUUID()}`;
+    const definition = { workspaceId, name, purpose: "One reviewable fictional action", expectedResult: "One finding",
+      steps: { create: { stepOrder: 1, instruction: "Inspect the fictional record", stepType: "manual" as const } } };
+    const first = await prisma.procedure.create({ data: definition });
+    const second = await prisma.procedure.create({ data: { ...definition, familyId: first.familyId, version: 2 } });
+    const activate = (procedure: typeof first) => request(`/v1/process-core/procedures/${procedure.id}/actions/activate`, {
+      method: "POST", headers, body: JSON.stringify({ expectedVersion: procedure.version, expectedUpdatedAt: procedure.updatedAt.toISOString() }) });
+    const results = await Promise.all([activate(first), activate(second)]);
+    assert.ok(results.every(result => [200, 409].includes(result.status)), JSON.stringify(results));
+    assert.equal(await prisma.procedure.count({ where: { workspaceId, familyId: first.familyId, status: "active" } }), 1);
+    assert.equal(await prisma.auditLog.count({ where: { workspaceId, action: "procedure.activate", resourceId: { in: [first.id, second.id] } } }),
+      results.filter(result => result.status === 200).length);
+    assert.equal(await prisma.event.count({ where: { workspaceId, type: "procedure_activated", resourceId: { in: [first.id, second.id] } } }),
+      results.filter(result => result.status === 200).length);
+  });
+
   test("RF-CTX-029 native procedure launch is scoped, atomic, idempotent and traceable", async () => {
     const owner = await registerOwner(`procedure-launch-${randomUUID()}@example.test`, "Procedure launch fixture");
     const foreign = await registerOwner(`procedure-foreign-${randomUUID()}@example.test`, "Foreign launch fixture");

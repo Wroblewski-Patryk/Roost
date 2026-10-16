@@ -2244,9 +2244,10 @@ test("product engineering keeps definitions shared, observations explicit, and p
 
   const procedureCreate = await request("/v1/process-core/procedures", { method: "POST", headers: auth, body: JSON.stringify({ name: "Release application", purpose: "Release a verified application safely.", expectedResult: "A verified release with rollback evidence.", steps: [{ instruction: "Run the release validation suite." }, { instruction: "Record deployment and rollback evidence." }] }) });
   assert.equal(procedureCreate.status, 201);
-  const procedure = (procedureCreate.body as { data: { id: string; familyId: string; version: number; status: string } }).data;
+  const procedure = (procedureCreate.body as { data: { id: string; familyId: string; version: number; status: string; updatedAt: string } }).data;
   assert.equal(procedure.status, "draft");
-  const activate = await request(`/v1/process-core/procedures/${procedure.id}/actions/activate`, { method: "POST", headers: auth, body: "{}" });
+  const activate = await request(`/v1/process-core/procedures/${procedure.id}/actions/activate`, { method: "POST", headers: auth,
+    body: JSON.stringify({ expectedVersion: procedure.version, expectedUpdatedAt: procedure.updatedAt }) });
   assert.equal(activate.status, 200);
   const applicationProcedureLink = await request(`/v1/product-engineering/applications/${roostId}/procedures`, { method: "POST", headers: auth, body: JSON.stringify({ procedureId: procedure.id, relationType: "release", required: true }) });
   assert.equal(applicationProcedureLink.status, 201);

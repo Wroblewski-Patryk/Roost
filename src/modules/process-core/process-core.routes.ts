@@ -145,6 +145,7 @@ const procedureCommandSchema = z.object({
   organizationalContext: organizationalContextSchema.optional()
 });
 const procedureUpdateSchema = procedureCommandSchema.partial().extend({ steps: z.array(procedureStepSchema).min(1).optional() });
+const procedureActivationSchema = z.object({ expectedVersion: z.number().int().positive().optional(), expectedUpdatedAt: z.string().datetime().optional() }).strict();
 
 function requestActor(req: Express.Request) {
   return req.auth!.authType === "user"
@@ -169,6 +170,16 @@ async function validateProcedureRelations(workspaceId: string, input: { processI
   if (input.ownerRoleId && !await prisma.companyRole.findFirst({ where: { id: input.ownerRoleId, workspaceId } })) return "owner_role_not_found";
   const adapterIds = input.steps?.map((step) => step.requiredToolAdapterId).filter((id): id is string => Boolean(id)) ?? [];
   if (adapterIds.length && await prisma.toolAdapter.count({ where: { id: { in: adapterIds }, workspaceId } }) !== new Set(adapterIds).size) return "tool_adapter_not_found";
+  return null;
+}
+
+async function validateProcedureProjectScopes(workspaceId: string, context: z.infer<typeof organizationalContextSchema> | undefined) {
+  const projectScopes = context?.scopes.filter(scope => scope.type === "project") ?? [];
+  for (const scope of projectScopes) {
+    if (!scope.entityId || !z.string().uuid().safeParse(scope.entityId).success) return "invalid_project_scope";
+    if (!await prisma.project.findFirst({ where: { id: scope.entityId, workspaceId, status: "active" }, select: { id: true } }))
+      return "project_scope_not_found";
+  }
   return null;
 }
 
@@ -378,6 +389,8 @@ processCoreRouter.post("/procedures", asyncHandler(async (req, res) => {
   const { organizationalContext, ...procedureInput } = input;
   const workspaceId = req.auth!.workspaceId;
   if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return sendApiError(res, 400, "invalid_department_key");
+  const scopeError = await validateProcedureProjectScopes(workspaceId, organizationalContext);
+  if (scopeError) return sendApiError(res, scopeError === "invalid_project_scope" ? 400 : 404, scopeError);
   const relationError = await validateProcedureRelations(workspaceId, procedureInput);
   if (relationError) return sendApiError(res, 404, relationError);
   await ensureDefaultDepartments(workspaceId);
@@ -420,6 +433,8 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
     WHERE workspace_id=${workspaceId}::uuid AND draft_procedure_id=${existing.id}::uuid`;
   if (reviewedDraft.length) return sendApiError(res, 409, "procedure_improvement_draft_immutable");
   if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return sendApiError(res, 400, "invalid_department_key");
+  const scopeError = await validateProcedureProjectScopes(workspaceId, organizationalContext);
+  if (scopeError) return sendApiError(res, scopeError === "invalid_project_scope" ? 400 : 404, scopeError);
   const relationError = await validateProcedureRelations(workspaceId, procedureInput);
   if (relationError) return sendApiError(res, 404, relationError);
 
@@ -449,7 +464,8 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
 
   const procedure = await prisma.$transaction(async (tx) => {
     if (existing.status === OperatingStatus.draft) {
-      const updated = await tx.procedure.update({ where: { id: existing.id }, data });
+      const claimed = await tx.procedure.updateMany({ where: { id: existing.id, workspaceId, status: OperatingStatus.draft, updatedAt: existing.updatedAt }, data });
+      if (claimed.count !== 1) return null;
       if (procedureInput.steps) {
         await tx.procedureStep.deleteMany({ where: { procedureId: existing.id } });
         await tx.procedureStep.createMany({ data: steps.map((step, index) => ({
@@ -464,8 +480,8 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
           rollbackInstruction: step.rollbackInstruction
         })) });
       }
-      await replaceOrganizationalContext(tx, workspaceId, "procedure", updated.id, effectiveContext);
-      return updated;
+      await replaceOrganizationalContext(tx, workspaceId, "procedure", existing.id, effectiveContext);
+      return tx.procedure.findUniqueOrThrow({ where: { id: existing.id } });
     }
 
     const latest = await tx.procedure.aggregate({ where: { workspaceId, familyId: existing.familyId }, _max: { version: true } });
@@ -492,6 +508,7 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
     await replaceOrganizationalContext(tx, workspaceId, "procedure", created.id, effectiveContext);
     return created;
   });
+  if (!procedure) return sendApiError(res, 409, "procedure_draft_stale");
   await auditProcedure(req, existing.status === OperatingStatus.draft ? "procedure.update_draft" : "procedure.propose_revision", procedure.id, { sourceProcedureId: existing.id, changed: Object.keys(input) });
   await createEvent({ type: existing.status === OperatingStatus.draft ? "procedure_draft_updated" : "procedure_revision_proposed", workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version, sourceProcedureId: existing.id } });
   const response = await prisma.procedure.findUnique({ where: { id: procedure.id }, include: { process: true, ownerRole: true, steps: { orderBy: { stepOrder: "asc" } } } });
@@ -500,22 +517,49 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
 }));
 
 processCoreRouter.post("/procedures/:id/actions/activate", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const command = procedureActivationSchema.parse(req.body ?? {});
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: true } });
   if (!existing) return sendApiError(res, 404, "procedure_not_found");
   if (isReferenceSiteChecklist(existing.scope, existing.steps)) return sendApiError(res, 403, "reference_site_checklist_owner_decision_required");
-  const reviewedDraft = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT id FROM procedure_improvement_decisions
-    WHERE workspace_id=${workspaceId}::uuid AND draft_procedure_id=${existing.id}::uuid`;
-  if (reviewedDraft.length && !requireWorkspaceRole(req, res, "owner")) return;
   if (existing.status !== OperatingStatus.draft) return sendApiError(res, 409, "only_draft_procedure_can_be_activated");
+  if (!command.expectedVersion || !command.expectedUpdatedAt)
+    return sendApiError(res, 409, "procedure_activation_exact_review_required");
+  const exactProjectScope = await prisma.organizationalScope.findMany({ where: { workspaceId, entityType: "procedure", entityId: existing.id, scopeType: "project" }, select: { scopeEntityId: true } });
+  if (exactProjectScope.length) {
+    if (exactProjectScope.length !== 1 || !exactProjectScope[0].scopeEntityId)
+      return sendApiError(res, 409, "procedure_activation_exact_review_required");
+    if (!await prisma.project.count({ where: { id: exactProjectScope[0].scopeEntityId, workspaceId, status: "active" } }))
+      return sendApiError(res, 409, "procedure_project_scope_stale");
+  }
+  if ((command.expectedVersion && command.expectedVersion !== existing.version) ||
+    (command.expectedUpdatedAt && command.expectedUpdatedAt !== existing.updatedAt.toISOString()))
+    return sendApiError(res, 409, "procedure_activation_stale");
   if (!existing.steps.length || !existing.expectedResult) return sendApiError(res, 409, "procedure_activation_requirements_missing");
+  if (exactProjectScope.length === 1 && exactProjectScope[0].scopeEntityId) {
+    const readiness = await procedureLaunchPreview(workspaceId, req.auth!.userId!, existing.id,
+      { projectId: exactProjectScope[0].scopeEntityId, inputs: {} });
+    if ("error" in readiness) return sendApiError(res, 409, "procedure_activation_incomplete");
+    const definitionBlockers = readiness.blockers.filter(blocker => blocker !== "procedure_not_active" && !blocker.startsWith("input_missing:"));
+    if (definitionBlockers.length) return sendApiError(res, 409, "procedure_activation_incomplete", { details: { blockers: definitionBlockers } });
+  }
   const procedure = await prisma.$transaction(async (tx) => {
-    await tx.procedure.updateMany({ where: { workspaceId, familyId: existing.familyId, status: OperatingStatus.active }, data: { status: OperatingStatus.retired } });
-    return tx.procedure.update({ where: { id: existing.id }, data: { status: OperatingStatus.active }, include: { steps: { orderBy: { stepOrder: "asc" } }, process: true, ownerRole: true } });
+    const claimed = await tx.procedure.updateMany({ where: { id: existing.id, workspaceId, status: OperatingStatus.draft, updatedAt: existing.updatedAt }, data: { status: OperatingStatus.active } });
+    if (claimed.count !== 1) return null;
+    await tx.procedure.updateMany({ where: { workspaceId, familyId: existing.familyId, id: { not: existing.id }, status: OperatingStatus.active }, data: { status: OperatingStatus.retired } });
+    const correlationId = `process-core:procedure:${existing.id}:${Date.now()}`;
+    await tx.auditLog.create({ data: { workspaceId, ...requestActor(req), action: "procedure.activate", resourceType: "Procedure", resourceId: existing.id,
+      correlationId, inputPayload: { familyId: existing.familyId, version: existing.version } } });
+    await tx.event.create({ data: { type: "procedure_activated", workspaceId, source: "companycore", ...requestActor(req), resourceType: "Procedure", resourceId: existing.id,
+      correlationId, payload: { familyId: existing.familyId, version: existing.version } } });
+    return tx.procedure.findUniqueOrThrow({ where: { id: existing.id }, include: { steps: { orderBy: { stepOrder: "asc" } }, process: true, ownerRole: true } });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }).catch((error: unknown) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === "P2034" || (error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code))))) return null;
+    throw error;
   });
-  await auditProcedure(req, "procedure.activate", procedure.id, { familyId: procedure.familyId, version: procedure.version });
-  await createEvent({ type: "procedure_activated", workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version } });
+  if (!procedure) return sendApiError(res, 409, "procedure_activation_stale");
   res.json({ data: procedure });
 }));
 
