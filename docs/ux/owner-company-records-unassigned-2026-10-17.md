@@ -89,12 +89,24 @@ or opening audit cancels a pending detail read so dialogs cannot stack.
   or business record was removed or changed. No release backup, push,
   deployment or signed-in production read-back was attempted at this stop.
 
+A fresh read-only check still found remote `main`, backend and public health at
+`1836b518`, Coolify `6452` finished and no build container. Root free space
+immediately before the separately authorized second standard cache prune was
+12,606,283,776 B. `docker builder du` marked 6.053 GB as reclaimable but all
+of it was **shared**, with 0 B private. The one further
+`docker builder prune -f` reported **0 B** removed. A subsequent physical
+`df -B1 /` measured 12,606,218,240 B, a 65,536 B decrease and
+278,683,648 B below the planning allowance. The same backend/PostgreSQL
+containers remained running, PostgreSQL healthy. No further cache prune is
+authorized or useful for this release. Push, deployment and backup remain
+unattempted.
+
 The smaller next decision is capacity: add physical free space without
 removing retained images, or separately approve an exact unused older backend
 image for deletion after another ownership/reference check. The identified
 older image `13f17f26` had image ID
 `sha256:a4fecb73a011ed5564e2b6e67ce32012330c582a7c5415f047d645c83dd2eec2`
-and zero container references at this checkpoint; it is neither the running
+and zero container references at the follow-up check; it is neither the running
 build nor its immediate predecessor. This is only a candidate, not deletion
 authority or a guaranteed physical-space gain. Recheck free space, queue,
 backup/recovery readiness, exact build and image references before any release.
