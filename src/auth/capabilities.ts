@@ -282,6 +282,8 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/company-records/registry/unassigned", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/task-source-options", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id", capability: "company-records:read" },
+      { method: "GET", path: "/v1/company-records/:id/inventory-assessments", capability: "company-records:read" },
+      { method: "POST", path: "/v1/company-records/:id/inventory-assessments", capability: "company-records:write" },
       { method: "GET", path: "/v1/company-records/:id/context-reviews", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id/source-audit", capability: "company-records:read" },
       { method: "GET", path: "/v1/company-records/:id/source-audit/task-options", capability: "company-records:read" },

@@ -12,6 +12,7 @@ type CcRecordEditorModalProps = {
   onSubmit: FormEventHandler<HTMLFormElement>;
   maxWidthClassName?: string;
   closeLabel?: string;
+  initialFocus?: "first-field" | "heading";
 };
 
 export function CcRecordEditorModal({
@@ -25,7 +26,8 @@ export function CcRecordEditorModal({
   onClose,
   onSubmit,
   maxWidthClassName = "max-w-4xl",
-  closeLabel = "Close editor"
+  closeLabel = "Close editor",
+  initialFocus = "first-field"
 }: CcRecordEditorModalProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -44,6 +46,10 @@ export function CcRecordEditorModal({
     }
 
     const focusFrame = window.requestAnimationFrame(() => {
+      if (initialFocus === "heading") {
+        document.getElementById(titleId)?.focus();
+        return;
+      }
       const firstField = focusableElements().find(element => element.matches('input, select, textarea'));
       (firstField || focusableElements()[0])?.focus();
     });
@@ -101,7 +107,7 @@ export function CcRecordEditorModal({
                 </div>
               ) : null}
             </div>
-            <h2 className="mt-1 text-2xl font-black text-company-ink" id={titleId}>{title}</h2>
+            <h2 className="mt-1 text-2xl font-black text-company-ink" id={titleId} tabIndex={initialFocus === "heading" ? -1 : undefined}>{title}</h2>
             {description ? <p className="mt-1 max-w-3xl text-sm leading-6 text-company-muted" id={`${titleId}-description`}>{description}</p> : null}
           </div>
           <button className="btn btn-ghost btn-circle h-11 min-h-11 w-11 min-w-11 shrink-0" aria-label={closeLabel} onClick={onClose} type="button">

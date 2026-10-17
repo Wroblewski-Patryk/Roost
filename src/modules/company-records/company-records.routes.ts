@@ -8,6 +8,7 @@ import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { createEvent } from "../events/event.service";
 import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
 import { companySourceDigest, companySourceEligible, companySourceEligibility } from "../agent-runtime/company-source-trust";
+import { companyRecordInventoryDigest, companyRecordInventorySourceReference, companyRecordInventoryState } from "./company-record-inventory-assessment";
 import { configuredReferenceSiteUrl, referenceSiteMetadata } from "../product-engineering/reference-site-contract";
 
 const contextSchema = z.object({
@@ -78,8 +79,18 @@ const sourceDocumentId = Prisma.sql`CASE WHEN ${completeDocumentSource} THEN
     r.metadata->>'sourceSystem', r.metadata->>'sourceRoot', r.metadata->>'sourceRevision',
     r.metadata->>'filePath')::text) ELSE NULL END`;
 
-async function registryItems(workspaceId: string, records: Array<Prisma.CompanyRecordGetPayload<{ select: typeof registrySelect }>>) {
+async function registryItems(workspaceId: string, records: Array<Prisma.CompanyRecordGetPayload<{ select: typeof registrySelect }>>, includeInventory = false) {
   const detailed = await serialize(workspaceId, records);
+  const ids = includeInventory ? records.map(record => record.id) : [];
+  const fullRecords = ids.length ? await prisma.companyRecord.findMany({ where: { workspaceId, id: { in: ids } } }) : [];
+  const maximumOrdinals = ids.length ? await prisma.companyRecordInventoryAssessment.groupBy({
+    by: ["recordId"], where: { workspaceId, recordId: { in: ids } }, _max: { ordinal: true }
+  }) : [];
+  const latestAssessments = maximumOrdinals.length ? await prisma.companyRecordInventoryAssessment.findMany({
+    where: { workspaceId, ordinal: { in: maximumOrdinals.flatMap(row => row._max.ordinal == null ? [] : [row._max.ordinal]) } }
+  }) : [];
+  const fullById = new Map(fullRecords.map(record => [record.id, record]));
+  const assessmentById = new Map(latestAssessments.map(assessment => [assessment.recordId, assessment]));
   return records.map(({ metadata }, index) => {
     const fields = metadata && typeof metadata === "object" && !Array.isArray(metadata)
       ? metadata as Record<string, unknown> : {};
@@ -89,7 +100,10 @@ async function registryItems(workspaceId: string, records: Array<Prisma.CompanyR
       return value.length > 160 ? `${value.slice(0, 157)}…` : value;
     };
     const ownerDepartment = detailed[index].organizationalContext?.ownerDepartment;
-    return { ...detailed[index], organizationalContext: { ownerDepartment: ownerDepartment
+    const full = fullById.get(records[index].id);
+    return { ...detailed[index], ...(includeInventory ? { inventoryAssessment: full
+      ? companyRecordInventoryState(full, assessmentById.get(full.id) ?? null) : null } : {}),
+      organizationalContext: { ownerDepartment: ownerDepartment
       ? { id: ownerDepartment.id, key: ownerDepartment.key, name: ownerDepartment.name } : null },
       metadata: { sourceKind: sourceField("sourceKind"),
       sourceSystem: sourceField("sourceSystem"), sourceId: sourceField("sourceId"),
@@ -253,7 +267,7 @@ companyRecordsRouter.get("/registry/unassigned", asyncHandler(async (req, res) =
     const byId = new Map(pageRecords.map(record => [record.id, record]));
     return { total: count[0]?.total ?? 0, records: pageIds.flatMap(row => { const record = byId.get(row.id); return record ? [record] : []; }) };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
-  res.json({ data: { level: "records", items: await registryItems(workspaceId, records), total,
+  res.json({ data: { level: "records", items: await registryItems(workspaceId, records, true), total,
     recordTotal: total, page: input.page, pageSize: input.pageSize } });
 }));
 // A bounded owner-only picker for an ordinary Task. It carries no record body.
@@ -287,6 +301,99 @@ const sourceReviewSchema = z.object({
   verificationMethod: z.string().trim().min(1).max(500), verificationRef: z.string().trim().min(1).max(1000),
   inclusionReason: z.string().trim().min(1).max(1000), validUntil: z.string().datetime()
 }).strict();
+
+const inventoryAssessmentInput = z.object({
+  requestId: z.string().uuid(), expectedRevision: z.string().datetime(),
+  expectedDigest: z.string().regex(/^[0-9a-f]{64}$/), expectedPreviousAssessmentId: z.string().uuid().nullable(),
+  category: z.enum(["business", "test", "audit", "unknown"]),
+  reason: z.string().trim().min(1).max(2000)
+}).strict();
+
+// Owner inventory purpose is separate from one-task source admission. The
+// preview includes the exact current body and the append-only correction chain.
+companyRecordsRouter.get("/:id/inventory-assessments", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId, recordId = z.string().uuid().parse(String(req.params.id));
+  if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner")
+    return res.status(403).json({ error: "inventory_assessment_owner_required" });
+  const page = z.object({ limit: z.coerce.number().int().min(1).max(50).default(25),
+    beforeOrdinal: z.coerce.number().int().positive().optional() }).strict().parse(req.query);
+  const [owner, record, latest, rows, assessable] = await Promise.all([
+    prisma.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId }, select: { id: true } }),
+    prisma.companyRecord.findFirst({ where: { id: recordId, workspaceId } }),
+    prisma.companyRecordInventoryAssessment.findFirst({ where: { workspaceId, recordId }, orderBy: { ordinal: "desc" } }),
+    prisma.companyRecordInventoryAssessment.findMany({ where: { workspaceId, recordId,
+      ...(page.beforeOrdinal ? { ordinal: { lt: page.beforeOrdinal } } : {}) },
+      orderBy: { ordinal: "desc" }, take: page.limit + 1 }),
+    prisma.$queryRaw<Array<{ id: string }>>`SELECT r.id FROM company_records r
+      WHERE r.workspace_id = ${workspaceId}::uuid AND r.id = ${recordId}::uuid
+      AND NOT EXISTS (SELECT 1 FROM organizational_department_relations relation
+        WHERE relation.workspace_id = r.workspace_id AND relation.entity_type = 'company_record' AND relation.entity_id = r.id)
+      AND NOT EXISTS (SELECT 1 FROM organizational_scopes scope
+        WHERE scope.workspace_id = r.workspace_id AND scope.entity_type = 'company_record'
+          AND scope.entity_id = r.id AND scope.scope_type = 'company')`
+  ]);
+  if (!owner) return res.status(403).json({ error: "inventory_assessment_owner_required" });
+  if (!record) return res.status(404).json({ error: "inventory_assessment_record_not_found" });
+  const currentPage = rows.slice(0, page.limit);
+  res.json({ data: { record: (await serialize(workspaceId, [record]))[0],
+    recordRevision: record.updatedAt.toISOString(), recordDigest: companyRecordInventoryDigest(record),
+    sourceReference: companyRecordInventorySourceReference(record), assessable: assessable.length > 0,
+    state: companyRecordInventoryState(record, latest), latest, history: currentPage,
+    nextBeforeOrdinal: rows.length > page.limit ? currentPage.at(-1)?.ordinal : null } });
+}));
+
+companyRecordsRouter.post("/:id/inventory-assessments", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId, recordId = z.string().uuid().parse(String(req.params.id));
+  if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner")
+    return res.status(403).json({ error: "inventory_assessment_owner_required" });
+  const input = inventoryAssessmentInput.parse(req.body);
+  const requestHash = createHash("sha256").update(JSON.stringify({ recordId, ...input })).digest("hex");
+  const result = await prisma.$transaction(async db => {
+    const owner = await db.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId! }, select: { id: true } });
+    if (!owner) return { status: 403, error: "inventory_assessment_owner_required" };
+    const locked = await db.$queryRaw<Array<{ id: string }>>`SELECT id FROM company_records
+      WHERE id = ${recordId}::uuid AND workspace_id = ${workspaceId}::uuid FOR UPDATE`;
+    if (!locked.length) return { status: 404, error: "inventory_assessment_record_not_found" };
+    const priorRequest = await db.companyRecordInventoryAssessment.findUnique({ where: { id: input.requestId } });
+    if (priorRequest) return priorRequest.workspaceId === workspaceId && priorRequest.recordId === recordId
+      && priorRequest.requestHash === requestHash
+      ? { status: 200, assessment: priorRequest } : { status: 409, error: "inventory_assessment_request_conflict" };
+    const record = await db.companyRecord.findFirst({ where: { id: recordId, workspaceId } });
+    if (!record) return { status: 404, error: "inventory_assessment_record_not_found" };
+    const assessable = await db.$queryRaw<Array<{ id: string }>>`SELECT r.id FROM company_records r
+      WHERE r.workspace_id = ${workspaceId}::uuid AND r.id = ${recordId}::uuid
+      AND NOT EXISTS (SELECT 1 FROM organizational_department_relations relation
+        WHERE relation.workspace_id = r.workspace_id AND relation.entity_type = 'company_record' AND relation.entity_id = r.id)
+      AND NOT EXISTS (SELECT 1 FROM organizational_scopes scope
+        WHERE scope.workspace_id = r.workspace_id AND scope.entity_type = 'company_record'
+          AND scope.entity_id = r.id AND scope.scope_type = 'company')`;
+    if (!assessable.length) return { status: 409, error: "inventory_assessment_record_no_longer_unassigned" };
+    const latest = await db.companyRecordInventoryAssessment.findFirst({ where: { workspaceId, recordId }, orderBy: { ordinal: "desc" } });
+    if (latest?.id !== (input.expectedPreviousAssessmentId ?? undefined))
+      return { status: 409, error: "inventory_assessment_chain_changed" };
+    if (record.updatedAt.toISOString() !== input.expectedRevision
+      || companyRecordInventoryDigest(record) !== input.expectedDigest)
+      return { status: 409, error: "inventory_assessment_record_changed" };
+    const assessment = await db.companyRecordInventoryAssessment.create({ data: {
+      id: input.requestId, workspaceId, recordId, recordRevision: record.updatedAt,
+      recordDigest: input.expectedDigest, category: input.category, reason: input.reason,
+      sourceReference: companyRecordInventorySourceReference(record) as Prisma.InputJsonValue,
+      previousAssessmentId: latest?.id ?? null, requestHash, actorUserId: auth.userId!
+    } });
+    await db.event.create({ data: { workspaceId, type: "company_record_inventory_assessed", source: "roost",
+      resourceType: "company_record", resourceId: recordId,
+      payload: { assessmentId: assessment.id, category: assessment.category, actorUserId: auth.userId,
+        recordRevision: record.updatedAt.toISOString(), recordDigest: assessment.recordDigest } } });
+    return { status: 201, assessment };
+  }).catch(async error => {
+    if ((error as { code?: string })?.code !== "P2002") throw error;
+    const prior = await prisma.companyRecordInventoryAssessment.findUnique({ where: { id: input.requestId } });
+    return prior?.workspaceId === workspaceId && prior.recordId === recordId && prior.requestHash === requestHash
+      ? { status: 200, assessment: prior } : { status: 409, error: "inventory_assessment_request_conflict" };
+  });
+  if ("error" in result) return res.status(result.status).json({ error: result.error });
+  res.status(result.status).json({ data: result.assessment });
+}));
 
 companyRecordsRouter.get("/:id/context-reviews", asyncHandler(async (req, res) => {
   const auth = req.auth!, workspaceId = auth.workspaceId;

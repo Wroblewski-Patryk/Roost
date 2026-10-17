@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** none. G0 source grouping deployed and checked. [Evidence](ux/owner-company-source-grouping-2026-10-17.md). G24c/G25 STOP
+**Active gate:** G0 owner inventory assessment, authorized and in progress. [Evidence](ux/owner-company-record-inventory-assessment-2026-10-17.md). G24c/G25 STOP
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 

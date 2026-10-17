@@ -555,6 +555,7 @@ model User {
   authSessionRevocations AuthSessionRevocation[]
   ownerActionProofs OwnerActionProof[]
   companySourceReviews CompanySourceReview[]
+  inventoryAssessments CompanyRecordInventoryAssessment[]
   ownerTickets TrustedProviderTicket[]
   preferredLanguage String? @map("preferred_language")
   admissionScopes TaskAdmissionScope[]
@@ -702,6 +703,7 @@ model Workspace {
   entityOwnerships                  EntityOwnership[]
   companyRecords                    CompanyRecord[]
   companySourceReviews              CompanySourceReview[]
+  inventoryAssessments              CompanyRecordInventoryAssessment[]
   evidenceRecords                   EvidenceRecord[]
   departmentViewDefinitions         DepartmentViewDefinition[]
   departmentViewAvailabilities      DepartmentViewAvailability[]
@@ -909,6 +911,7 @@ model CompanyRecord {
   parent                 CompanyRecord?     @relation("CompanyRecordHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children               CompanyRecord[]    @relation("CompanyRecordHierarchy")
   sourceReviews           CompanySourceReview[]
+  inventoryAssessments   CompanyRecordInventoryAssessment[]
   referenceSiteFindings   CapabilityObservation[] @relation("ReferenceSiteFindings")
   projectId              String?            @map("project_id") @db.Uuid
   applicationId          String?            @map("application_id") @db.Uuid
@@ -953,6 +956,32 @@ model CompanySourceReview {
 
   @@index([workspaceId, taskId, recordId, createdAt])
   @@map("company_source_reviews")
+}
+
+// Owner's inventory-purpose assessment of one exact canonical record version.
+// This is separate from task-bound source approval and cannot admit agent context.
+model CompanyRecordInventoryAssessment {
+  id                   String                           @id @db.Uuid
+  ordinal              Int                              @unique @default(autoincrement())
+  workspaceId          String                           @map("workspace_id") @db.Uuid
+  workspace            Workspace                        @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  recordId             String                           @map("record_id") @db.Uuid
+  record               CompanyRecord                    @relation(fields: [recordId], references: [id], onDelete: Restrict)
+  recordRevision       DateTime                         @map("record_revision")
+  recordDigest         String                           @map("record_digest")
+  category             String
+  reason               String                           @db.Text
+  sourceReference      Json                             @map("source_reference")
+  previousAssessmentId String?                          @unique @map("previous_assessment_id") @db.Uuid
+  previousAssessment   CompanyRecordInventoryAssessment? @relation("InventoryAssessmentChain", fields: [previousAssessmentId], references: [id], onDelete: Restrict)
+  nextAssessment       CompanyRecordInventoryAssessment? @relation("InventoryAssessmentChain")
+  requestHash          String                           @map("request_hash")
+  actorUserId          String                           @map("actor_user_id") @db.Uuid
+  actorUser            User                             @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  createdAt            DateTime                         @default(now()) @map("created_at")
+
+  @@index([workspaceId, recordId, ordinal])
+  @@map("company_record_inventory_assessments")
 }
 
 // Exact, task-scoped owner attestations for non-CompanyRecord source families.

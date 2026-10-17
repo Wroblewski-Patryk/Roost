@@ -8,12 +8,15 @@ import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-
 import { useLanguage } from "../../i18n/i18n";
 import type { AuthMe } from "../../types";
 import { CompanySourcePanel } from "./company-source-panel";
+import { CompanyRecordInventoryAssessment, inventoryStateLabel } from "./company-record-inventory-assessment";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 type RegistryRecord = {
   id: string; recordType: string; title: string; key: string; source: string; status: string;
   verificationState: string; metadata?: { sourceKind?: string | null; sourceSystem?: string | null } | null;
   updatedAt: string;
+  inventoryAssessment?: { status: "unassessed" | "current" | "stale"; category: "business" | "test" | "audit" | "unknown" | null;
+    lastCategory: "business" | "test" | "audit" | "unknown" | null; latestAssessmentId: string | null; assessedAt: string | null } | null;
 };
 type RecordDetail = RegistryRecord & {
   description?: string | null; businessPurpose?: string | null; currentState?: string | null;
@@ -68,7 +71,7 @@ function groupTitle(group: SourceGroup, pl: boolean) {
   return `${application} · ${group.sourceSystem}`;
 }
 
-function ReadOnlyDetail({ record, onClose, onSource }: { record: RecordDetail; onClose: () => void; onSource: () => void }) {
+function ReadOnlyDetail({ record, onClose, onSource, onInventory }: { record: RecordDetail; onClose: () => void; onSource: () => void; onInventory: () => void }) {
   const { locale } = useLanguage();
   const pl = locale === "pl";
   const raw = (value: unknown) => value === null || value === undefined ? null
@@ -104,7 +107,7 @@ function ReadOnlyDetail({ record, onClose, onSource }: { record: RecordDetail; o
   ];
   function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); }
   return <CcRecordEditorModal
-    actions={<><CcButton onClick={onSource} variant="outline">{pl ? "Audyt źródła" : "Source audit"}</CcButton><CcButton onClick={onClose} variant="primary">{pl ? "Zamknij" : "Close"}</CcButton></>}
+    actions={<><CcButton onClick={onInventory} variant="outline">{pl ? "Oceń przeznaczenie" : "Assess purpose"}</CcButton><CcButton onClick={onSource} variant="outline">{pl ? "Audyt źródła" : "Source audit"}</CcButton><CcButton onClick={onClose} variant="primary">{pl ? "Zamknij" : "Close"}</CcButton></>}
     closeLabel={pl ? "Zamknij szczegóły rekordu" : "Close record details"}
     description={pl ? "Dokładny zapis tylko do odczytu. Obecność w katalogu nie oznacza dopuszczenia do zadania." : "Exact read-only record. Catalog presence does not grant task eligibility."}
     eyebrow={pl ? "Bez przypisania do działu ani całej firmy · tylko odczyt" : "No department or company-wide assignment · read only"}
@@ -138,6 +141,7 @@ export function UnassignedCompanyRecords({ backHref }: { backHref: string }) {
   const [detail, setDetail] = useState<RecordDetail | null>(null);
   const [detailError, setDetailError] = useState("");
   const [audit, setAudit] = useState<RegistryRecord | null>(null);
+  const [inventory, setInventory] = useState<RegistryRecord | null>(null);
   const registryRequest = useRef(0);
   const detailRequest = useRef(0);
   const searchPending = searchInput.trim() !== query;
@@ -149,6 +153,9 @@ export function UnassignedCompanyRecords({ backHref }: { backHref: string }) {
   function openAudit(row: RegistryRecord) {
     dismissDetail();
     setAudit(row);
+  }
+  function openInventory(row: RegistryRecord) {
+    dismissDetail(); setAudit(null); setInventory(row);
   }
 
   useEffect(() => {
@@ -203,8 +210,9 @@ export function UnassignedCompanyRecords({ backHref }: { backHref: string }) {
     { key: "type", header: pl ? "Typ" : "Type", cell: row => <span className="break-words text-sm">{recordTypeLabel(row.recordType, pl)}</span> },
     { key: "source", header: pl ? "Pochodzenie" : "Source", cell: row => <span className="grid min-w-0 text-sm"><strong className="break-words">{row.source}</strong><span className="break-words text-company-muted">{row.metadata?.sourceKind || (pl ? "Rodzaj źródła nie zapisany" : "Source kind not recorded")}{row.metadata?.sourceSystem ? ` · ${row.metadata.sourceSystem}` : ""}</span></span> },
     { key: "verification", header: pl ? "Weryfikacja" : "Verification", cell: row => <span className="badge badge-outline whitespace-normal">{humanizeBusinessValue(row.verificationState, undefined, locale)}</span> },
+    { key: "purpose", header: pl ? "Ocena przeznaczenia" : "Purpose assessment", cell: row => <span className="badge badge-outline whitespace-normal">{inventoryStateLabel(row.inventoryAssessment, pl)}</span> },
     { key: "status", header: "Status", cell: row => <span className="badge badge-outline">{humanizeBusinessValue(row.status, undefined, locale)}</span> },
-    { key: "actions", header: labels.actions, cell: row => <div className="flex flex-wrap justify-end gap-1"><CcButton ariaLabel={pl ? `Szczegóły: ${row.title}` : `Details: ${row.title}`} onClick={() => openDetail(row)} size="xs" variant="outline">{pl ? "Szczegóły" : "Details"}</CcButton><CcButton ariaLabel={pl ? `Audyt źródła: ${row.title}` : `Source audit: ${row.title}`} onClick={() => openAudit(row)} size="xs" variant="ghost">{pl ? "Audyt" : "Audit"}</CcButton></div> }
+    { key: "actions", header: labels.actions, cell: row => <div className="flex flex-wrap justify-end gap-1"><CcButton ariaLabel={pl ? `Szczegóły: ${row.title}` : `Details: ${row.title}`} onClick={() => openDetail(row)} size="xs" variant="outline">{pl ? "Szczegóły" : "Details"}</CcButton><CcButton ariaLabel={pl ? `Oceń przeznaczenie: ${row.title}` : `Assess purpose: ${row.title}`} onClick={() => openInventory(row)} size="xs" variant="outline">{pl ? "Oceń" : "Assess"}</CcButton><CcButton ariaLabel={pl ? `Audyt źródła: ${row.title}` : `Source audit: ${row.title}`} onClick={() => openAudit(row)} size="xs" variant="ghost">{pl ? "Audyt" : "Audit"}</CcButton></div> }
   ], [locale, pl, labels]);
   const total = registry?.total ?? 0;
   const start = total ? (page - 1) * pageSize + 1 : 0;
@@ -289,7 +297,9 @@ export function UnassignedCompanyRecords({ backHref }: { backHref: string }) {
         error={state === "error" ? loadError : null} errorAction={<CcButton onClick={() => setRefresh(value => value + 1)} variant="outline">{pl ? "Ponów" : "Retry"}</CcButton>}
         getRowLabel={row => `${row.title} · ${row.key}`} labels={labels} loading={state === "loading" || searchPending} mobileMode="cards" /> : null}
     </> : null}
-    {detail ? <ReadOnlyDetail record={detail} onClose={dismissDetail} onSource={() => openAudit(detail)} /> : null}
+    {detail ? <ReadOnlyDetail record={detail} onClose={dismissDetail} onSource={() => openAudit(detail)} onInventory={() => openInventory(detail)} /> : null}
     {audit ? <CompanySourcePanel onClose={() => setAudit(null)} recordId={audit.id} recordTitle={audit.title} /> : null}
+    {inventory ? <CompanyRecordInventoryAssessment key={inventory.id} recordId={inventory.id} title={inventory.title}
+      onClose={() => setInventory(null)} onChanged={() => setRefresh(value => value + 1)} /> : null}
   </>;
 }

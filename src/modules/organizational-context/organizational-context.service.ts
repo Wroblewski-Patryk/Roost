@@ -53,6 +53,12 @@ export async function replaceOrganizationalContext(
   input: OrganizationalContextInput
 ) {
   entityType = canonicalOrganizationalEntityType(entityType);
+  // Inventory assessment locks the same canonical row before checking whether
+  // a record is still unassigned. Serialize scope changes with that check.
+  if (entityType === "company_record") {
+    await transaction.$queryRaw`SELECT id FROM company_records
+      WHERE id = ${entityId}::uuid AND workspace_id = ${workspaceId}::uuid FOR UPDATE`;
+  }
   const keys = [
     ...(input.ownerDepartmentKey ? [input.ownerDepartmentKey] : []),
     ...(input.relatedDepartmentKeys ?? []),

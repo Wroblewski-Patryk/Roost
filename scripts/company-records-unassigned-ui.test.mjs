@@ -58,12 +58,34 @@ try {
     const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
     await page.addInitScript(value => localStorage.setItem('companycoreLocale', value), locale);
     const requests = [], errors = [];
-    let recoveryReads = 0, delayDetail = false;
+    let recoveryReads = 0, delayDetail = false, inventoryAssessment = null, dropAssessmentResponse = false;
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/v1/**', async route => {
       const request = route.request(), url = new URL(request.url()), pathname = url.pathname;
       requests.push(`${request.method()} ${pathname}${url.search}`);
-      assert.equal(request.method(), 'GET', 'catalog journey is read-only');
+      assert.ok(request.method() === 'GET' || (request.method() === 'POST' && pathname === `/v1/company-records/${id(1)}/inventory-assessments`));
+      if (pathname === `/v1/company-records/${id(1)}/inventory-assessments`) {
+        if (request.method() === 'POST') {
+          const input = request.postDataJSON();
+          assert.ok(['test', 'unknown'].includes(input.category));
+          assert.equal(input.reason, input.category === 'test' ? 'Synthetic fixture only' : 'Purpose still unknown');
+          assert.equal(input.expectedDigest, 'a'.repeat(64));
+          if (inventoryAssessment?.id === input.requestId) return route.fulfill({ status: 200, json: { data: inventoryAssessment } });
+          assert.equal(input.expectedPreviousAssessmentId, inventoryAssessment?.id ?? null);
+          inventoryAssessment = { id: input.requestId, ordinal: (inventoryAssessment?.ordinal ?? 0) + 1, category: input.category, reason: input.reason,
+            actorUserId: id(950), createdAt: '2026-10-17T10:00:01.000Z', recordRevision: current[0].updatedAt,
+            recordDigest: input.expectedDigest, sourceReference: { source: 'documentation-import' }, previousAssessmentId: input.expectedPreviousAssessmentId };
+          if (dropAssessmentResponse) { dropAssessmentResponse = false; return route.abort('failed'); }
+          return route.fulfill({ status: 201, json: { data: inventoryAssessment } });
+        }
+        return route.fulfill({ json: { data: { record: full(current[0]), recordRevision: current[0].updatedAt,
+          recordDigest: 'a'.repeat(64), sourceReference: { source: 'documentation-import', sourceKind: 'legacy_assumption',
+            sourceSystem: 'fixture-docs', filePath: 'docs/example.md' }, assessable: true,
+          state: inventoryAssessment ? { status: 'current', category: inventoryAssessment.category, lastCategory: inventoryAssessment.category, latestAssessmentId: inventoryAssessment.id,
+            assessedAt: inventoryAssessment.createdAt } : { status: 'unassessed', category: null, lastCategory: null,
+            latestAssessmentId: null, assessedAt: null }, latest: inventoryAssessment,
+          history: inventoryAssessment ? [inventoryAssessment] : [], nextBeforeOrdinal: null } } });
+      }
       if (pathname === '/v1/auth/me') return route.fulfill({ json: { data: {
         authType: 'user', workspaces: [{ id: 'workspace-a', active: true, role: 'owner' }] } } });
       if (pathname === '/v1/departments') return route.fulfill({ json: { data: { departments: [] } } });
@@ -93,7 +115,10 @@ try {
         const matching = scope === 'history' ? [historical] : !q && params.get('groupId') === otherId ? [otherRecord]
           : q === 'missing' ? [] : q === 'legacy' ? [current[0]]
             : q === 'recover' ? [current[0]] : current;
-        return route.fulfill({ json: { data: { level, items: matching.slice((pageNumber - 1) * 25, pageNumber * 25),
+        return route.fulfill({ json: { data: { level, items: matching.slice((pageNumber - 1) * 25, pageNumber * 25).map(item => item.id === id(1)
+          ? { ...item, inventoryAssessment: inventoryAssessment ? { status: 'current', category: inventoryAssessment.category, lastCategory: inventoryAssessment.category,
+            latestAssessmentId: inventoryAssessment.id, assessedAt: inventoryAssessment.createdAt }
+            : { status: 'unassessed', category: null, lastCategory: null, latestAssessmentId: null, assessedAt: null } } : item),
           total: matching.length, recordTotal: matching.length, page: pageNumber, pageSize: 25 } } });
       }
       if (pathname === `/v1/company-records/${id(1)}`) {
@@ -161,6 +186,34 @@ try {
     await detail.getByRole('button', { name: pl ? 'Audyt źródła' : 'Source audit' }).click();
     await page.getByRole('dialog', { name: /(?:Pochodzenie i dopuszczenie źródła|Source provenance and eligibility)/ }).waitFor();
     await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: `${pl ? 'Oceń przeznaczenie' : 'Assess purpose'}: Triage legacy import` }).press('Enter');
+    const inventory = page.getByRole('dialog', { name: 'Triage legacy import' });
+    await inventory.getByText('Exact private record body', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'inventory-assessment-title');
+    await inventory.getByText('legacy_assumption').first().waitFor();
+    assert.equal(await inventory.getByRole('button', { name: pl ? 'Zapisz ocenę rekordu' : 'Save record assessment' }).count(), 0);
+    await inventory.getByLabel(pl ? 'Przeznaczenie' : 'Purpose').selectOption('test');
+    await inventory.getByLabel(pl ? 'Uzasadnienie' : 'Reason').fill('Synthetic fixture only');
+    await inventory.getByRole('button', { name: pl ? 'Pokaż skutki oceny' : 'Preview assessment effect' }).click();
+    await inventory.getByText(pl ? 'Podgląd skutków' : 'Effect preview').waitFor();
+    await inventory.getByRole('button', { name: pl ? 'Zapisz ocenę rekordu' : 'Save record assessment' }).click();
+    await inventory.getByText(pl ? 'Ocena została zapisana' : 'Assessment saved').waitFor();
+    await inventory.getByText('Synthetic fixture only').first().waitFor();
+    if (pl && width === 390) {
+      dropAssessmentResponse = true;
+      await inventory.getByLabel('Przeznaczenie').selectOption('unknown');
+      await inventory.getByLabel('Uzasadnienie').fill('Purpose still unknown');
+      await inventory.getByRole('button', { name: 'Pokaż skutki oceny' }).click();
+      await inventory.getByRole('button', { name: 'Zapisz ocenę rekordu' }).click();
+      await inventory.getByText('Wynik zapisu jest nieznany').waitFor();
+      assert.equal(await inventory.getByLabel('Przeznaczenie').isDisabled(), true);
+      assert.equal(await inventory.getByRole('button', { name: 'Wróć do edycji' }).count(), 0);
+      await inventory.getByRole('button', { name: 'Ponów identyczny zapis' }).click();
+      await inventory.getByText('Ocena została zapisana').waitFor();
+      assert.equal(inventoryAssessment.category, 'unknown');
+    }
+    await page.keyboard.press('Escape');
+    await page.getByText(pl && width === 390 ? 'Nieustalone' : pl ? 'Testowy' : 'Test', { exact: true }).filter({ visible: true }).first().waitFor();
     await page.getByRole('button', { name: pl ? 'Historia' : 'History' }).press('Enter');
     await page.getByText(pl ? 'Zarchiwizowane rekordy bez przypisania do działu' : 'Archived records without a department assignment', { exact: false }).waitFor();
     await page.getByRole('button', { name: new RegExp(id(902)) }).press('Enter');
@@ -187,7 +240,7 @@ try {
     const bounds = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
     assert.ok(bounds.content <= bounds.viewport + 2, `catalog fits ${width}px`);
     assert.deepEqual(errors, []);
-    assert.ok(requests.every(request => request.startsWith('GET ')));
+    assert.equal(requests.filter(request => request.startsWith('POST ')).length, pl && width === 390 ? 3 : 1);
     await page.close();
     checks++;
   }
