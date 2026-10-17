@@ -28,6 +28,7 @@ import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
 import { improvementView, proposeImprovement, decideImprovement } from "./procedure-improvements";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
+import { readTaskPreparationDraft, saveTaskPreparationDraft, taskPreparationSaveSchema } from "./task-preparation-draft";
 import { approveExecutionContinuation, assertBoundExecutionContinuation, assertExecutionContinuation, continuationView } from "./task-execution-continuation";
 import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
 import { taskCompanySources } from "./company-source-read";
@@ -659,6 +660,29 @@ agentRuntimeRouter.post("/tasks/:id/actions/review-information", asyncHandler(as
   if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404
     : result.error === "information_owner_required" ? 403 : 409, result.error);
   res.json({ data: result });
+}));
+
+agentRuntimeRouter.get("/tasks/:id/preparation-draft", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  res.setHeader("Cache-Control", "no-store");
+  const taskId = z.string().uuid().parse(req.params.id);
+  const result = await readTaskPreparationDraft(req.auth!.workspaceId, taskId, req.auth!.userId!);
+  if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404 : 403, result.error);
+  res.json({ data: result });
+}));
+
+agentRuntimeRouter.post("/tasks/:id/preparation-draft", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  res.setHeader("Cache-Control", "no-store");
+  const taskId = z.string().uuid().parse(req.params.id);
+  const input = taskPreparationSaveSchema.parse(req.body);
+  const result = await saveTaskPreparationDraft(req.auth!.workspaceId, taskId, req.auth!.userId!, input);
+  if ("error" in result && result.error) return sendApiError(res,
+    result.error === "task_not_found" ? 404 : result.error === "task_draft_owner_required" ? 403
+      : result.error === "task_draft_too_large" ? 413
+        : ["task_draft_sensitive_content", "task_draft_reference_invalid"].includes(result.error) ? 422 : 409,
+    result.error, { details: "currentVersion" in result ? { currentVersion: result.currentVersion } : undefined });
+  res.status("replayed" in result && result.replayed ? 200 : 201).json({ data: result });
 }));
 
 agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {

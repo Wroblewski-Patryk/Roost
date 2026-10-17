@@ -556,6 +556,7 @@ model User {
   ownerActionProofs OwnerActionProof[]
   companySourceReviews CompanySourceReview[]
   inventoryAssessments CompanyRecordInventoryAssessment[]
+  preparationDrafts TaskPreparationDraft[]
   ownerTickets TrustedProviderTicket[]
   preferredLanguage String? @map("preferred_language")
   admissionScopes TaskAdmissionScope[]
@@ -704,6 +705,7 @@ model Workspace {
   companyRecords                    CompanyRecord[]
   companySourceReviews              CompanySourceReview[]
   inventoryAssessments              CompanyRecordInventoryAssessment[]
+  preparationDrafts                 TaskPreparationDraft[]
   evidenceRecords                   EvidenceRecord[]
   departmentViewDefinitions         DepartmentViewDefinition[]
   departmentViewAvailabilities      DepartmentViewAvailability[]
@@ -3261,6 +3263,7 @@ model Task {
   executionReadiness         Json                  @default("{\"status\":\"draft\"}") @map("execution_readiness")
   executionRoleProvenance    Json?                 @map("execution_role_provenance")
   readySourceWatches         TaskReadySourceWatch[]
+  preparationDrafts         TaskPreparationDraft[]
   reviewerUserId            String?               @map("reviewer_user_id") @db.Uuid
   reviewerUser              User?                 @relation("TaskReviewerUser", fields: [reviewerUserId], references: [id], onDelete: SetNull)
   title                     String
@@ -3305,6 +3308,29 @@ model TaskReadySourceWatch {
   @@id([taskId, sourceTable])
   @@index([sourceTable])
   @@map("task_ready_source_watches")
+}
+
+// Append-only owner working text. This is never a Ready pin or an agent packet.
+model TaskPreparationDraft {
+  id             String   @id @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  taskId         String   @map("task_id") @db.Uuid
+  task           Task     @relation(fields: [taskId, workspaceId], references: [id, workspaceId], onDelete: Restrict)
+  version        Int
+  editorVersion  String   @map("editor_version")
+  executionClass String   @map("execution_class")
+  applicationId  String?  @map("application_id") @db.Uuid
+  body           Json     @map("draft_body")
+  bodyDigest     String   @map("body_digest")
+  requestHash    String   @map("request_hash")
+  actorUserId    String   @map("actor_user_id") @db.Uuid
+  actorUser      User     @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([workspaceId, taskId, version])
+  @@index([workspaceId, taskId, createdAt])
+  @@map("task_preparation_drafts")
 }
 
 model Client {

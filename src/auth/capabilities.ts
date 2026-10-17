@@ -542,6 +542,8 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/risk-admission/evidence", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/risk/scope", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/risk/assessments", capability: "agent-runtime:write" },
+      { method: "GET", path: "/v1/agent-runtime/tasks/:id/preparation-draft", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/agent-runtime/tasks/:id/preparation-draft", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/actions/submit-for-execution", capability: "agent-runtime:write" },
       { method: "GET", path: "/v1/agent-runtime/tasks/:id/execution-continuation", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/agent-runtime/tasks/:id/execution-continuation", capability: "agent-runtime:write" },

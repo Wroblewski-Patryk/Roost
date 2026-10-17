@@ -21,7 +21,7 @@ import { TaskProcedureCompositionModal } from "./procedure-composition";
 import { TaskRiskModal } from "./task-risk";
 import { reviewMessages } from "./task-review-messages";
 import { isSpecialistOfferData, TaskSpecialistOffer, type SpecialistOfferState } from "./task-specialist-offer";
-import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, fields, isCompanyInformation, modelPolicyOverride, modelPolicyProposalFor, modelPolicyReasonText, runtimeInformationInput, visibleContextGroups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup } from "./task-readiness-model";
+import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, fields, isCompanyInformation, modelPolicyOverride, modelPolicyProposalFor, modelPolicyReasonText, runtimeInformationInput, visibleContextGroups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup, type SavedPreparationDraft } from "./task-readiness-model";
 
 export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplication = false }: { taskId: string; onClose: () => void; onSaved?: () => void; returnToApplication?: boolean }) {
   const { locale, t } = useLanguage();
@@ -31,18 +31,44 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
   const [busy, setBusy] = useState<string | null>("loading"), [error, setError] = useState<string | null>(null);
   const [issues, setIssues] = useState<string[]>([]), [success, setSuccess] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false), [leave, setLeave] = useState(false), [expanded, setExpanded] = useState(false);
+  const [draftAccess, setDraftAccess] = useState<"loading" | "owner" | "viewer" | "error">("loading");
+  const [savedDraft, setSavedDraft] = useState<SavedPreparationDraft | null>(null);
+  const [restoredDraftId, setRestoredDraftId] = useState<string | null>(null);
+  const [reviewedContextVersion, setReviewedContextVersion] = useState<string | null>(null);
+  const [draftErrorCode, setDraftErrorCode] = useState<string | null>(null);
+  const [draftConflict, setDraftConflict] = useState(false), [saveUncertain, setSaveUncertain] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [compositionOpen,setCompositionOpen]=useState(false);
   const [riskOpen, setRiskOpen] = useState(false);
   const [authorizationOpen, setAuthorizationOpen] = useState(false);
   const [qualificationOpen, setQualificationOpen] = useState(false);
   const [links, setLinks] = useState({ projectId: "", goalId: "", assignedWorkforceEntityId: "" });
-  const mounted = useRef(true), errorRef = useRef<HTMLDivElement>(null);
+  const mounted = useRef(true), errorRef = useRef<HTMLDivElement>(null), draftErrorRef = useRef<HTMLDivElement>(null);
   const submission = useRef<{ body: string; requestId: string } | null>(null);
+  const pendingDraftSave = useRef<{ body: string; requestId: string; expectedVersion: number } | null>(null);
   const classQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("executionClass") : null;
   const requestedClass = useRef(classQuery === companyInformationClass || classQuery === "roost-company-information-runtime-v1" || classQuery === "application" ? classQuery : "");
   function close() { if (busy && busy !== "loading") return; if (dirty) setLeave(true); else onClose(); }
-  function update(next: Draft) { setDraft(next); setDirty(true); setSuccess(null); }
+  function update(next: Draft) { if (saveUncertain) return; setDraft(next); setDirty(true); setSuccess(null); if (!draftConflict) setDraftErrorCode(null); }
+  function draftCopy(code: string) {
+    const pl = locale === "pl";
+    switch (code) {
+      case "task_draft_version_conflict": return pl ? "Ktoś zapisał nowszą wersję. Twoje zmiany pozostały w formularzu. Sprawdź aktualny szkic przed ponownym zapisem." : "A newer version was saved. Your edits remain in the form. Check the current draft before saving again.";
+      case "task_draft_context_changed": return pl ? "Kontekst zadania zmienił się. Twoje zmiany pozostały w formularzu. Odśwież kontekst i sprawdź odwołania przed zapisem." : "Task context changed. Your edits remain in the form. Refresh the context and review references before saving.";
+      case "task_draft_request_conflict": return pl ? "Identyfikator zapisu jest już użyty. Sprawdź aktualny szkic przed ponowną próbą." : "This save request was already used. Check the current draft before retrying.";
+      case "task_draft_reference_invalid": return pl ? "Niektóre odwołania nie należą do tego obszaru roboczego lub nie są już dostępne. Usuń je lub wybierz aktualne." : "Some references do not belong to this workspace or are no longer available. Remove them or select current ones.";
+      case "task_draft_sensitive_content": return pl ? "Szkic zawiera dane chronione lub sekret. Usuń je przed zapisem." : "The draft contains protected data or a secret. Remove it before saving.";
+      case "task_draft_too_large": return pl ? "Szkic przekracza dopuszczalny rozmiar. Skróć jego treść." : "The draft exceeds the size limit. Shorten its content.";
+      case "task_draft_execution_active": return pl ? "Zadanie jest już wykonywane. Szkicu nie można teraz zapisać." : "The task is already being executed. The draft cannot be saved now.";
+      case "task_draft_accepted_or_closed": return pl ? "Zadanie ma przyjęte Ready albo jest zamknięte. Szkicu nie można teraz zapisać." : "The task has accepted Ready or is closed. The draft cannot be saved now.";
+      case "task_draft_owner_required": return pl ? "Tylko właściciel obszaru może zapisać szkic." : "Only the workspace owner can save a draft.";
+      case "uncertain": return pl ? "Nie wiadomo, czy zapis dotarł do serwera. Pola są zachowane; ponów ten sam zapis albo odczytaj zapisany szkic." : "It is unclear whether the save reached the server. Your fields are preserved; retry the same request or check the saved draft.";
+      case "read_failed": return pl ? "Nie udało się odczytać zapisanego szkicu. Zapis jest wstrzymany do ponownego odczytu." : "The saved draft could not be read. Saving is paused until it is read again.";
+      case "links_not_saved": return pl ? "Najpierw zapisz zmiany powiązań zadania. Zapis szkicu nie zmienia projektu, celu ani wykonawcy." : "Save task link changes first. Saving a draft does not change the project, goal, or assignee.";
+      case "saved_application_unavailable": return pl ? "Aplikacja zapisana w szkicu nie jest już powiązana z zadaniem. Tekst zachowano. Wybierz bieżącą aplikację i sprawdź odwołania przed kolejnym zapisem." : "The application saved in this draft is no longer linked to the task. Your text remains. Choose a current application and review references before saving again.";
+      default: return pl ? "Nie udało się zapisać szkicu. Pola pozostały w formularzu." : "The draft could not be saved. Your fields remain in the form.";
+    }
+  }
   function errorCopy(caught: unknown) {
     if (!(caught instanceof AppApiError)) return "error.failed";
     if (caught.code.startsWith("procedure_composition_")) return "compositionRequired";
@@ -64,7 +90,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
       if (mounted.current) setSpecialistOffer({ kind: caught instanceof AppApiError && caught.status === 404 ? "none" : "error" });
     }
   }
-  async function load(applicationId?: string, preserve = false) {
+  async function load(applicationId?: string, preserve = false, restore: SavedPreparationDraft | null = null, allowMissingAppFallback = false) {
     setBusy("loading"); setError(null);
     try {
       const response = await api<{ data: ReadyPacket }>(`/v1/agent-runtime/tasks/${taskId}/execution-readiness?editor=1${applicationId ? `&applicationId=${encodeURIComponent(applicationId)}` : ""}${requestedClass.current ? `&executionClass=${requestedClass.current}` : ""}`, { cache: "no-store" });
@@ -72,17 +98,58 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
       if (!response.data.editor) throw new AppApiError({ code: response.data.reason ?? "task_editor_unavailable", status: 409 });
       setPacket(response.data);
       if (["needs_context", "needs_decision"].includes(response.data.status)) { setError("invalid"); setIssues(validationSections(response.data)); }
-      if (!preserve) { setDraft(draftFrom(response.data.editor)); setDirty(false); }
+      if (!preserve) {
+        const usable = restore && !response.data.editor.accepted && !response.data.pinId && response.data.status !== "ready";
+        setDraft(usable ? restore.draft : draftFrom(response.data.editor)); setDirty(false);
+        setRestoredDraftId(usable ? restore.id : null);
+        setReviewedContextVersion(null);
+        if (usable) setExpanded(true);
+      }
       setLinks({ projectId: response.data.editor.task.project?.id ?? "", goalId: response.data.editor.task.goal?.id ?? "", assignedWorkforceEntityId: response.data.editor.agent?.id ?? "" });
+      return response.data;
     } catch (caught) {
+      if (allowMissingAppFallback && caught instanceof AppApiError && caught.code === "application_not_found") throw caught;
       console.warn(`Owner task readiness read rejected: ${caught instanceof AppApiError ? caught.code : "task_editor_unavailable"}`);
       if (mounted.current) setError(errorCopy(caught));
+      return null;
     }
     finally { if (mounted.current) setBusy(null); }
   }
-  useEffect(() => { mounted.current = true; void load(); void loadSpecialistOffer(); return () => { mounted.current = false; }; }, [taskId]);
+  async function readSavedDraft(): Promise<SavedPreparationDraft | null> {
+    const response = await api<{ data: { latest: SavedPreparationDraft | null } }>(`/v1/agent-runtime/tasks/${encodeURIComponent(taskId)}/preparation-draft`, { cache: "no-store" });
+    return response.data.latest ?? null;
+  }
+  async function restoreEditor(latest: SavedPreparationDraft | null) {
+    if (latest) requestedClass.current = latest.executionClass;
+    try { await load(latest?.applicationId ?? undefined, false, latest, Boolean(latest?.applicationId)); }
+    catch {
+      if (mounted.current) {
+        const fallback = await load(undefined, false, latest);
+        if (fallback && mounted.current) { setDraftConflict(true); setDraftErrorCode("saved_application_unavailable"); }
+      }
+    }
+  }
+  useEffect(() => {
+    mounted.current = true;
+    void (async () => {
+      let latest: SavedPreparationDraft | null = null;
+      try {
+        latest = await readSavedDraft();
+        if (mounted.current) { setDraftAccess("owner"); setSavedDraft(latest); }
+      } catch (caught) {
+        if (mounted.current) {
+          setDraftAccess(caught instanceof AppApiError && caught.status === 403 ? "viewer" : "error");
+          if (!(caught instanceof AppApiError && caught.status === 403)) setDraftErrorCode("read_failed");
+        }
+      }
+      if (!mounted.current) return;
+      await restoreEditor(latest);
+    })();
+    void loadSpecialistOffer();
+    return () => { mounted.current = false; };
+  }, [taskId]);
   async function submit(event: FormEvent) {
-    event.preventDefault(); if (!packet || !draft || !packet.canSubmit || !offerAllowsSubmit || packet.editor.activeExecution || busy
+    event.preventDefault(); if (!packet || !draft || !packet.canSubmit || !offerAllowsSubmit || packet.editor.activeExecution || busy || saveUncertain
       || packet.editor.executionClass === companyInformationRuntimeClass && !modelPolicyProposalFor(packet.editor)) return;
     setBusy("submitting"); setError(null); setIssues([]); setSuccess(null);
     try {
@@ -96,6 +163,92 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
       if (caught instanceof AppApiError && (caught.code === "task_execution_contract_invalid" || (caught.code.startsWith("task_risk_") || caught.code.startsWith("risk_admission_") || caught.code.startsWith("procedure_composition_")))) await load(packet.editor.applicationId ?? undefined, true);
       setError(errorCopy(caught)); setIssues(caught instanceof AppApiError && caught.code === "task_execution_contract_invalid" ? validationSections(caught.details) : []);
       setExpanded(true); requestAnimationFrame(() => errorRef.current?.focus());
+    } finally { if (mounted.current) setBusy(null); }
+  }
+  async function savePreparationDraft() {
+    const editor = packet?.editor;
+    if (!editor || !draft || draftAccess !== "owner" || busy || draftConflict || editor.activeExecution
+      || editor.accepted || packet?.pinId || packet?.status === "ready" || !["todo", "in_progress"].includes(editor.task.status)) return;
+    if (links.projectId !== (editor.task.project?.id ?? "") || links.goalId !== (editor.task.goal?.id ?? "")
+      || links.assignedWorkforceEntityId !== (editor.agent?.id ?? "")) { setDraftErrorCode("links_not_saved"); return; }
+    if (savedDraft && restoredDraftId === savedDraft.id && savedDraft.editorVersion !== editor.submissionVersion
+      && reviewedContextVersion !== editor.submissionVersion) { setDraftErrorCode("task_draft_context_changed"); setDraftConflict(true); return; }
+    const request = pendingDraftSave.current ?? (() => {
+      const requestId = crypto.randomUUID(), expectedVersion = savedDraft?.version ?? 0;
+      const body = JSON.stringify({ requestId, expectedVersion, expectedEditorVersion: editor.submissionVersion,
+        executionClass: editor.executionClass ?? "application", applicationId: editor.applicationId, draft });
+      return { requestId, expectedVersion, body };
+    })();
+    pendingDraftSave.current = request;
+    setBusy("saving-draft"); setDraftErrorCode(null);
+    try {
+      const response = await api<{ data: { latest: SavedPreparationDraft; replayed: boolean; currentVersion?: number } }>(`/v1/agent-runtime/tasks/${encodeURIComponent(taskId)}/preparation-draft`, { method: "POST", body: request.body });
+      if (!response.data?.latest || response.data.latest.id !== request.requestId || response.data.latest.version !== request.expectedVersion + 1)
+        throw new AppApiError({ code: "task_draft_invalid_response", status: 0 });
+      if (!mounted.current) return;
+      if ((response.data.currentVersion ?? response.data.latest.version) > response.data.latest.version) {
+        pendingDraftSave.current = null; setSaveUncertain(false); setDraftConflict(true);
+        setDraftErrorCode("task_draft_version_conflict");
+        return;
+      }
+      setSavedDraft(response.data.latest); setRestoredDraftId(response.data.latest.id);
+      setDirty(false); setSaveUncertain(false); setDraftConflict(false); setReviewedContextVersion(null);
+      pendingDraftSave.current = null;
+    } catch (caught) {
+      if (!mounted.current) return;
+      const ambiguous = !(caught instanceof AppApiError) || caught.status === 0 || caught.status >= 500;
+      if (ambiguous) { setSaveUncertain(true); setDraftErrorCode("uncertain"); }
+      else {
+        pendingDraftSave.current = null;
+        setDraftErrorCode(caught.code);
+        if (caught.status === 409) setDraftConflict(true);
+        if (caught.status === 403) setDraftAccess("viewer");
+      }
+      requestAnimationFrame(() => draftErrorRef.current?.focus());
+    } finally { if (mounted.current) setBusy(null); }
+  }
+  async function inspectSavedDraft(discardLocal: boolean) {
+    setBusy("reading-draft"); setDraftErrorCode(null);
+    try {
+      const unresolved = pendingDraftSave.current;
+      const latest = await readSavedDraft();
+      if (!mounted.current) return;
+      if (saveUncertain && unresolved && latest?.id === unresolved.requestId) {
+        setSavedDraft(latest); setRestoredDraftId(latest.id); setDirty(false);
+        setSaveUncertain(false); setDraftConflict(false); pendingDraftSave.current = null;
+        return;
+      }
+      setSavedDraft(latest); setDraftAccess("owner");
+      if (saveUncertain && unresolved && (latest?.version ?? 0) > unresolved.expectedVersion) {
+        pendingDraftSave.current = null; setSaveUncertain(false); setDraftConflict(true);
+        setDraftErrorCode("task_draft_version_conflict"); return;
+      }
+      if (saveUncertain && !discardLocal && (latest?.version ?? 0) <= (unresolved?.expectedVersion ?? 0)) {
+        setDraftErrorCode("uncertain"); return;
+      }
+      if (!discardLocal && latest && restoredDraftId !== latest.id && !draftConflict) {
+        setDraftConflict(true); setDraftErrorCode("task_draft_version_conflict"); return;
+      }
+      if (discardLocal) {
+        if (latest) requestedClass.current = latest.executionClass;
+        const restored = await load(latest?.applicationId ?? undefined, false, latest, Boolean(latest?.applicationId));
+        if (!restored) { setDraftAccess("error"); setDraftErrorCode("read_failed"); return; }
+        pendingDraftSave.current = null; setSaveUncertain(false); setDraftConflict(false);
+      } else {
+        const current = await load(packet?.editor.applicationId ?? undefined, true);
+        if (!current) { setDraftAccess("error"); setDraftErrorCode("read_failed"); return; }
+        pendingDraftSave.current = null; setSaveUncertain(false); setDraftConflict(false);
+        setReviewedContextVersion(current.editor.submissionVersion);
+        setDraftErrorCode(null);
+      }
+    } catch (caught) {
+      if (mounted.current) {
+        if (caught instanceof AppApiError && caught.code === "application_not_found") {
+          setDraftConflict(true); setDraftErrorCode("saved_application_unavailable"); return;
+        }
+        setDraftAccess(caught instanceof AppApiError && caught.status === 403 ? "viewer" : "error");
+        setDraftErrorCode(caught instanceof AppApiError && caught.status === 403 ? "task_draft_owner_required" : "read_failed");
+      }
     } finally { if (mounted.current) setBusy(null); }
   }
   async function saveLinks() {
@@ -119,6 +272,13 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
   const acceptedModelSelection = runtimeInformation && e?.accepted?.contract.executionClass === companyInformationRuntimeClass ? e.accepted.contract.modelSelection : null;
   const acceptedModel = acceptedModelSelection?.modelSelection ?? acceptedModelSelection;
   const writable = packet?.canSubmit && !e?.activeExecution;
+  const savedVisible = Boolean(savedDraft && e && !e.accepted && !packet?.pinId && packet?.status !== "ready");
+  const contextMismatch = Boolean(savedVisible && restoredDraftId === savedDraft?.id
+    && savedDraft?.editorVersion !== e?.submissionVersion && reviewedContextVersion !== e?.submissionVersion);
+  const canSaveDraft = Boolean(e && draft && draftAccess === "owner" && packet?.canSubmit
+    && !e.activeExecution && !e.accepted && !packet?.pinId && packet?.status !== "ready"
+    && ["todo", "in_progress"].includes(e.task.status) && !busy && !draftConflict && !contextMismatch
+    && (!savedDraft || dirty || saveUncertain));
   const pendingLinks = e && (links.projectId !== (e.task.project?.id ?? "") || links.goalId !== (e.task.goal?.id ?? "") || links.assignedWorkforceEntityId !== (e.agent?.id ?? ""));
   const linksValid = Boolean(!pendingLinks && e && (informational || e.task.project) && e.task.goal && e.agent?.eligible && (informational || e.applicationId) && ["todo", "in_progress"].includes(e.task.status));
   const showForm = e && draft && (expanded || packet?.status !== "ready"
@@ -210,15 +370,27 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
     {!informational ? <CcButton disabled={Boolean(busy)||dirty} onClick={()=>setCompositionOpen(true)}>{locale==="pl"?"Skład procedury":"Procedure composition"}</CcButton> : null}
     {!informational ? <CcButton variant="outline" disabled={Boolean(busy) || dirty} onClick={()=>setReviewOpen(true)}>{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
     <CcButton className="min-h-11" onClick={close} variant="ghost" disabled={Boolean(busy && busy !== "loading")}>{returnToApplication ? locale === "pl" ? "Wróć do aplikacji" : "Back to application" : tr("close")}</CcButton>
-    {packet && writable ? showForm ? <CcButton key="submit" className="min-h-11" variant="primary" type="submit" loading={busy === "submitting"} disabled={Boolean(busy) || !linksValid || !offerAllowsSubmit || runtimeInformation && !modelProposal}>{packet.revision ? tr("resubmit") : tr("submit")}</CcButton> : <CcButton key="review" className="min-h-11" variant="primary" onClick={event => { event.preventDefault(); setExpanded(true); }}>{tr("edit")}</CcButton> : null}
+    {packet && showForm && draftAccess === "owner" && !e?.accepted && !packet.pinId && packet.status !== "ready" ? <CcButton type="button" className="min-h-11" variant="outline" loading={busy === "saving-draft"} disabled={!canSaveDraft} onClick={() => void savePreparationDraft()}>{locale === "pl" ? saveUncertain ? "Ponów ten sam zapis" : "Zapisz szkic" : saveUncertain ? "Retry the same save" : "Save draft"}</CcButton> : null}
+    {packet && writable ? showForm ? <CcButton key="submit" className="min-h-11" variant="primary" type="submit" loading={busy === "submitting"} disabled={Boolean(busy) || saveUncertain || !linksValid || !offerAllowsSubmit || runtimeInformation && !modelProposal}>{packet.revision ? tr("resubmit") : tr("submit")}</CcButton> : <CcButton key="review" className="min-h-11" variant="primary" onClick={event => { event.preventDefault(); setExpanded(true); }}>{tr("edit")}</CcButton> : null}
   </>}>
     {busy === "loading" ? <div aria-live="polite" className="grid gap-3 py-3"><p>{tr("loading")}</p><div className="skeleton h-12 w-full" /><div className="skeleton h-12 w-3/4" /></div> : null}
-    {error ? <div ref={errorRef} tabIndex={-1}><CcNotice live tone="error" title={tr(error)} />{issues.length ? <ul className="mt-3 grid gap-2 text-sm list-disc pl-5">{issues.map(issue => <li key={issue}>{tr(`issue.${issue}`)}</li>)}</ul> : null}{!packet ? <CcButton onClick={() => void load()} variant="outline">{tr("retry")}</CcButton> : null}</div> : null}
+    {error ? <div ref={errorRef} tabIndex={-1}><CcNotice live tone="error" title={tr(error)} />{issues.length ? <ul className="mt-3 grid gap-2 text-sm list-disc pl-5">{issues.map(issue => <li key={issue}>{tr(`issue.${issue}`)}</li>)}</ul> : null}{!packet ? <CcButton onClick={() => void restoreEditor(savedDraft)} variant="outline">{tr("retry")}</CcButton> : null}</div> : null}
+    {draftErrorCode ? <div ref={draftErrorRef} tabIndex={-1}><CcNotice live tone="error" title={draftCopy(draftErrorCode)} /></div> : null}
+    {draftAccess === "error" && !busy ? <CcButton type="button" size="sm" variant="outline" onClick={() => void inspectSavedDraft(false)}>{locale === "pl" ? "Ponów odczyt szkicu" : "Retry draft read"}</CcButton> : null}
+    {draftAccess === "viewer" && packet?.canSubmit && packet.status !== "ready" ? <CcNotice tone="info" title={locale === "pl" ? "Szkic roboczy zapisuje tylko właściciel obszaru" : "Only the workspace owner can save working drafts"} /> : null}
+    {(draftConflict || saveUncertain || contextMismatch) && draftAccess === "owner" && !busy ? <div className="flex flex-wrap gap-2">
+      <CcButton type="button" size="sm" variant="outline" onClick={() => void inspectSavedDraft(false)}>{locale === "pl" ? saveUncertain ? "Sprawdź zapis na serwerze" : "Sprawdź aktualną wersję i zachowaj zmiany" : saveUncertain ? "Check saved draft on server" : "Check current version and keep edits"}</CcButton>
+      {!saveUncertain ? <CcButton type="button" size="sm" variant="ghost" onClick={() => void inspectSavedDraft(true)}>{locale === "pl" ? "Odrzuć moje zmiany i wczytaj zapis" : "Discard my edits and load saved draft"}</CcButton> : null}
+    </div> : null}
     {success ? <CcNotice live tone="success" title={tr(success)} /> : null}
     <TaskSpecialistOffer taskId={taskId} state={specialistOffer} onRefresh={loadSpecialistOffer} onSaved={() => { void load(); onSaved?.(); }} />
     {packet && e && draft ? <>
       <section aria-label={tr("title")} className="grid gap-4 border-b border-base-300 pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton variant="outline" disabled={Boolean(busy) || !e} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton variant="outline" disabled={Boolean(busy) || !e || saveUncertain} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton><CcButton size="sm" variant="outline" disabled={Boolean(busy) || saveUncertain} onClick={() => void load(e.applicationId ?? undefined, dirty || savedVisible)}>{tr("refresh")}</CcButton></div>
+        {savedVisible ? <CcNotice live tone={contextMismatch ? "warning" : "info"}
+          title={locale === "pl" ? `Zapisany szkic v${savedDraft!.version} · bez Ready` : `Saved draft v${savedDraft!.version} · not Ready`}
+          detail={locale === "pl" ? `Zapisano ${new Date(savedDraft!.savedAt).toLocaleString(locale)}. Szkic nie uruchamia wykonania ani nie zatwierdza źródeł.${contextMismatch ? " Kontekst zmienił się od zapisu; sprawdź bieżące odwołania." : restoredDraftId !== savedDraft!.id ? " Aktualny formularz różni się od zapisu." : ""}` : `Saved ${new Date(savedDraft!.savedAt).toLocaleString(locale)}. This draft does not start execution or approve sources.${contextMismatch ? " Context changed since it was saved; review current references." : restoredDraftId !== savedDraft!.id ? " The current form differs from the saved draft." : ""}`} /> : null}
+        {savedVisible && restoredDraftId !== savedDraft!.id && !dirty && !busy ? <CcButton type="button" size="sm" variant="outline" onClick={() => void inspectSavedDraft(true)}>{locale === "pl" ? "Wczytaj zapisany szkic" : "Load saved draft"}</CcButton> : null}
         {packet.status !== "ready" ? <p className="text-sm">{tr(`reason.${reason}`)}</p> : null}
         <TaskDecisionAuthorityHistory records={packet.editor.decisionAuthorities}/>
         <ChangedContextSources sources={packet.changedSources} />
@@ -234,11 +406,11 @@ export function TaskReadinessModal({ taskId, onClose, onSaved, returnToApplicati
         {dirty ? <p role="status" className="text-sm text-warning">{tr("unsaved")}</p> : null}
         <div className="flex flex-wrap gap-2">{packet.status === "ready" && !writable ? <CcButton size="sm" variant="outline" onClick={() => setExpanded(!expanded)}>{tr("edit")}</CcButton> : null}{packet.status === "ready" && packet.canSubmit ? <CcButton size="sm" variant="outline" onClick={() => void queue()} disabled={!offerAllowsSubmit || !canPrepareForWorker(packet) || Boolean(busy) || dirty || e.activeExecution}>{tr(informational ? "information.queue" : "queue")}</CcButton> : null}<CcButton size="sm" variant="ghost" href="/areas?area=06-kadry&view=executions" onClick={event => { if (dirty) { event.preventDefault(); setError("unsaved"); } }}>{tr("runs")}</CcButton></div>
       </section>
-      <CcField label={tr("executionClass")} hint={tr("executionClassHint")}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy) || dirty} value={runtimeInformation ? companyInformationRuntimeClass : informational ? companyInformationClass : "application"} onChange={event => { requestedClass.current = event.target.value; submission.current = null; void load(); }}><option value="application">{tr("applicationTask")}</option><option value={companyInformationClass}>{tr("informationTask")}</option>{informational ? <option value={companyInformationRuntimeClass}>{locale === "pl" ? "Zadanie informacyjne — wykonanie" : "Information task — runtime"}</option> : null}</CcSelect>}</CcField>
+      <CcField label={tr("executionClass")} hint={tr("executionClassHint")}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy) || dirty || saveUncertain} value={runtimeInformation ? companyInformationRuntimeClass : informational ? companyInformationClass : "application"} onChange={event => { requestedClass.current = event.target.value; submission.current = null; void load(); }}><option value="application">{tr("applicationTask")}</option><option value={companyInformationClass}>{tr("informationTask")}</option>{informational ? <option value={companyInformationRuntimeClass}>{locale === "pl" ? "Zadanie informacyjne — wykonanie" : "Information task — runtime"}</option> : null}</CcSelect>}</CcField>
       {informational && !runtimeInformation ? <CcNotice tone="info" title={tr("informationTask")} detail={tr("information.boundary")} /> : null}
       {informational ? <CompanyInformationResult taskId={taskId} canStart={Boolean(packet.canSubmit && packet.status === "ready" && !dirty && !busy && !e.activeExecution)} canAuthorize={Boolean(runtimeInformation && packet.canSubmit && !busy && !e.activeExecution)} onAuthorize={()=>setAuthorizationOpen(true)} onReview={()=>setReviewOpen(true)} onSaved={() => { void load(); onSaved?.(); }} /> : null}
       {packet.status === "ready" && acceptedModel ? <p className="text-sm text-company-muted">{locale === "pl" ? "Wybór przyjęty w Ready" : "Selection accepted at Ready"}: {acceptedModelSelection?.backend === "ollama_loopback" ? "Ollama" : "Codex Responses"} · {acceptedModel.model} · {acceptedModel.reasoningEffort}</p> : null}
-      {showForm ? <fieldset disabled={!writable || Boolean(busy)} className="min-w-0 grid gap-4">
+      {showForm ? <fieldset disabled={!writable || Boolean(busy) || saveUncertain} className="min-w-0 grid gap-4">
         <details open={!linksValid} className="border-b border-base-300 pb-4"><summary className="cursor-pointer py-2 font-bold">{tr("links")}</summary><p className="my-2 text-sm text-company-muted">{tr("linksHint")}</p><div className="grid gap-4 sm:grid-cols-3">{(["projectId", "goalId", "assignedWorkforceEntityId"] as const).map((key, index) => <CcField key={key} label={tr(["project", "goal", "agent"][index]!)}>{({ id }) => <CcSelect id={id} value={links[key]} onChange={event => { setLinks({ ...links, [key]: event.target.value }); setDirty(true); }}><option value="">{tr("choose")}</option>{(index === 0 ? e.projects : index === 1 ? e.goals.map(item => ({ id: item.id, name: item.title })) : e.agents).map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</CcSelect>}</CcField>)}</div><CcButton className="mt-3" size="sm" variant="outline" onClick={() => void saveLinks()}>{tr("saveLinks")}</CcButton></details>
         <div className="grid gap-4 sm:grid-cols-2">{!informational ? <CcField label={tr("application")} required>{({ id }) => <CcSelect id={id} value={e.applicationId ?? ""} required onChange={event => { if (!event.target.value) return; update({ ...draft, refs: { ...draft.refs, product: [], technical: [] } }); void load(event.target.value, true); }}><option value="">{tr("choose")}</option>{e.applications.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</CcSelect>}</CcField> : null}<div className="text-sm"><p className="text-company-muted">{tr("goal")}</p><p>{e.task.goal?.title || "—"}</p><p className="mt-2 text-company-muted">{tr("agent")}</p><p>{e.agent?.name || "—"}</p></div></div>
         <section className="grid gap-3"><h3 className="font-bold">{tr("intent")}</h3><div className="grid gap-4 sm:grid-cols-2">{fields.intent.filter(name => !informational || name !== "baseBranch").map(input)}</div></section>

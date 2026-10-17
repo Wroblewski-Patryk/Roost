@@ -2811,6 +2811,136 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
   return { input, sources, goal, agent, manager, component, verifier, releaser, readiness: (await fixtureExecutionMetadata(taskId)).readyContextPin };
 }
 
+test("owner preparation draft survives reads, fences stale tabs and never grants Ready", async () => {
+  const owner = await registerOwner(`draft-${randomUUID()}@example.test`, "Draft fixture"), workspaceId = owner.workspace.id;
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const app = await prisma.application.create({ data: { workspaceId, name: "Draft app", slug: randomUUID() } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Draft project" } });
+  await prisma.applicationProject.create({ data: { applicationId: app.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Prepare unfinished task" } });
+  const fixture = await prepareReadyFixture(workspaceId, task.id, app.id, auth, false);
+  const root = `/v1/agent-runtime/tasks/${task.id}`, route = `${root}/preparation-draft`;
+  const post = (url: string, body: unknown, headers: Record<string, string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const getEditor = async () => {
+    const response = await request(`${root}/execution-readiness?editor=1&applicationId=${app.id}`, { headers: auth });
+    assert.equal(response.status, 200, JSON.stringify(response.body));
+    return (response.body as any).data.editor;
+  };
+  const editor = await getEditor();
+  const originalTask = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  const sourceReviewsBefore = await prisma.taskSourceReview.count({ where: { taskId: task.id } });
+  const draft = {
+    taskRoles: { requester: editor.requester ? { id: editor.requester.id, revision: editor.requester.revision } : null,
+      executor: null, verifier: null, releaser: null },
+    singleTask: { component: null, manager: null, metric: "", comparison: "eq", target: "", unit: "", method: "",
+      problems: [{ statement: "", causalLink: "" }], mechanism: "", inseparability: "", evidence: null },
+    values: Object.fromEntries(["version", "outcome", "allowed", "forbidden", "prompt", "baseBranch", "maxAttempts",
+      "maxDurationSeconds", "maxOutputTokens", "restrictions", "criteria", "tests", "evidence", "handoff", "failure",
+      "escalation", "rollbackInstructions"].map(key => [key, ""])),
+    backend: "codex_responses", model: "", modelDigest: "", effort: "", competencies: [], tools: [], permissions: [],
+    refs: Object.fromEntries(["company", "product", "technical", "procedures", "skills", "dependencies", "decisions"].map(key => [key, []])),
+    none: Object.fromEntries(["company", "product", "technical", "procedures", "skills", "dependencies", "decisions"].map(key => [key, ""])),
+    rollbackMode: ""
+  };
+  draft.values.outcome = "Incomplete owner working text";
+  const input = { requestId: randomUUID(), expectedVersion: 0, expectedEditorVersion: editor.submissionVersion,
+    executionClass: "application", applicationId: app.id, draft };
+  assert.equal((await request(route, { headers: auth })).status, 200);
+  assert.equal(((await request(route, { headers: auth })).body as any).data.latest, null);
+  const first = await post(route, input);
+  assert.equal(first.status, 201, JSON.stringify(first.body));
+  assert.equal((first.body as any).data.latest.version, 1);
+  assert.equal((await post(route, input)).status, 200); // lost reply replay, one version and event
+  assert.equal((await post(route, { ...input, draft: { ...draft, values: { ...draft.values, outcome: "Changed replay" } } })).status, 409);
+  const reopened = await request(route, { headers: auth });
+  assert.equal((reopened.body as any).data.latest.draft.values.outcome, "Incomplete owner working text");
+  assert.equal((await prisma.taskPreparationDraft.count({ where: { taskId: task.id } })), 1);
+  assert.equal(await prisma.event.count({ where: { taskId: task.id, type: "task_preparation_draft_saved" } }), 1);
+  const draftEvent = await prisma.event.findFirstOrThrow({ where: { taskId: task.id, type: "task_preparation_draft_saved" } });
+  assert.equal(JSON.stringify(draftEvent.payload).includes("Incomplete owner working text"), false);
+  const afterSave = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  assert.deepEqual(afterSave.executionReadiness, originalTask.executionReadiness);
+  assert.equal(afterSave.projectId, project.id);
+  assert.equal(afterSave.goalId, originalTask.goalId);
+  assert.equal(afterSave.assignedWorkforceEntityId, originalTask.assignedWorkforceEntityId);
+  assert.equal(await prisma.taskSourceReview.count({ where: { taskId: task.id } }), sourceReviewsBefore);
+  assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 0);
+  assert.equal(await prisma.taskCapabilityGrant.count({ where: { taskId: task.id } }), 0);
+  assert.equal((await post(route, { ...input, requestId: randomUUID() })).status, 409); // stale tab
+  const secondInput = { ...input, requestId: randomUUID(), expectedVersion: 1,
+    draft: { ...draft, values: { ...draft.values, outcome: "Second saved version" } } };
+  const second = await post(route, secondInput);
+  assert.equal(second.status, 201, JSON.stringify(second.body));
+  assert.equal((second.body as any).data.latest.version, 2);
+  const olderReplay = await post(route, input);
+  assert.equal(olderReplay.status, 200);
+  assert.equal((olderReplay.body as any).data.currentVersion, 2);
+  assert.equal(((await request(route, { headers: auth })).body as any).data.latest.draft.values.outcome, "Second saved version");
+  const staleReference = { ...secondInput, requestId: randomUUID(), expectedVersion: 2,
+    draft: { ...draft, refs: { ...draft.refs, company: [{ id: fixture.sources[0].id, revision: "old-revision" }] } } };
+  assert.equal((await post(route, staleReference)).status, 201);
+  assert.equal(((await request(route, { headers: auth })).body as any).data.latest.draft.refs.company[0].revision, "old-revision");
+  assert.deepEqual((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness, originalTask.executionReadiness);
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    draft: { ...draft, refs: { ...draft.refs, company: [{ id: randomUUID(), revision: "stale" }] } } })).status, 422);
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    draft: { ...draft, unsupported: true } })).status, 400);
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    draft: { ...draft, values: { ...draft.values, prompt: "x".repeat(20_001) } } })).status, 400);
+  const sensitive = await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    draft: { ...draft, values: { ...draft.values, outcome: "secret=synthetic-test-value" } } });
+  assert.equal(sensitive.status, 409, JSON.stringify(sensitive.body));
+  assert.equal((sensitive.body as any).error, "agent_runtime_content_blocked");
+  const member = await prisma.user.create({ data: { email: `draft-member-${randomUUID()}@example.test`, passwordHash: "synthetic-not-login" } });
+  await prisma.workspaceMembership.create({ data: { workspaceId, userId: member.id, role: "member" } });
+  const { createAuthToken } = await import("../auth/token");
+  const memberAuth = { Authorization: `Bearer ${createAuthToken({ workspaceId, userId: member.id })}` };
+  assert.equal((await request(route, { headers: memberAuth })).status, 403);
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3 }, memberAuth)).status, 403);
+  const agentKey = await post("/v1/api-keys", { name: "Draft denied agent key", profileId: "mcp_codex_worker" });
+  assert.equal(agentKey.status, 201, JSON.stringify(agentKey.body));
+  const agentAuth = { "X-API-Key": (agentKey.body as any).data.key };
+  assert.equal((await request(route, { headers: agentAuth })).status, 403);
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3 }, agentAuth)).status, 403);
+  const foreign = await registerOwner(`draft-foreign-${randomUUID()}@example.test`, "Foreign draft fixture");
+  assert.equal((await request(route, { headers: { Authorization: `Bearer ${foreign.token}` } })).status, 404);
+  const foreignRecord = await prisma.companyRecord.create({ data: { workspaceId: foreign.workspace.id,
+    recordType: "requirement", key: randomUUID(), title: "Foreign fixture" } });
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    draft: { ...draft, refs: { ...draft.refs, company: [{ id: foreignRecord.id, revision: foreignRecord.updatedAt.toISOString() }] } } })).status, 422);
+  const wrongApp = await prisma.application.create({ data: { workspaceId, name: "Other draft app", slug: randomUUID() } });
+  const wrongAppRecord = await prisma.companyRecord.create({ data: { workspaceId, applicationId: wrongApp.id,
+    recordType: "requirement", key: randomUUID(), title: "Wrong application fixture" } });
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    draft: { ...draft, refs: { ...draft.refs, product: [{ id: wrongAppRecord.id, revision: wrongAppRecord.updatedAt.toISOString() }] } } })).status, 422);
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    expectedEditorVersion: "f".repeat(64) })).status, 409);
+  const invalidSubmit = await post(`${root}/actions/submit-for-execution`, {
+    ...fixture.input, requestId: randomUUID(), expectedVersion: editor.submissionVersion,
+    contract: { ...fixture.input.contract, version: "" }
+  });
+  assert.notEqual(invalidSubmit.status, 200);
+  const afterInvalidSubmit = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
+  assert.notEqual(afterInvalidSubmit?.status, "ready");
+  assert.equal(afterInvalidSubmit?.pinId, undefined);
+  const acceptedInput = await submissionInput(`${root}/actions/submit-for-execution`, fixture.input, auth);
+  const accepted = await post(`${root}/actions/submit-for-execution`, acceptedInput);
+  assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+  const previousExecutionEnabled = process.env.ROOST_CODEX_EXECUTION_ENABLED;
+  let queued;
+  try {
+    process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+    queued = await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: app.id });
+  } finally {
+    if (previousExecutionEnabled === undefined) delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+    else process.env.ROOST_CODEX_EXECUTION_ENABLED = previousExecutionEnabled;
+  }
+  assert.equal(queued.status, 201, JSON.stringify(queued.body));
+  assert.equal((await post(route, { ...secondInput, requestId: randomUUID(), expectedVersion: 3,
+    expectedEditorVersion: (await getEditor()).submissionVersion })).status, 409);
+  await assert.rejects(prisma.$executeRaw`UPDATE task_preparation_drafts SET version=9 WHERE task_id=${task.id}::uuid`, /task_preparation_draft_immutable/);
+});
+
 test("G9 Ready source watches ignore Drive telemetry and invalidate changed source bodies", async () => {
   const owner = await registerOwner(`g9-watch-${randomUUID()}@example.test`, "G9 watch fixture"), workspaceId = owner.workspace.id;
   const auth = { Authorization: `Bearer ${owner.token}` };

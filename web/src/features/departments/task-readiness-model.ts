@@ -65,6 +65,9 @@ export const fields = {
 export type FieldName = typeof fields[keyof typeof fields][number];
 export type ScopeDraft = { component: Reference | null; manager: Reference | null; metric: string; comparison: string; target: string; unit: string; method: string; problems: { statement: string; causalLink: string }[]; mechanism: string; inseparability: string; evidence: Reference | null };
 export type Draft = { taskRoles: { requester: Reference | null; executor: Reference | null; verifier: Reference | null; releaser: Reference | null }; singleTask: ScopeDraft; values: Record<FieldName, string>; backend: "codex_responses" | "ollama_loopback"; model: string; modelDigest: string; effort: string; competencies: string[]; tools: string[]; permissions: string[]; refs: Record<RefGroup, Reference[]>; none: Record<RefGroup, string>; rollbackMode: string };
+export type SavedPreparationDraft = { id: string; version: number; editorVersion: string;
+  executionClass: "application" | "roost-company-information-v1" | "roost-company-information-runtime-v1";
+  applicationId: string | null; draft: Draft; bodyDigest: string; actorUserId: string; savedAt: string };
 const lines = (value: string) => value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 const join = (value: unknown) => Array.isArray(value) ? value.join("\n") : typeof value === "string" || typeof value === "number" ? String(value) : "";
 export function modelPolicyProposalFor(editor: ReadyEditor): ModelPolicyProposal | null {
