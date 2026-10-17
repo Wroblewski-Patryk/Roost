@@ -54,7 +54,7 @@ function briefContext(value: string | null | undefined) {
 export const dashboardRouter = Router();
 
 const ATTENTION_PAGE_SIZE = 25;
-type AttentionRow = { id: string; kind: "decision" | "result" | "procedure_result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date; executionId: string | null; totalCount: bigint; decisionCount: bigint };
+type AttentionRow = { id: string; kind: "decision" | "result" | "procedure_result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date; executionId: string | null; exceptionReason: string | null; totalCount: bigint; decisionCount: bigint };
 type DecisionAttentionReason = "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required";
 type DecisionAttentionAuthority = { responsible: string | null; reason: DecisionAttentionReason };
 
@@ -179,18 +179,33 @@ async function attentionPage(workspaceId: string, offset: number) {
       UNION ALL
       SELECT 2, s.id, 'procedure_result',
         concat(r.procedure_name, ' · ', s.step_order, '. ', s.instruction),
-        'owner_review', 'medium', NULL::timestamp, t.updated_at, NULL::uuid
+        CASE WHEN outcome.decision='exception' THEN 'owner_exception' ELSE 'owner_review' END,
+        CASE WHEN outcome.decision='exception' THEN 'high' ELSE 'medium' END,
+        NULL::timestamp, COALESCE(outcome.created_at, t.updated_at), NULL::uuid
       FROM procedure_run_steps s
       JOIN procedure_runs r ON r.id=s.run_id AND r.workspace_id=${workspaceId}::uuid
       JOIN tasks t ON t.id=s.task_id AND t.workspace_id=r.workspace_id
-      WHERE t.status='done' AND s.step_type IN ('manual', 'human_review')
-        AND NOT EXISTS (SELECT 1 FROM procedure_run_step_outcomes o
-          WHERE o.run_step_id=s.id AND o.workspace_id=r.workspace_id)
+      LEFT JOIN LATERAL (
+        SELECT o.decision, o.created_at FROM procedure_run_step_outcomes o
+        WHERE o.run_step_id=s.id AND o.workspace_id=r.workspace_id
+        ORDER BY o.created_at DESC, o.id DESC LIMIT 1
+      ) outcome ON true
+      WHERE s.step_type IN ('manual', 'human_review')
+        AND ((outcome.decision IS NULL AND t.status='done') OR outcome.decision='exception')
       UNION ALL
       SELECT 3, t.id, 'blocker', t.title, 'blocked', 'high', t.due_date, t.updated_at, NULL::uuid
       FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.status='blocked'
         AND NOT EXISTS (SELECT 1 FROM current_result e WHERE e.task_id=t.id)
         AND NOT EXISTS (SELECT 1 FROM retired_goal_tasks r WHERE r.id=t.id)
+        AND NOT EXISTS (
+          SELECT 1 FROM procedure_run_steps s JOIN procedure_runs r ON r.id=s.run_id AND r.workspace_id=t.workspace_id
+          JOIN LATERAL (
+            SELECT o.decision FROM procedure_run_step_outcomes o
+            WHERE o.run_step_id=s.id AND o.workspace_id=r.workspace_id
+            ORDER BY o.created_at DESC, o.id DESC LIMIT 1
+          ) outcome ON outcome.decision='exception'
+          WHERE s.task_id=t.id AND s.step_type IN ('manual', 'human_review')
+        )
       UNION ALL
       SELECT 5, c.id, 'incident', c.title, c.status, c.priority, NULL::timestamp, c.updated_at, NULL::uuid
       FROM company_records c WHERE c.workspace_id=${workspaceId}::uuid AND c.record_type='technical_incident'
@@ -202,6 +217,11 @@ async function attentionPage(workspaceId: string, offset: number) {
         AND NOT EXISTS (SELECT 1 FROM retired_goal_tasks r WHERE r.id=t.id)
     )
     SELECT id, kind, title, status, severity, due_date AS "dueDate", updated_at AS "updatedAt", execution_id AS "executionId",
+      CASE WHEN kind='procedure_result' AND status='owner_exception' THEN (
+        SELECT o.reason FROM procedure_run_step_outcomes o
+        WHERE o.workspace_id=${workspaceId}::uuid AND o.run_step_id=attention.id
+        ORDER BY o.created_at DESC, o.id DESC LIMIT 1
+      ) ELSE NULL END AS "exceptionReason",
       count(*) OVER() AS "totalCount", count(*) FILTER (WHERE kind='decision') OVER() AS "decisionCount"
     FROM attention ORDER BY rank, updated_at DESC, id DESC
     LIMIT ${ATTENTION_PAGE_SIZE + 1} OFFSET ${offset}
@@ -257,10 +277,10 @@ async function attentionPage(workspaceId: string, offset: number) {
     id: row.id, kind: row.kind, title: row.title, source: row.kind, severity: row.severity,
     status: row.status, dueDate: row.dueDate, updatedAt: row.updatedAt,
     reason: row.kind === "decision" ? decisionAuthorities.get(row.id)?.reason ?? "decision_authority_blocked" : row.kind === "result" ? row.status === "failed" ? "result_failed" : row.status === "owner_pending" ? "result_owner_pending" : "result_review"
-      : row.kind === "procedure_result" ? "procedure_outcome_pending"
+      : row.kind === "procedure_result" ? row.status === "owner_exception" ? "procedure_outcome_exception" : "procedure_outcome_pending"
       : row.kind === "blocker" ? "task_blocked" : row.kind === "task" ? "task_overdue"
       : row.kind === "incident" ? "incident_blocked" : "risk_high",
-    context: briefContext(taskById.get(row.id)?.description ?? decisionById.get(row.id)?.problem
+    context: row.exceptionReason ?? briefContext(taskById.get(row.id)?.description ?? decisionById.get(row.id)?.problem
       ?? decisionById.get(row.id)?.context ?? decisionById.get(row.id)?.rationale
       ?? incidentById.get(row.id)?.description ?? (row.kind === "procedure_result" ? row.title : null)),
     responsible: row.kind === "decision" ? decisionAuthorities.get(row.id)?.responsible ?? null

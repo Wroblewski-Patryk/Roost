@@ -302,8 +302,30 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
       body: JSON.stringify({ requestId: randomUUID(), decision: "exception", evidence: { summary: "Fictional packet needs another review", references: [] }, reason: "The reviewed packet was superseded" }) });
     assert.equal(exception.status, 201, JSON.stringify(exception.body));
     assert.equal(((await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any).data.status, "exception");
+    const exceptionToday = await todayProcedureRows();
+    const exceptionRow = exceptionToday.items.find((item: any) => item.id === run.steps[0].id);
+    assert.deepEqual({ kind: exceptionRow?.kind, status: exceptionRow?.status, reason: exceptionRow?.reason,
+      context: exceptionRow?.context, responsible: exceptionRow?.responsible, severity: exceptionRow?.severity },
+    { kind: "procedure_result", status: "owner_exception", reason: "procedure_outcome_exception",
+      context: "The reviewed packet was superseded", responsible: "Test Owner", severity: "high" });
+    assert.equal(exceptionRow.target, `/areas?area=04-operacje&view=procedures&procedureId=${procedure.id}&runId=${run.id}&stepId=${run.steps[0].id}&from=attention`);
+    assert.equal(exceptionToday.items.filter((item: any) => item.id === run.steps[0].id).length, 1);
+    await prisma.task.update({ where: { id: tasks[0].id }, data: { status: "blocked" } });
+    const blockedExceptionToday = await todayProcedureRows();
+    assert.equal(blockedExceptionToday.items.filter((item: any) => item.id === run.steps[0].id).length, 1,
+      "latest exception remains actionable when its Task becomes blocked");
+    assert.equal(blockedExceptionToday.items.some((item: any) => item.kind === "blocker" && item.id === tasks[0].id), false,
+      "the same blocked Task does not make a second Today card");
+    assert.equal(((await request("/v1/dashboard/attention", { headers: foreignHeaders })).body as any).data.items
+      .some((item: any) => item.id === run.steps[0].id), false, "foreign workspace cannot read the exception");
+    await prisma.task.update({ where: { id: tasks[0].id }, data: { status: "done" } });
+    const resolved = await request(outcomePath(run.steps[0].id), { method: "POST", headers,
+      body: JSON.stringify({ requestId: randomUUID(), decision: "accept", evidence: { summary: "Owner accepted the corrected packet", references: [] } }) });
+    assert.equal(resolved.status, 201, JSON.stringify(resolved.body));
     assert.equal((await todayProcedureRows()).items.some((item: any) => item.id === run.steps[0].id), false,
-      "exception history does not reopen a pending assessment card");
+      "later accepted outcome clears Current");
+    const resolvedHistory = (await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any;
+    assert.deepEqual(resolvedHistory.data.steps[0].outcomeHistory.slice(0, 2).map((item: any) => item.decision), ["accept", "exception"]);
     await prisma.procedure.update({ where: { id: procedure.id }, data: { status: "retired" } });
     const successor = await prisma.procedure.create({ data: { workspaceId, familyId: procedure.familyId,
       name: procedure.name, version: 2, purpose: procedure.purpose, scope: procedure.scope,
@@ -372,5 +394,18 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     assert.equal(after.data.items.some((item: any) => item.id === acceptedStepId), false);
     const history = (await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any;
     assert.ok(history.data.steps.find((step: any) => step.id === acceptedStepId)?.outcomeHistory.some((item: any) => item.decision === "accept"));
+    const exception = await request(`/v1/process-core/procedure-runs/${run.id}/steps/${acceptedStepId}/outcomes`, {
+      method: "POST", headers, body: JSON.stringify({ requestId: randomUUID(), decision: "exception",
+        evidence: { summary: "Fictional review found a later issue", references: [] },
+        reason: "The accepted fictional result has become outdated" })
+    });
+    assert.equal(exception.status, 201, JSON.stringify(exception.body));
+    const reopened = (await request("/v1/dashboard/attention", { headers })).body as any;
+    assert.equal(reopened.data.totalCount, 27);
+    assert.equal(reopened.data.items.length, 25);
+    assert.equal(reopened.data.hasMore, true);
+    assert.equal(reopened.data.items.filter((item: any) => item.id === acceptedStepId).length, 1);
+    assert.equal(reopened.data.items.find((item: any) => item.id === acceptedStepId)?.context,
+      "The accepted fictional result has become outdated");
   });
 }

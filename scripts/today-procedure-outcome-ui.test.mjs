@@ -12,6 +12,7 @@ const stepId = '33333333-3333-4333-8333-333333333333';
 const taskId = '44444444-4444-4444-8444-444444444444';
 const projectId = '55555555-5555-4555-8555-555555555555';
 const title = 'Fictional review · 1. Inspect the delivered packet';
+const exceptionReason = `The accepted fictional packet needs correction: ${'X'.repeat(120)}`;
 const target = `/areas?area=04-operacje&view=procedures&procedureId=${procedureId}&runId=${runId}&stepId=${stepId}&from=attention`;
 const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{useAppLocation,useClientNavigation}from'./web/src/app-navigation';import{GeneralDashboard}from'./web/src/features/departments/general-dashboard';import{ProceduresWorkbench}from'./web/src/features/departments/procedures-workbench';function App(){useClientNavigation();const location=useAppLocation();return location.includes('view=procedures')?<ProceduresWorkbench/>:<GeneralDashboard/>}createRoot(document.getElementById('root')).render(<LanguageProvider><App/></LanguageProvider>);`, resolveDir: process.cwd(), loader: 'tsx' },
   bundle: true, write: false, jsx: 'automatic', define: { 'process.env.NODE_ENV': '"test"' } });
@@ -33,11 +34,15 @@ try {
     const pl = locale === 'pl';
     const page = await browser.newPage({ viewport: { width, height: 960 }, reducedMotion: 'reduce' });
     const errors = [], writes = [];
-    let accepted = false, failRunListOnce = true;
+    let assessment = 'pending', failRunListOnce = true;
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(value => localStorage.setItem('companycoreLocale', value), locale);
-    const attention = () => ({ id: stepId, kind: 'procedure_result', title, status: 'owner_review', severity: 'medium',
-      reason: 'procedure_outcome_pending', responsible: 'Fictional owner', related: 'Fictional project',
+    const attention = () => ({ id: stepId, kind: 'procedure_result', title,
+      status: assessment === 'exception' ? 'owner_exception' : 'owner_review',
+      severity: assessment === 'exception' ? 'high' : 'medium',
+      reason: assessment === 'exception' ? 'procedure_outcome_exception' : 'procedure_outcome_pending',
+      context: assessment === 'exception' ? exceptionReason : title,
+      responsible: 'Fictional owner', related: 'Fictional project',
       provenance: 'procedure_run', provenanceConfirmed: true, target });
     const procedure = { id: procedureId, familyId: procedureId, name: 'Fictional review', purpose: 'Inspect a fictional packet',
       status: 'active', version: 3, updatedAt: '2026-10-17T09:00:00Z', scope: 'One project', expectedResult: 'Owner assessed packet',
@@ -45,23 +50,32 @@ try {
       steps: [{ id: stepId, stepOrder: 1, instruction: 'Inspect the delivered packet', stepType: 'manual', expectedInput: {},
         expectedOutput: { packet: 'Inspected' }, validationRule: { success: 'Evidence reviewed' }, rollbackInstruction: 'Return' }] };
     const run = () => ({ id: runId, procedureId, procedureVersion: 3, projectId, projectName: 'Fictional project',
-      inputSnapshot: {}, createdAt: '2026-10-17T09:00:00Z', status: accepted ? 'owner_accepted' : 'tasks_done_evidence_pending',
+      inputSnapshot: {}, createdAt: '2026-10-17T09:00:00Z', status: assessment === 'exception' ? 'exception' : assessment === 'pending' ? 'tasks_done_evidence_pending' : 'owner_accepted',
       steps: [{ id: stepId, order: 1, instruction: 'Inspect the delivered packet', task: { id: taskId, title, status: 'done' },
-        outputEvidence: accepted ? [{ id: stepId, evidence: { summary: 'The packet was inspected', references: [] }, recordedAt: '2026-10-17T10:00:00Z' }] : [],
-        outcomeHistory: accepted ? [{ id: stepId, decision: 'accept', evidence: { summary: 'The packet was inspected' }, reason: null }] : [], exception: null }] });
+        outputEvidence: assessment === 'accepted' || assessment === 'resolved' ? [{ id: stepId, evidence: { summary: 'The packet was inspected', references: [] }, recordedAt: '2026-10-17T10:00:00Z' }] : [],
+        outcomeHistory: assessment === 'pending' ? [] : assessment === 'accepted' ?
+          [{ id: stepId, decision: 'accept', evidence: { summary: 'The packet was inspected' }, reason: null }] : assessment === 'exception' ?
+          [{ id: stepId, decision: 'exception', evidence: { summary: 'The packet needs correction' }, reason: exceptionReason },
+            { id: stepId, decision: 'accept', evidence: { summary: 'The packet was inspected' }, reason: null }] :
+          [{ id: stepId, decision: 'accept', evidence: { summary: 'The corrected packet was inspected' }, reason: null },
+            { id: stepId, decision: 'exception', evidence: { summary: 'The packet needs correction' }, reason: exceptionReason }],
+        exception: assessment === 'exception' ? exceptionReason : null }] });
     await page.route('**/v1/**', route => {
       const request = route.request(), url = new URL(request.url()), name = url.pathname;
       if (request.method() === 'POST') {
         writes.push({ path: name, body: request.postDataJSON() });
         if (name === `/v1/process-core/procedure-runs/${runId}/steps/${stepId}/outcomes`) {
-          accepted = true; return route.fulfill({ status: 201, json: { data: { outcomeId: stepId, replayed: false } } });
+          assessment = request.postDataJSON().decision === 'exception' ? 'exception' : assessment === 'exception' ? 'resolved' : 'accepted';
+          return route.fulfill({ status: 201, json: { data: { outcomeId: stepId, replayed: false } } });
         }
         return route.fulfill({ status: 405, json: { error: 'unexpected_write' } });
       }
       if (name === '/v1/dashboard/command') return route.fulfill({ json: { data: { summary: {}, departmentSignals: [], latestRouteProposals: [],
-        attentionTotal: accepted ? 0 : 1, attentionHasMore: false, priorityItems: accepted ? [] : [attention()] } } });
-      if (name === '/v1/dashboard/attention') return route.fulfill({ json: { data: { items: accepted ? [] : [attention()], totalCount: accepted ? 0 : 1,
-        decisionCount: 0, hasMore: false, nextOffset: accepted ? 0 : 1 } } });
+        attentionTotal: assessment === 'pending' || assessment === 'exception' ? 1 : 0, attentionHasMore: false,
+        priorityItems: assessment === 'pending' || assessment === 'exception' ? [attention()] : [] } } });
+      if (name === '/v1/dashboard/attention') return route.fulfill({ json: { data: { items: assessment === 'pending' || assessment === 'exception' ? [attention()] : [],
+        totalCount: assessment === 'pending' || assessment === 'exception' ? 1 : 0,
+        decisionCount: 0, hasMore: false, nextOffset: assessment === 'pending' || assessment === 'exception' ? 1 : 0 } } });
       if (name === '/v1/auth/me') return route.fulfill({ json: { data: { authType: 'user', workspaces: [{ active: true, role: 'owner' }] } } });
       if (name === '/v1/process-core/procedures') return route.fulfill({ json: { data: [procedure] } });
       if (name === `/v1/process-core/procedures/${procedureId}/runs`) {
@@ -110,6 +124,34 @@ try {
     await page.waitForURL(/attentionProcedureStepId=/);
     await page.getByText(pl ? 'Żadna bieżąca pozycja nie pasuje do tego linku.' : 'No current attention item matches this link.').waitFor();
     assert.equal(await page.getByRole('button', { name: new RegExp('Fictional review') }).count(), 0);
+    await page.goto(`${origin}${target}`);
+    const exceptionPanel = page.locator('[data-procedure-launch]');
+    await exceptionPanel.getByRole('combobox', { name: pl ? 'Ocena właściciela' : 'Owner decision' }).selectOption('exception');
+    await exceptionPanel.getByRole('textbox', { name: pl ? 'Dowód lub opis wyniku' : 'Evidence or output summary' }).fill('The packet needs correction');
+    await exceptionPanel.getByRole('textbox', { name: pl ? 'Powód wyjątku' : 'Exception reason' }).fill(exceptionReason);
+    await exceptionPanel.getByRole('button', { name: pl ? 'Zapisz ocenę' : 'Record decision' }).click();
+    await exceptionPanel.getByText(pl ? 'Wyjątek:' : 'Exception:', { exact: false }).first().waitFor();
+    assert.equal(await exceptionPanel.getByText(pl ? 'Ten krok nie oczekuje już na ocenę w Dzisiaj.' : 'This step no longer awaits assessment in Today.').count(), 0);
+    await exceptionPanel.getByRole('link', { name: pl ? 'Wróć do Dzisiaj' : 'Return to Today' }).press('Enter');
+    await page.waitForURL(/attentionProcedureStepId=/);
+    const exceptionCard = page.locator(`[data-attention-key='procedure_result:${stepId}']`);
+    await exceptionCard.waitFor(); await exceptionCard.press('Enter');
+    const exceptionInspector = page.locator('.roost-decision-inspector');
+    await exceptionInspector.getByText(exceptionReason, { exact: true }).waitFor();
+    await exceptionInspector.locator(`a[href='${target}']`).press('Enter');
+    await page.waitForURL(/stepId=/);
+    const focusedException = page.locator('[data-procedure-launch] li[tabindex="-1"]').filter({ hasText: 'Inspect the delivered packet' }).last();
+    await focusedException.waitFor();
+    assert.equal(await focusedException.evaluate(element => document.activeElement === element), true, 'exception deep link focuses the exact step');
+    assert.equal(await page.getByText(pl ? 'Ten krok nie oczekuje już na ocenę w Dzisiaj.' : 'This step no longer awaits assessment in Today.').count(), 0);
+    await page.locator('[data-procedure-launch]').getByRole('textbox', { name: pl ? 'Dowód lub opis wyniku' : 'Evidence or output summary' }).fill('The corrected packet was inspected');
+    await page.locator('[data-procedure-launch]').getByRole('button', { name: pl ? 'Zapisz ocenę' : 'Record decision' }).click();
+    await page.getByText(pl ? 'Ten krok nie oczekuje już na ocenę w Dzisiaj.' : 'This step no longer awaits assessment in Today.').waitFor();
+    await page.locator('[data-procedure-launch]').getByText(exceptionReason, { exact: false }).waitFor();
+    await page.locator('[data-procedure-launch]').getByRole('link', { name: pl ? 'Wróć do Dzisiaj' : 'Return to Today' }).press('Enter');
+    await page.waitForURL(/attentionProcedureStepId=/);
+    await page.getByText(pl ? 'Żadna bieżąca pozycja nie pasuje do tego linku.' : 'No current attention item matches this link.').waitFor();
+    assert.deepEqual(writes.map(write => write.body.decision), ['accept', 'exception', 'accept']);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `${locale}/${width}: overflow`);
     assert.deepEqual(errors, [], `${locale}/${width}: page errors`);
     await page.close(); checks++;

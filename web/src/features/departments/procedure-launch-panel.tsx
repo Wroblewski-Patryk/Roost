@@ -15,7 +15,7 @@ type Preview = { procedure: { id: string; name: string; purpose: string; version
 type Run = { id: string; procedureId?: string; procedureVersion: number; projectId: string; projectName: string; inputSnapshot: Record<string, string>; createdAt: string; status: string;
   steps: Array<{ id: string; order: number; instruction: string; task: { id: string; title: string; status: string };
     outputEvidence: Array<{ id: string; evidence: { summary?: string; references?: string[] }; recordedAt: string }>;
-    outcomeHistory: Array<{ id: string; decision: string; evidence: { summary?: string }; reason: string | null }>;
+    outcomeHistory: Array<{ id: string; decision: string; evidence: { summary?: string; references?: string[] }; reason: string | null }>;
     exception: string | null }> };
 
 function errorCode(error: unknown) { return error instanceof AppApiError ? error.code : "request_failed"; }
@@ -132,7 +132,8 @@ export function ProcedureLaunchPanel({ procedure, focusRunId = null, focusStepId
   const focusedStep = focusedRun?.steps.find(step => step.id === focusStepId);
   const focusStepError = Boolean(focusStepId && focusedRun && !focusedStep);
   const focusStepStale = Boolean(fromAttention && focusedStep &&
-    (focusedStep.task.status !== "done" || focusedStep.outcomeHistory.length > 0));
+    (focusedStep.outcomeHistory[0]?.decision !== "exception" &&
+      (focusedStep.task.status !== "done" || focusedStep.outcomeHistory.length > 0)));
   const inputKeys = [...new Set(procedure.steps.flatMap(step => Object.keys(step.expectedInput || {})))];
   const load = useCallback(async () => {
     setReadError(null); setLoadingRuns(true);
@@ -271,7 +272,7 @@ export function ProcedureLaunchPanel({ procedure, focusRunId = null, focusStepId
         {step.exception ? <span className="ml-2 text-warning">{pl ? "Wyjątek:" : "Exception:"} {step.exception === "task_blocked" || step.exception === "task_archived_without_accepted_output" ? message(step.exception, pl) : step.exception}</span> : null}
         <p className="text-xs text-company-muted">{pl ? "Dowód wyniku:" : "Output evidence:"} {step.outputEvidence.length ? step.outputEvidence.map(item => `${item.evidence.summary || item.id} (${new Date(item.recordedAt).toLocaleString(locale)})`).join(", ") : (pl ? "Brak przyjętego wyniku" : "No accepted output")}</p>
         {step.outputEvidence.flatMap(item => item.evidence.references || []).length ? <ul className="list-disc pl-5 text-xs">{step.outputEvidence.flatMap(item => item.evidence.references || []).map((reference, index) => <li className="break-all" key={index}>{reference}</li>)}</ul> : null}
-        {step.outcomeHistory.length ? <p className="text-xs text-company-muted">{pl ? "Historia ocen:" : "Decision history:"} {step.outcomeHistory.map(item => `${item.decision === "accept" ? (pl ? "Przyjęty wynik" : "Accepted output") : (pl ? "Wyjątek" : "Exception")}: ${item.evidence.summary || item.reason || item.id}`).join(" · ")}</p> : null}
+        {step.outcomeHistory.length ? <p className="break-words text-xs text-company-muted">{pl ? "Historia ocen:" : "Decision history:"} {step.outcomeHistory.map(item => `${item.decision === "accept" ? (pl ? "Przyjęty wynik" : "Accepted output") : (pl ? "Wyjątek" : "Exception")}: ${item.reason ? `${item.reason} · ` : ""}${item.evidence.summary || item.id}${item.evidence.references?.length ? ` · ${item.evidence.references.join(", ")}` : ""}`).join(" · ")}</p> : null}
         {step.outcomeHistory.length ? <p className="mt-2 text-xs text-company-muted">{pl
           ? "Nowa ocena zmieni bieżący wynik kroku; wcześniejsze oceny pozostaną w historii."
           : "A new assessment changes the step's current outcome; earlier assessments remain in history."}</p> : null}

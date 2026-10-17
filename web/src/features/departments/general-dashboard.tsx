@@ -50,7 +50,7 @@ function actionLabel(item: DashboardPriorityItem, t: ReturnType<typeof useLangua
 }
 
 function attentionStatus(status: string | undefined, locale: "en" | "pl") {
-  return ({ pending: locale === "pl" ? "oczekuje" : "pending", owner_pending: locale === "pl" ? "decyzja właściciela" : "owner decision", owner_review: locale === "pl" ? "ocena wyniku" : "outcome review", review: locale === "pl" ? "do odbioru" : "review needed", failed: locale === "pl" ? "nieudany" : "failed", blocked: locale === "pl" ? "zablokowane" : "blocked", active: locale === "pl" ? "aktywny" : "active", todo: locale === "pl" ? "do zrobienia" : "to do", in_progress: locale === "pl" ? "w toku" : "in progress" } as Record<string, string>)[status || ""] || status;
+  return ({ pending: locale === "pl" ? "oczekuje" : "pending", owner_pending: locale === "pl" ? "decyzja właściciela" : "owner decision", owner_review: locale === "pl" ? "ocena wyniku" : "outcome review", owner_exception: locale === "pl" ? "wyjątek do oceny" : "exception to assess", review: locale === "pl" ? "do odbioru" : "review needed", failed: locale === "pl" ? "nieudany" : "failed", blocked: locale === "pl" ? "zablokowane" : "blocked", active: locale === "pl" ? "aktywny" : "active", todo: locale === "pl" ? "do zrobienia" : "to do", in_progress: locale === "pl" ? "w toku" : "in progress" } as Record<string, string>)[status || ""] || status;
 }
 
 function priorityTone(item: DashboardPriorityItem) {
@@ -233,7 +233,7 @@ export function GeneralDashboard() {
                       return (
                         <button aria-pressed={selected} className={`roost-decision-row ${priorityTone(item)}${selected ? " is-selected" : ""}`} data-attention-key={`${item.kind}:${item.id}`} key={`${item.kind || item.source}-${item.id}`} onClick={(event) => choosePriority(item, event.currentTarget)} type="button">
                           <span className="roost-decision-number">{String(index + 1).padStart(2, "0")}</span>
-                          <span className="roost-decision-copy"><strong>{item.title}</strong><small>{reasonLabel(item, t)} · {item.responsible || t("general.responsibleUnknown")}{item.related ? ` · ${item.related}` : ""}</small></span>
+                          <span className="roost-decision-copy"><strong>{item.title}</strong><small>{reasonLabel(item, t)}{item.reason === "procedure_outcome_exception" && item.context ? ` ${item.context}` : ""} · {item.responsible || t("general.responsibleUnknown")}{item.related ? ` · ${item.related}` : ""}</small></span>
                           <span className="roost-decision-impact">{attentionStatus(item.status, locale) || t("state.normal")}</span>
                           <span className="roost-decision-source">{item.kind ? t(`general.attention.${item.kind}`) : item.source}</span>
                           <span className="roost-decision-due">{item.dueDate ? formattedDate(item.dueDate) : "—"}</span>
@@ -321,7 +321,7 @@ export function GeneralDashboard() {
               {selectedPriority.dueDate ? <time dateTime={selectedPriority.dueDate}>{t("general.due")}: {formattedDate(selectedPriority.dueDate)}</time> : null}
             </section>
             <section><h3>{t("general.whyItMatters")}</h3><p>{reasonLabel(selectedPriority, t)}</p>
-              {selectedPriority.context ? <p>{selectedPriority.context}</p> : null}</section>
+              {selectedPriority.context ? <p className="break-all">{selectedPriority.context}</p> : null}</section>
             <section><h3>{t("general.nextResponsible")}</h3><p>{selectedPriority.responsible || t("general.responsibleUnknown")}</p>{selectedPriority.related ? <p>{t("general.relatedObject")}: {selectedPriority.related}</p> : null}</section>
             <section><h3>{t("general.provenanceTitle")}</h3><p>{selectedPriority.kind === "procedure_result" ? t("general.procedureProvenance")
               : <>{selectedPriority.provenance || t("general.provenanceUnknown")} · {selectedPriority.provenanceConfirmed ? t("general.provenanceConfirmed") : t("general.provenanceUnconfirmed")}</>}</p></section>

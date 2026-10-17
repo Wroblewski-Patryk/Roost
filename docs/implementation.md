@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 Today procedure outcome assessment; local API/UI pass, release pending. [Evidence](ux/owner-today-procedure-outcome-2026-10-17.md). G24c/G25 STOP
+**Active gate:** G0 Today step exception; local API/UI passed, release pending. [Evidence](ux/owner-today-procedure-exception-2026-10-17.md). G24c/G25 STOP
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 

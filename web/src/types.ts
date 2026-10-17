@@ -126,7 +126,7 @@ export type DashboardPriorityItem = {
   outcome?: string | null;
   dueDate?: string | null;
   updatedAt?: string;
-  reason?: "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required" | "result_failed" | "result_review" | "procedure_outcome_pending" | "task_blocked" | "task_overdue" | "incident_blocked" | "risk_high";
+  reason?: "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required" | "result_failed" | "result_review" | "procedure_outcome_pending" | "procedure_outcome_exception" | "task_blocked" | "task_overdue" | "incident_blocked" | "risk_high";
   context?: string | null;
   responsible?: string | null;
   related?: string | null;
