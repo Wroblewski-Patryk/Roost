@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 owner Task preparation draft; local proof passed, release preflight blocked. [Evidence](architecture/task-preparation-draft.md). G24c/G25 STOP
+**Active gate:** G0 owner Task preparation draft; preflight passed, deploy pending. [Evidence](architecture/task-preparation-draft.md). G24c/G25 STOP
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
