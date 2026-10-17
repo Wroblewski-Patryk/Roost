@@ -117,7 +117,7 @@ export type RouteProposalPacket = {
 export type DashboardPriorityItem = {
   id: string;
   title: string;
-  kind?: "decision" | "result" | "blocker" | "incident" | "task" | "risk";
+  kind?: "decision" | "result" | "procedure_result" | "blocker" | "incident" | "task" | "risk";
   target?: string;
   source: string;
   severity?: string;
@@ -126,7 +126,7 @@ export type DashboardPriorityItem = {
   outcome?: string | null;
   dueDate?: string | null;
   updatedAt?: string;
-  reason?: "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required" | "result_failed" | "result_review" | "task_blocked" | "task_overdue" | "incident_blocked" | "risk_high";
+  reason?: "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required" | "result_failed" | "result_review" | "procedure_outcome_pending" | "task_blocked" | "task_overdue" | "incident_blocked" | "risk_high";
   context?: string | null;
   responsible?: string | null;
   related?: string | null;

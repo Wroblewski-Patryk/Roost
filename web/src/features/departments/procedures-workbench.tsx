@@ -384,8 +384,10 @@ function ProcedureActivationReview({ procedure, busy, error, onClose, onConfirm 
   </CcRecordEditorModal>;
 }
 
-function ProcedureDetail({ procedure, focusRunId, provenance, provenanceStatus, provenanceError, onRefreshProvenance, busy, archiveOpen = false, canArchive, onActivate, onArchive, onClose, onEdit }: {
+function ProcedureDetail({ procedure, focusRunId, focusStepId, fromAttention, provenance, provenanceStatus, provenanceError, onRefreshProvenance, busy, archiveOpen = false, canArchive, onActivate, onArchive, onClose, onEdit }: {
   focusRunId?: string | null;
+  focusStepId?: string | null;
+  fromAttention?: boolean;
   procedure: Procedure;
   provenance: ProcedureProvenance | null;
   provenanceStatus: "idle" | "loading" | "ready" | "error";
@@ -443,7 +445,7 @@ function ProcedureDetail({ procedure, focusRunId, provenance, provenanceStatus, 
             ))}
           </dl>
           {canArchive ? <ProcedureProvenancePanel value={provenance} status={provenanceStatus} error={provenanceError} onRefresh={onRefreshProvenance} /> : null}
-          {canArchive ? <ProcedureLaunchPanel procedure={procedure} focusRunId={focusRunId} /> : null}
+          {canArchive ? <ProcedureLaunchPanel procedure={procedure} focusRunId={focusRunId} focusStepId={focusStepId} fromAttention={fromAttention} /> : null}
           <section className="mt-6">
             <div className="flex items-end justify-between gap-3 border-b border-base-300 pb-2"><div><h3 className="font-black text-company-ink">{pl ? "Kroki" : "Steps"}</h3><p className="text-sm text-company-muted">{pl ? "Kolejność wykonania pracy." : "The executable order of work."}</p></div><span className="text-xs font-bold text-company-muted">{procedure.steps.length} {pl ? "kroków" : procedure.steps.length === 1 ? "step" : "steps"}</span></div>
             <ol>{procedure.steps.map((step) => <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-base-300 py-4" key={step.id}><span className="text-right text-sm font-black tabular-nums text-primary">{String(step.stepOrder).padStart(2, "0")}</span><div className="min-w-0"><p className="text-sm font-bold leading-6 text-company-ink">{step.instruction}</p>{step.rollbackInstruction ? <p className="mt-1 text-xs text-warning">{pl ? "Wycofanie:" : "Rollback:"} {step.rollbackInstruction}</p> : null}</div></li>)}</ol>
@@ -608,8 +610,10 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
   const { locale, t } = useLanguage();
   const requestedProcedureId = recordIdFromQuery(window.location.search, "procedureId");
   const requestedRunId = recordIdFromQuery(window.location.search, "runId");
+  const requestedStepId = recordIdFromQuery(window.location.search, "stepId");
   const linkQuery = new URLSearchParams(window.location.search);
-  const invalidRunLink = (linkQuery.has("procedureId") && !requestedProcedureId) || (linkQuery.has("runId") && (!requestedRunId || !requestedProcedureId));
+  const invalidRunLink = (linkQuery.has("procedureId") && !requestedProcedureId) || (linkQuery.has("runId") && (!requestedRunId || !requestedProcedureId))
+    || (linkQuery.has("stepId") && (!requestedStepId || !requestedRunId || !requestedProcedureId));
   const requestedDepartment = canonical ? new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null : departmentKey;
   const scoped = Boolean(requestedDepartment);
   const effectiveDepartment = requestedDepartment || departmentKey;
@@ -842,7 +846,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
         {status === "ready" ? <CcDataTable columns={columns} density="compact" emptyDetail={t("procedures.emptyDetail")} emptyTitle={t("procedures.empty")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(procedure) => procedure.name} initialQuickFilter="current" initialSort={{ key: "name", direction: "asc" }} labels={tableLabels} mobileMode="cards" quickFilters={[{ key: "current", label: t("procedures.current"), predicate: (procedure) => !["archived", "retired"].includes(procedure.status) }, { key: "all", label: t("procedures.all"), predicate: () => true }]} rowActionItems={rowActions} rows={procedures} searchPlaceholder={t("procedures.search")} tableMinWidthClassName="min-w-[920px]" /> : null}
       </div>
       {contractId?<ProcedureContractsModal procedureId={contractId} onClose={()=>setContractId(null)}/>:null}
-      {selected ? <ProcedureDetail archiveOpen={confirmArchive || confirmActivate} canArchive={ownerRole} busy={busy} focusRunId={selected.id === requestedProcedureId ? requestedRunId : null} provenance={provenance} provenanceStatus={provenanceStatus} provenanceError={provenanceError} onRefreshProvenance={() => setProvenanceRefresh((value) => value + 1)} onActivate={() => { setActivationError(null); setConfirmActivate(true); }} onArchive={openArchive} onClose={() => { setSelectedId(null); setArchiveSuccess(false); }} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
+      {selected ? <ProcedureDetail archiveOpen={confirmArchive || confirmActivate} canArchive={ownerRole} busy={busy} focusRunId={selected.id === requestedProcedureId ? requestedRunId : null} focusStepId={selected.id === requestedProcedureId ? requestedStepId : null} fromAttention={linkQuery.get("from") === "attention"} provenance={provenance} provenanceStatus={provenanceStatus} provenanceError={provenanceError} onRefreshProvenance={() => setProvenanceRefresh((value) => value + 1)} onActivate={() => { setActivationError(null); setConfirmActivate(true); }} onArchive={openArchive} onClose={() => { setSelectedId(null); setArchiveSuccess(false); }} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
       {selected && confirmActivate ? <ProcedureActivationReview procedure={selected} busy={busy} error={activationError} onClose={() => { setConfirmActivate(false); setActivationError(null); }} onConfirm={() => void activate()} /> : null}
       {selected && confirmArchive && ownerRole ? <ProcedureArchiveDialog procedure={selected} preview={archivePreview} loading={archiveLoading} busy={busy} stale={archiveStale} error={archiveError} reason={archiveReason} acknowledged={archiveAcknowledged} onReason={setArchiveReason} onAcknowledge={setArchiveAcknowledged} onRefresh={() => void refreshArchive(selected.id, true)} onCancel={closeArchive} onConfirm={() => void archive()} /> : null}
       {editing !== undefined ? <ProcedureEditor error={error} onClose={() => { setEditing(undefined); setError(null); }} onSubmit={(event) => void submit(event)} permissionOptions={permissionOptions} procedure={editing} processes={processes} saving={busy} toolOptions={toolOptions} /> : null}

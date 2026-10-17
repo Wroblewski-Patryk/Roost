@@ -2,7 +2,7 @@
 
 Current delivery status and evidence.
 
-**Active gate:** G0 owner inventory assessment, authorized and in progress. [Evidence](ux/owner-company-record-inventory-assessment-2026-10-17.md). G24c/G25 STOP
+**Active gate:** G0 Today procedure outcome assessment; local API/UI pass, release pending. [Evidence](ux/owner-today-procedure-outcome-2026-10-17.md). G24c/G25 STOP
 
 [Goal retirement](ux/owner-goal-retirement-2026-10-16.md): deployed; owner-confirmed production read-back.
 
@@ -827,4 +827,4 @@ The accepted direction is one Windows Host running separate role-scoped Hermes i
 | 13. Native mobile owner client | Reuse reliable web API/auth and canonical records for attention, decisions, task/result and agent status. RF-SCOPE-001. | **Deferred:** no native proof; independent of later service breadth. |
 | 14. Bounded autonomy | Expand mandates only after accepted quality, cost, recovery and review; reserve material human choices. RF-GOV-001/009/013, RF-HOST-010/011/022. | **Later:** no general autonomy proof. |
 
-Product sale, service sale, legal/operations and public/data-lifecycle branches have separate proof and owner decisions in [company workflows](product/company-operating-workflows.md#dependent-company-and-release-branches). Outcomes 0 and 1 have bounded deployed slices, but their wider proof remains open; finish Outcome 0 classification before expanding the owner work surface. Outcome 7 tests a real application without authorizing portfolio work. ClickUp and Drive are reused. The Roost implementation owner carries each separately authorized gate; the Worker handles company work, and application delivery has its own workstream. This plan authorizes no G24c, model call, production cleanup, push, deploy or later outcome.
+Product sale, service sale, legal/operations and public/data-lifecycle branches have separate proof and owner decisions in [company workflows](product/company-operating-workflows.md#dependent-company-and-release-branches). Outcomes 0 and 1 remain open. On 2026-10-17 the owner placed one bounded Today procedure assessment step ahead of further Outcome 0 classification; that order change authorizes only the named gate. Outcome 7 tests a real application without authorizing portfolio work. ClickUp and Drive are reused. The Roost implementation owner carries each separately authorized gate; the Worker handles company work, and application delivery has its own workstream. This plan authorizes no G24c, model call, production cleanup or later outcome.

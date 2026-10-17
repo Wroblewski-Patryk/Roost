@@ -54,7 +54,7 @@ function briefContext(value: string | null | undefined) {
 export const dashboardRouter = Router();
 
 const ATTENTION_PAGE_SIZE = 25;
-type AttentionRow = { id: string; kind: "decision" | "result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date; executionId: string | null; totalCount: bigint; decisionCount: bigint };
+type AttentionRow = { id: string; kind: "decision" | "result" | "procedure_result" | "blocker" | "incident" | "task" | "risk"; title: string; status: string; severity: string; dueDate: Date | null; updatedAt: Date; executionId: string | null; totalCount: bigint; decisionCount: bigint };
 type DecisionAttentionReason = "decision_pending" | "decision_authority_blocked" | "decision_impact_stale" | "decision_agent_admission_required";
 type DecisionAttentionAuthority = { responsible: string | null; reason: DecisionAttentionReason };
 
@@ -177,6 +177,16 @@ async function attentionPage(workspaceId: string, offset: number) {
         AND t.status IN ('todo', 'in_progress', 'blocked')
       WHERE NOT EXISTS (SELECT 1 FROM retired_goal_tasks r WHERE r.id=t.id)
       UNION ALL
+      SELECT 2, s.id, 'procedure_result',
+        concat(r.procedure_name, ' · ', s.step_order, '. ', s.instruction),
+        'owner_review', 'medium', NULL::timestamp, t.updated_at, NULL::uuid
+      FROM procedure_run_steps s
+      JOIN procedure_runs r ON r.id=s.run_id AND r.workspace_id=${workspaceId}::uuid
+      JOIN tasks t ON t.id=s.task_id AND t.workspace_id=r.workspace_id
+      WHERE t.status='done' AND s.step_type IN ('manual', 'human_review')
+        AND NOT EXISTS (SELECT 1 FROM procedure_run_step_outcomes o
+          WHERE o.run_step_id=s.id AND o.workspace_id=r.workspace_id)
+      UNION ALL
       SELECT 3, t.id, 'blocker', t.title, 'blocked', 'high', t.due_date, t.updated_at, NULL::uuid
       FROM tasks t WHERE t.workspace_id=${workspaceId}::uuid AND t.status='blocked'
         AND NOT EXISTS (SELECT 1 FROM current_result e WHERE e.task_id=t.id)
@@ -200,8 +210,9 @@ async function attentionPage(workspaceId: string, offset: number) {
   const taskIds = pageRows.filter(row => ["result", "blocker", "task"].includes(row.kind)).map(row => row.id);
   const decisionIds = pageRows.filter(row => row.kind === "decision").map(row => row.id);
   const incidentIds = pageRows.filter(row => row.kind === "incident").map(row => row.id);
+  const procedureStepIds = pageRows.filter(row => row.kind === "procedure_result").map(row => row.id);
   const executionIds = pageRows.filter(row => row.kind === "result" && row.executionId).map(row => row.executionId!);
-  const [tasks, decisions, incidents, executions, workspace] = await Promise.all([
+  const [tasks, decisions, incidents, procedureSteps, executions, workspace] = await Promise.all([
     prisma.task.findMany({ where: { workspaceId, id: { in: taskIds } }, select: {
       id: true, source: true, description: true, project: { select: { name: true } }, goal: { select: { title: true, status: true } },
       ownerUser: { select: { name: true } },
@@ -212,6 +223,9 @@ async function attentionPage(workspaceId: string, offset: number) {
     } }),
     prisma.companyRecord.findMany({ where: { workspaceId, id: { in: incidentIds } }, select: {
       id: true, source: true, description: true
+    } }),
+    prisma.procedureRunStep.findMany({ where: { id: { in: procedureStepIds }, run: { workspaceId } }, select: {
+      id: true, run: { select: { id: true, procedureId: true, projectName: true } }
     } }),
     prisma.agentExecution.findMany({ where: { workspaceId, id: { in: executionIds } },
       select: { taskId: true, metadata: true } }),
@@ -237,28 +251,36 @@ async function attentionPage(workspaceId: string, offset: number) {
   const taskById = new Map(tasks.map(task => [task.id, task]));
   const decisionById = new Map(decisions.map(decision => [decision.id, decision]));
   const incidentById = new Map(incidents.map(incident => [incident.id, incident]));
+  const procedureStepById = new Map(procedureSteps.map(step => [step.id, step]));
   const decisionAuthorities = await decisionAttentionAuthorities(workspaceId, decisionIds, workspace?.owner.name ?? null);
   const items = pageRows.map(row => ({
     id: row.id, kind: row.kind, title: row.title, source: row.kind, severity: row.severity,
     status: row.status, dueDate: row.dueDate, updatedAt: row.updatedAt,
     reason: row.kind === "decision" ? decisionAuthorities.get(row.id)?.reason ?? "decision_authority_blocked" : row.kind === "result" ? row.status === "failed" ? "result_failed" : row.status === "owner_pending" ? "result_owner_pending" : "result_review"
+      : row.kind === "procedure_result" ? "procedure_outcome_pending"
       : row.kind === "blocker" ? "task_blocked" : row.kind === "task" ? "task_overdue"
       : row.kind === "incident" ? "incident_blocked" : "risk_high",
     context: briefContext(taskById.get(row.id)?.description ?? decisionById.get(row.id)?.problem
       ?? decisionById.get(row.id)?.context ?? decisionById.get(row.id)?.rationale
-      ?? incidentById.get(row.id)?.description),
+      ?? incidentById.get(row.id)?.description ?? (row.kind === "procedure_result" ? row.title : null)),
     responsible: row.kind === "decision" ? decisionAuthorities.get(row.id)?.responsible ?? null
+      : row.kind === "procedure_result" ? workspace?.owner.name ?? null
       : row.kind === "result" && row.status === "owner_pending" ? workspace?.owner.name ?? null
       : row.kind === "result" && row.status === "review" ? verifierByTask.get(row.id) ?? null
       : row.kind === "result" && row.status === "failed" ? managerByTask.get(row.id) ?? null
       : row.kind === "result" ? null
       : taskById.get(row.id)?.ownerUser?.name ?? taskById.get(row.id)?.assignedWorkforceEntity?.name ?? null,
     related: taskById.get(row.id)?.project?.name ?? (taskById.get(row.id)?.goal?.status === "archived" ? null : taskById.get(row.id)?.goal?.title)
-      ?? decisionById.get(row.id)?.project?.name ?? null,
-    provenance: taskById.get(row.id)?.source ?? decisionById.get(row.id)?.source ?? incidentById.get(row.id)?.source ?? null,
-    provenanceConfirmed: false,
+      ?? decisionById.get(row.id)?.project?.name ?? procedureStepById.get(row.id)?.run.projectName ?? null,
+    provenance: taskById.get(row.id)?.source ?? decisionById.get(row.id)?.source ?? incidentById.get(row.id)?.source
+      ?? (row.kind === "procedure_result" ? "procedure_run" : null),
+    provenanceConfirmed: row.kind === "procedure_result",
     target: row.kind === "decision" ? `/areas?area=01-strategia&view=decisions&decisionId=${row.id}&from=attention`
       : row.kind === "result" && row.executionId ? `/areas?area=04-operacje&view=tasks&taskId=${row.id}&executionId=${row.executionId}&from=attention`
+      : row.kind === "procedure_result" && procedureStepById.has(row.id) ? (() => {
+        const run = procedureStepById.get(row.id)!.run;
+        return `/areas?area=04-operacje&view=procedures&procedureId=${run.procedureId}&runId=${run.id}&stepId=${row.id}&from=attention`;
+      })()
       : ["result", "blocker", "task"].includes(row.kind) ? `/areas?area=04-operacje&view=tasks&taskId=${row.id}&from=attention`
       : row.kind === "incident" ? `/areas?area=09-technologia&view=incidents&recordId=${row.id}&from=attention`
       : `/areas?area=12-zarzadzanie&view=risks&recordId=${row.id}&from=attention`

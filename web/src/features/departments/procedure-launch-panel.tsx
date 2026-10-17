@@ -107,8 +107,8 @@ function OutcomeForm({ runId, stepId, taskStatusValue, onSaved }: { runId: strin
   </div>;
 }
 
-export function ProcedureLaunchPanel({ procedure, focusRunId = null }: { procedure: { id: string; name: string; version: number; status: string; updatedAt: string;
-  steps: Array<{ expectedInput?: Record<string, unknown> }> }; focusRunId?: string | null }) {
+export function ProcedureLaunchPanel({ procedure, focusRunId = null, focusStepId = null, fromAttention = false }: { procedure: { id: string; name: string; version: number; status: string; updatedAt: string;
+  steps: Array<{ expectedInput?: Record<string, unknown> }> }; focusRunId?: string | null; focusStepId?: string | null; fromAttention?: boolean }) {
   const { locale } = useLanguage();
   const pl = locale === "pl";
   const [projects, setProjects] = useState<Project[]>([]);
@@ -118,6 +118,7 @@ export function ProcedureLaunchPanel({ procedure, focusRunId = null }: { procedu
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
+  const [loadingRuns, setLoadingRuns] = useState(true);
   const [focusRunError, setFocusRunError] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [loading, setLoading] = useState(false);
@@ -126,33 +127,40 @@ export function ProcedureLaunchPanel({ procedure, focusRunId = null }: { procedu
   const launchRequest = useRef<{ requestId: string; previewToken: string; projectId: string; inputs: Record<string, string> } | null>(null);
   const successRef = useRef<HTMLDivElement>(null);
   const runRef = useRef<HTMLLIElement>(null);
+  const stepRef = useRef<HTMLLIElement>(null);
+  const focusedRun = focusRunId ? runs.find(run => run.id === focusRunId) : null;
+  const focusedStep = focusedRun?.steps.find(step => step.id === focusStepId);
+  const focusStepError = Boolean(focusStepId && focusedRun && !focusedStep);
+  const focusStepStale = Boolean(fromAttention && focusedStep &&
+    (focusedStep.task.status !== "done" || focusedStep.outcomeHistory.length > 0));
   const inputKeys = [...new Set(procedure.steps.flatMap(step => Object.keys(step.expectedInput || {})))];
   const load = useCallback(async () => {
-    try {
-      setReadError(null);
-      const [projectResponse, runResponse] = await Promise.all([
-        api<{ data: Project[] }>("/v1/projects"),
-        api<{ data: Run[] }>(`/v1/process-core/procedures/${encodeURIComponent(procedure.id)}/runs`)
-      ]);
-      setProjects(projectResponse.data.filter(project => project.status === "active"));
-      let runRows = runResponse.data;
-      setFocusRunError(false);
-      if (focusRunId && !runRows.some(run => run.id === focusRunId)) {
-        try {
-          const exact = (await api<{ data: Run }>(`/v1/process-core/procedure-runs/${encodeURIComponent(focusRunId)}`)).data;
-          if (exact.procedureId !== procedure.id) throw new Error("wrong_procedure");
-          runRows = [exact, ...runRows];
-        } catch { setFocusRunError(true); }
-      }
-      setRuns(runRows);
-    } catch (caught) { setReadError(errorCode(caught)); }
+    setReadError(null); setLoadingRuns(true);
+    const [projectResult, listResult, exactResult] = await Promise.allSettled([
+      api<{ data: Project[] }>("/v1/projects"),
+      api<{ data: Run[] }>(`/v1/process-core/procedures/${encodeURIComponent(procedure.id)}/runs`),
+      focusRunId ? api<{ data: Run }>(`/v1/process-core/procedure-runs/${encodeURIComponent(focusRunId)}`) : Promise.resolve(null)
+    ]);
+    if (projectResult.status === "fulfilled") setProjects(projectResult.value.data.filter(project => project.status === "active"));
+    let runRows = listResult.status === "fulfilled" && Array.isArray(listResult.value.data) ? listResult.value.data : [];
+    const exact = exactResult.status === "fulfilled" ? exactResult.value?.data : null;
+    const exactValid = Boolean(focusRunId && exact?.id === focusRunId && exact.procedureId === procedure.id);
+    if (focusRunId) runRows = runRows.filter(run => run.id !== focusRunId);
+    if (exactValid) runRows = [exact!, ...runRows];
+    setFocusRunError(Boolean(focusRunId && !exactValid));
+    setRuns(runRows);
+    setReadError(projectResult.status === "rejected" ? errorCode(projectResult.reason)
+      : listResult.status === "rejected" ? errorCode(listResult.reason)
+        : listResult.status === "fulfilled" && !Array.isArray(listResult.value.data) ? "request_failed" : null);
+    setLoadingRuns(false);
   }, [procedure.id, focusRunId]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { setPreview(null); setSuccessId(null); launchRequest.current = null; }, [procedure.id, procedure.updatedAt]);
   useEffect(() => { if (successId) successRef.current?.focus(); }, [successId]);
   useEffect(() => { if (focusRunId && runs.some(run => run.id === focusRunId)) {
-    runRef.current?.scrollIntoView({ block: "center" }); runRef.current?.focus();
-  } }, [focusRunId, runs]);
+    const target = focusStepId && stepRef.current ? stepRef.current : runRef.current;
+    target?.scrollIntoView({ block: "center" }); target?.focus();
+  } }, [focusRunId, focusStepId, runs]);
   useEffect(() => {
     if (!preview) return;
     setNow(Date.now());
@@ -213,6 +221,10 @@ export function ProcedureLaunchPanel({ procedure, focusRunId = null }: { procedu
     {error ? <CcNotice tone="error" title={message(error, pl)} live /> : null}
     {readError ? <CcNotice tone="warning" title={pl ? "Nie udało się odświeżyć historii lub projektów" : "Could not refresh history or projects"} detail={message(readError, pl)} /> : null}
     {focusRunError ? <CcNotice live tone="warning" title={pl ? "Przebieg z linku jest niedostępny dla tej procedury." : "The linked run is unavailable for this procedure."} /> : null}
+    {focusStepError ? <CcNotice live tone="warning" title={pl ? "Krok z linku nie należy do tego przebiegu." : "The linked step does not belong to this run."} /> : null}
+    {focusStepStale ? <CcNotice live tone="warning" title={pl ? "Ten krok nie oczekuje już na ocenę w Dzisiaj." : "This step no longer awaits assessment in Today."}
+      detail={pl ? "Sprawdź bieżący status i historię ocen w przypiętym przebiegu." : "Inspect its current status and assessment history in the pinned run."} /> : null}
+    {fromAttention && focusStepId ? <CcButton href={`/areas?area=00-ogolny&view=overview&attentionProcedureStepId=${encodeURIComponent(focusStepId)}`} size="sm" variant="ghost">{pl ? "Wróć do Dzisiaj" : "Return to Today"}</CcButton> : null}
     {procedure.status === "active" ? <div className="mt-4 grid gap-3 rounded-lg border border-base-300 p-3 sm:p-4">
       <label className="grid gap-1 text-sm font-bold" htmlFor="procedure-launch-project">{pl ? "Projekt, którego dotyczy przebieg" : "Project for this run"}
         <select id="procedure-launch-project" className="select select-bordered w-full" value={projectId} onChange={event => { setProjectId(event.target.value); setPreview(null); launchRequest.current = null; }}>
@@ -247,19 +259,24 @@ export function ProcedureLaunchPanel({ procedure, focusRunId = null }: { procedu
       </div> : null}
     </div> : null}
     <div className="mt-5 flex items-center justify-between gap-2"><h4 className="font-bold">{pl ? "Historia przebiegów" : "Run history"}</h4><CcButton onClick={() => void load()} size="sm" variant="ghost">{pl ? "Odśwież" : "Refresh"}</CcButton></div>
+    {loadingRuns ? <p className="mt-2 text-sm" role="status">{pl ? "Wczytywanie historii przebiegów…" : "Loading run history…"}</p> : null}
     {runs.length ? <ol className="mt-2 grid gap-3">{runs.map(run => <li className="rounded-lg border border-base-300 p-3 text-sm focus:outline focus:outline-2 focus:outline-primary" key={run.id}
       ref={run.id === focusRunId ? runRef : null} tabIndex={run.id === focusRunId ? -1 : undefined}>
       <strong>{run.projectName}</strong> · <span className="break-all font-mono text-xs">{run.projectId}</span> · v{run.procedureVersion} · {runStatus(run.status, pl)} · {new Date(run.createdAt).toLocaleString(locale)}
       <p className="break-all text-xs text-company-muted">{run.id}</p>
       <details className="mt-2"><summary>{pl ? "Dane wejściowe przebiegu (tylko właściciel)" : "Run inputs (owner only)"}</summary><pre className="mt-1 whitespace-pre-wrap break-all text-xs">{JSON.stringify(run.inputSnapshot, null, 2)}</pre></details>
-      <ol className="mt-2 grid gap-2">{run.steps.map(step => <li className="border-t border-base-300 pt-2" key={step.id}>
+      <ol className="mt-2 grid gap-2">{run.steps.map(step => <li className="border-t border-base-300 pt-2 focus:outline focus:outline-2 focus:outline-primary" key={step.id}
+        ref={run.id === focusRunId && step.id === focusStepId ? stepRef : null} tabIndex={run.id === focusRunId && step.id === focusStepId ? -1 : undefined}>
         {step.order}. <a className="link" href={`/areas?area=04-operacje&view=tasks&taskId=${encodeURIComponent(step.task.id)}`}>{step.task.title}</a> · {taskStatus(step.task.status, pl)}
         {step.exception ? <span className="ml-2 text-warning">{pl ? "Wyjątek:" : "Exception:"} {step.exception === "task_blocked" || step.exception === "task_archived_without_accepted_output" ? message(step.exception, pl) : step.exception}</span> : null}
         <p className="text-xs text-company-muted">{pl ? "Dowód wyniku:" : "Output evidence:"} {step.outputEvidence.length ? step.outputEvidence.map(item => `${item.evidence.summary || item.id} (${new Date(item.recordedAt).toLocaleString(locale)})`).join(", ") : (pl ? "Brak przyjętego wyniku" : "No accepted output")}</p>
         {step.outputEvidence.flatMap(item => item.evidence.references || []).length ? <ul className="list-disc pl-5 text-xs">{step.outputEvidence.flatMap(item => item.evidence.references || []).map((reference, index) => <li className="break-all" key={index}>{reference}</li>)}</ul> : null}
         {step.outcomeHistory.length ? <p className="text-xs text-company-muted">{pl ? "Historia ocen:" : "Decision history:"} {step.outcomeHistory.map(item => `${item.decision === "accept" ? (pl ? "Przyjęty wynik" : "Accepted output") : (pl ? "Wyjątek" : "Exception")}: ${item.evidence.summary || item.reason || item.id}`).join(" · ")}</p> : null}
+        {step.outcomeHistory.length ? <p className="mt-2 text-xs text-company-muted">{pl
+          ? "Nowa ocena zmieni bieżący wynik kroku; wcześniejsze oceny pozostaną w historii."
+          : "A new assessment changes the step's current outcome; earlier assessments remain in history."}</p> : null}
         <OutcomeForm runId={run.id} stepId={step.id} taskStatusValue={step.task.status} onSaved={load} />
       </li>)}</ol>
-    </li>)}</ol> : <p className="mt-2 text-sm text-company-muted">{pl ? "Nie ma jeszcze przebiegów tej procedury." : "No runs for this procedure yet."}</p>}
+    </li>)}</ol> : !loadingRuns && !readError && !focusRunError ? <p className="mt-2 text-sm text-company-muted">{pl ? "Nie ma jeszcze przebiegów tej procedury." : "No runs for this procedure yet."}</p> : null}
   </section>;
 }

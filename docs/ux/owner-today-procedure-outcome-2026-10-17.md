@@ -1,0 +1,28 @@
+# Today: pending owner assessment for a procedure result
+
+## Authorized boundary
+
+On 2026-10-17 the owner authorized one bounded change to the delivery order: show an owner-only Today item after a linked manual or human-review ProcedureRun Task naturally reaches `done` and its step has no recorded owner outcome. The item must explain why it needs attention and name the responsible owner. It opens the exact pinned run and step with existing evidence, outcome form and history. Recording an accepted assessment removes that step from current Today while preserving run and step history. A `todo` Task must not appear as pending assessment.
+
+This gate permits local code, disposable native PostgreSQL/API and PL/EN UI proof, independent UX/Security review, a scoped commit/push and at most one ordinary Coolify deployment after a fresh encrypted backup, isolated restore and capacity/rollback preflight. Production smoke is read-only. It does not authorize a new or changed real company Task, ProcedureRun, outcome, Worker/model action, provider write, portfolio change or G24c/G25 work. The owner's estimate was 6–10 technical hours, not a hard timer.
+
+## Implementation and local proof
+
+The existing owner-only `/v1/dashboard/command` and `/v1/dashboard/attention` projection adds one `procedure_result` row per `done` pinned run step with no outcome. It joins run, Task and outcome in one workspace and excludes `todo`, blocked, accepted and exception steps. Rows carry the pinned procedure/project, exact run and step target, reason and owner; existing attention ordering, count and page size apply. The run's own owner-only read and outcome command remain the authority and history store. No schema or migration changed.
+
+The PL/EN Today card opens the existing Operations procedure workbench with exact `procedureId`, `runId` and `stepId`. The workbench verifies the pinned run separately from auxiliary project/list reads, scrolls and focuses the target step, shows history and its existing owner assessment form, and offers a return to Today. A stale or missing target gets a warning; a return link absent from current attention gives a neutral message without claiming acceptance. A subsequent assessment is labelled as a revision whose earlier history remains.
+
+- `COMPANYCORE_TEST_NAME_PATTERN='RF-CTX-029 native procedure launch|Today pages completed procedure assessments' npm run test:api:local` passed 2/2 against a disposable PostgreSQL database with the full migration chain. It covered natural `todo`/blocked/done transitions, two pending steps, owner-only/foreign-workspace denial, exact links and responsibility, acceptance/exception removal, preserved outcome history, 27-row counts, two pages and no duplicate IDs.
+- `node scripts/today-procedure-outcome-ui.test.mjs` passed four PL/EN journeys at 390/1440 CSS pixels with keyboard entry, exact step focus, independent exact-run read after a list failure, form submission, history, return, stale notice and no horizontal overflow. The browser API responses were fictional fixtures; the POST was only to that fixture.
+- `node node_modules/tsx/dist/cli.mjs --test web/src/owner-record-navigation.test.ts` passed 14/14, including duplicate/invalid step query handling. `npm run typecheck` and `npm run build:web` passed after the implementation changes.
+- Independent Security review found no remaining owner/workspace or run/step link bypass after a false-success return message was corrected. Independent UX review found no remaining blocker after exact-run recovery, truthful loading/error/empty states and revision labelling. Both reviews inspected source; they did not perform production writes.
+
+Attention pages use a live offset list. The 27-row native test proves static paging and deduplication, not a concurrent page snapshot: if an assessment changes the list between requests, a later offset may skip a row until Today is refreshed. Wider RF-OUT-001/002, RF-CTX-029 and RF-UX-012 acceptance remains open. No natural positive pending/accept case existed in production at the start of this gate; production proof cannot be manufactured through a company-data write.
+
+## Release preflight
+
+At the fresh 2026-10-17 preflight, remote `main` and both public health endpoints still reported `048d1dd8`. The running backend used that tag and immutable image `sha256:40a27c5fc0b60bdd3595ec8c5679fd59d9d7fac6d5a976bbf463cd7e28a92187`; PostgreSQL was healthy on its retained persistent volume, with 161 migrations up to date. The previous backend image `c83a10f2` remained for rollback. Physical free space was 22,401,236,992 B before backup, above the 12,884,901,888 B build allowance, so no cache or image cleanup was used.
+
+The first backup invocation refused a stale private PostgreSQL container identifier before taking a dump or creating a restore database. After binding the private config to the current healthy container, fresh encrypted backup `aabebd4d-f931-4a50-805b-228043bf0b5f` captured 322,219,747 archive bytes at 10:34:06 UTC. Its isolated restore matched source fingerprints at 10:42:21 UTC; the owned temporary restore database was absent, and private latest-copy read-back passed. The receipt and key remain outside Git. Post-backup free space was 21,404,717,056 B, still above the build allowance; public health, running backend, PostgreSQL and remote `main` were unchanged. No business record was assessed.
+
+One scoped push, at most one standard deployment, exact commit read-back, signed-in PL/EN negative smoke and final gate status remain pending.

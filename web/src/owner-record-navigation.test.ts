@@ -155,6 +155,9 @@ test("missing, denied and invalid Decision targets never become openable records
 test("Task entry opens only the exact workspace record and preserves denied state", async () => {
   assert.equal(recordIdFromQuery(`?taskId=${id}`, "taskId"), id);
   assert.equal(recordIdFromQuery(`?taskId=${id}&taskId=${other}`, "taskId"), null);
+  assert.equal(recordIdFromQuery(`?stepId=${id}`, "stepId"), id);
+  assert.equal(recordIdFromQuery(`?stepId=${id}&stepId=${other}`, "stepId"), null);
+  assert.equal(recordIdFromQuery(`?attentionProcedureStepId=${id}`, "attentionProcedureStepId"), id);
   assert.equal(await validateTaskNavigation(id, async () => ({ id })), id);
   await assert.rejects(validateTaskNavigation(id, async () => ({ id: other })), /task_navigation_unavailable/);
   await assert.rejects(validateTaskNavigation(id, async () => ({})), /task_navigation_unavailable/);

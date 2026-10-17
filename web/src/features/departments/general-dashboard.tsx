@@ -42,6 +42,7 @@ function reasonLabel(item: DashboardPriorityItem, t: ReturnType<typeof useLangua
 function actionLabel(item: DashboardPriorityItem, t: ReturnType<typeof useLanguage>["t"]) {
   return item.kind === "decision" ? t("general.action.decision")
     : item.kind === "result" ? t("general.action.result")
+    : item.kind === "procedure_result" ? t("general.action.procedure_result")
     : item.kind === "blocker" ? t("general.action.blocker")
     : item.kind === "task" ? t("general.action.task")
     : item.kind === "incident" ? t("general.action.incident")
@@ -49,7 +50,7 @@ function actionLabel(item: DashboardPriorityItem, t: ReturnType<typeof useLangua
 }
 
 function attentionStatus(status: string | undefined, locale: "en" | "pl") {
-  return ({ pending: locale === "pl" ? "oczekuje" : "pending", owner_pending: locale === "pl" ? "decyzja właściciela" : "owner decision", review: locale === "pl" ? "do odbioru" : "review needed", failed: locale === "pl" ? "nieudany" : "failed", blocked: locale === "pl" ? "zablokowane" : "blocked", active: locale === "pl" ? "aktywny" : "active", todo: locale === "pl" ? "do zrobienia" : "to do", in_progress: locale === "pl" ? "w toku" : "in progress" } as Record<string, string>)[status || ""] || status;
+  return ({ pending: locale === "pl" ? "oczekuje" : "pending", owner_pending: locale === "pl" ? "decyzja właściciela" : "owner decision", owner_review: locale === "pl" ? "ocena wyniku" : "outcome review", review: locale === "pl" ? "do odbioru" : "review needed", failed: locale === "pl" ? "nieudany" : "failed", blocked: locale === "pl" ? "zablokowane" : "blocked", active: locale === "pl" ? "aktywny" : "active", todo: locale === "pl" ? "do zrobienia" : "to do", in_progress: locale === "pl" ? "w toku" : "in progress" } as Record<string, string>)[status || ""] || status;
 }
 
 function priorityTone(item: DashboardPriorityItem) {
@@ -92,19 +93,22 @@ export function GeneralDashboard() {
   const [showAllAttention, setShowAllAttention] = useState(false);
   const returnTaskId = recordIdFromQuery(window.location.search, "attentionTaskId");
   const returnExecutionId = recordIdFromQuery(window.location.search, "attentionExecutionId");
+  const returnProcedureStepId = recordIdFromQuery(window.location.search, "attentionProcedureStepId");
+  const [returnProcedureNotCurrent, setReturnProcedureNotCurrent] = useState(false);
   const inspectorRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => { setMoreItems([]); setMoreHasMore(null); setMoreOffset(command.data?.attentionNextOffset || 0); setMoreError(false); }, [command.data]);
   useEffect(() => {
-    if (!returnTaskId || !returnExecutionId || !command.data) return;
+    if (((!returnTaskId || !returnExecutionId) && !returnProcedureStepId) || !command.data) return;
     let active = true;
     void (async () => {
       const initialRows = command.data.priorityItems || [];
       const rows = [...initialRows];
       let offset = command.data.attentionNextOffset || rows.length;
       let hasMore = Boolean(command.data.attentionHasMore);
-      const find = () => rows.find(row => row.kind === "result" && row.id === returnTaskId
-        && row.target && new URLSearchParams(row.target.split("?")[1]).get("executionId") === returnExecutionId);
+      const find = () => rows.find(row => (row.kind === "result" && row.id === returnTaskId
+        && row.target && new URLSearchParams(row.target.split("?")[1]).get("executionId") === returnExecutionId)
+        || (row.kind === "procedure_result" && row.id === returnProcedureStepId));
       try {
         while (!find() && hasMore && active) {
           const response = await api<{ data: { items: DashboardPriorityItem[]; hasMore: boolean; nextOffset: number } }>(`/v1/dashboard/attention?offset=${offset}`);
@@ -119,24 +123,29 @@ export function GeneralDashboard() {
           setMoreOffset(offset);
           setMoreHasMore(hasMore);
         }
-        if (find()) {
-          setSelectedPriorityKey(`result:${returnTaskId}`);
+        const found = find();
+        if (found) {
+          setReturnProcedureNotCurrent(false);
+          setSelectedPriorityKey(`${found.kind}:${found.id}`);
           setShowAllAttention(true);
           setInspectorOpen(true);
+        } else if (returnProcedureStepId && !hasMore) {
+          setReturnProcedureNotCurrent(true);
         }
       } catch { if (active) setMoreError(true); }
     })();
     return () => { active = false; };
-  }, [command.data, returnTaskId, returnExecutionId]);
+  }, [command.data, returnTaskId, returnExecutionId, returnProcedureStepId]);
   useEffect(() => {
-    if (!returnTaskId || !inspectorOpen || selectedPriorityKey !== `result:${returnTaskId}`) return;
+    const returnKey = returnProcedureStepId ? `procedure_result:${returnProcedureStepId}` : `result:${returnTaskId}`;
+    if (!inspectorOpen || selectedPriorityKey !== returnKey) return;
     const frame = window.requestAnimationFrame(() => {
       triggerRef.current = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-attention-key]"))
-        .find(button => button.dataset.attentionKey === `result:${returnTaskId}`) ?? null;
+        .find(button => button.dataset.attentionKey === returnKey) ?? null;
       inspectorRef.current?.querySelector<HTMLElement>("button")?.focus();
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [inspectorOpen, returnTaskId, selectedPriorityKey]);
+  }, [inspectorOpen, returnTaskId, returnProcedureStepId, selectedPriorityKey]);
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 1279px)");
@@ -216,6 +225,7 @@ export function GeneralDashboard() {
                   <span>{command.data?.attentionTotal ?? priorityItems.length} {t("general.currentItems")}</span>
                 </header>
                 <div className="roost-decision-columns" aria-hidden="true"><span></span><span>{t("general.status")}</span><span>{t("general.source")}</span><span>{t("general.due")}</span><span></span></div>
+                {returnProcedureNotCurrent ? <CcNotice live tone="warning" title={t("general.procedureResultNotCurrent")} detail={t("general.procedureResultHistoryHint")} /> : null}
                 {priorityItems.length ? (
                   <div className="roost-decision-list">
                     {(showAllAttention ? priorityItems : priorityItems.slice(0, 5)).map((item, index) => {
@@ -245,6 +255,7 @@ export function GeneralDashboard() {
               <nav className="roost-today-history" aria-label={t("general.historyTitle")}>
                 <strong>{t("general.historyTitle")}</strong>
                 <a href="/areas?area=04-operacje&view=tasks">{t("general.workLink")}</a>
+                <a href="/areas?area=04-operacje&view=procedures">{t("general.procedureHistoryLink")}</a>
                 <a href="/areas?area=01-strategia&view=decisions">{t("general.decisionHistoryLink")}</a>
               </nav>
 
@@ -312,7 +323,8 @@ export function GeneralDashboard() {
             <section><h3>{t("general.whyItMatters")}</h3><p>{reasonLabel(selectedPriority, t)}</p>
               {selectedPriority.context ? <p>{selectedPriority.context}</p> : null}</section>
             <section><h3>{t("general.nextResponsible")}</h3><p>{selectedPriority.responsible || t("general.responsibleUnknown")}</p>{selectedPriority.related ? <p>{t("general.relatedObject")}: {selectedPriority.related}</p> : null}</section>
-            <section><h3>{t("general.provenanceTitle")}</h3><p>{selectedPriority.provenance || t("general.provenanceUnknown")} · {selectedPriority.provenanceConfirmed ? t("general.provenanceConfirmed") : t("general.provenanceUnconfirmed")}</p></section>
+            <section><h3>{t("general.provenanceTitle")}</h3><p>{selectedPriority.kind === "procedure_result" ? t("general.procedureProvenance")
+              : <>{selectedPriority.provenance || t("general.provenanceUnknown")} · {selectedPriority.provenanceConfirmed ? t("general.provenanceConfirmed") : t("general.provenanceUnconfirmed")}</>}</p></section>
             <footer>
               {selectedPriority.target ? <a className="roost-inspector-primary" href={selectedPriority.target}>{actionLabel(selectedPriority, t)}<i className="ph-bold ph-arrow-right" aria-hidden="true"></i></a> : null}
               <small><i className="ph-bold ph-lock" aria-hidden="true"></i>{t("general.governedContext")}</small>

@@ -208,6 +208,13 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     assert.ok(((await preview()).body as any).data.blockers.includes("already_launched_for_scope"));
     assert.equal(await prisma.procedureRun.count({ where: { workspaceId, procedureId: procedure.id } }), 1);
     assert.equal(await prisma.procedureRunStep.count({ where: { runId: run.id } }), 2);
+    const todayProcedureRows = async () => {
+      const response = await request("/v1/dashboard/attention", { headers });
+      assert.equal(response.status, 200, JSON.stringify(response.body));
+      return (response.body as any).data;
+    };
+    assert.equal((await todayProcedureRows()).items.some((item: any) => item.kind === "procedure_result" && run.steps.some((step: any) => step.id === item.id)), false,
+      "todo procedure Tasks are not pending owner outcome reviews");
     const tasks = await prisma.task.findMany({ where: { id: { in: run.steps.map((step: any) => step.task.id) } } });
     assert.equal(tasks.length, 2);
     for (const step of run.steps) {
@@ -227,6 +234,7 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     assert.equal(foreignBoard.status, 200);
     assert.equal((foreignBoard.body as any).data.workItems.length, 0);
     await prisma.workspaceMembership.update({ where: { id: member.id }, data: { role: "admin" } });
+    assert.equal((await request("/v1/dashboard/attention", { headers })).status, 403, "Today remains owner-only");
     const nonOwnerTask = await request(`/v1/tasks/${run.steps[0].task.id}`, { headers });
     assert.equal(nonOwnerTask.status, 200);
     assert.equal((nonOwnerTask.body as any).data.procedureRunStep, null, "non-owner Task view omits owner-only run navigation");
@@ -246,18 +254,35 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     assert.equal(await prisma.auditLog.count({ where: { workspaceId, action: "procedure.launch", resourceId: run.id } }), 1);
     assert.equal(await prisma.event.count({ where: { workspaceId, type: "procedure_launched", resourceId: run.id } }), 1);
     assert.equal((await request(`/v1/process-core/procedure-runs/${run.id}`, { headers: foreignHeaders })).status, 404);
+    assert.equal(((await request("/v1/dashboard/attention", { headers: foreignHeaders })).body as any).data.items
+      .some((item: any) => item.kind === "procedure_result" && run.steps.some((step: any) => step.id === item.id)), false);
     await prisma.task.update({ where: { id: tasks[0].id }, data: { status: "blocked" } });
     assert.equal(((await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any).data.status, "exception");
+    assert.equal((await todayProcedureRows()).items.some((item: any) => item.id === run.steps[0].id), false,
+      "blocked Task is not presented as a completed outcome");
     await prisma.task.updateMany({ where: { id: { in: tasks.map(task => task.id) } }, data: { status: "done" } });
     const done = (await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any;
     assert.equal(done.data.status, "tasks_done_evidence_pending", "Task done does not prove output");
     assert.deepEqual(done.data.steps[0].outputEvidence, []);
+    const pendingToday = await todayProcedureRows();
+    const pendingRows = pendingToday.items.filter((item: any) => item.kind === "procedure_result" && run.steps.some((step: any) => step.id === item.id));
+    assert.equal(pendingRows.length, 2, "each completed unassessed step has one current entry");
+    assert.equal(pendingToday.totalCount, pendingToday.items.length);
+    assert.equal((await request("/v1/dashboard/command", { headers })).status, 200);
+    for (const step of run.steps) {
+      const item = pendingRows.find((row: any) => row.id === step.id);
+      assert.deepEqual({ kind: item?.kind, reason: item?.reason, status: item?.status, responsible: item?.responsible, related: item?.related },
+        { kind: "procedure_result", reason: "procedure_outcome_pending", status: "owner_review", responsible: "Test Owner", related: project.name });
+      assert.equal(item.target, `/areas?area=04-operacje&view=procedures&procedureId=${procedure.id}&runId=${run.id}&stepId=${step.id}&from=attention`);
+    }
     const outcomePath = (stepId: string) => `/v1/process-core/procedure-runs/${run.id}/steps/${stepId}/outcomes`;
     const firstOutcomeRequestId = randomUUID();
     const outcomeBody = { requestId: firstOutcomeRequestId, decision: "accept", evidence: { summary: "Owner checked the fictional packet", references: ["fixture://packet"] } };
     assert.equal((await request(outcomePath(run.steps[0].id), { method: "POST", headers: foreignHeaders, body: JSON.stringify(outcomeBody) })).status, 404);
     const firstOutcome = await request(outcomePath(run.steps[0].id), { method: "POST", headers, body: JSON.stringify(outcomeBody) });
     assert.equal(firstOutcome.status, 201, JSON.stringify(firstOutcome.body));
+    assert.deepEqual((await todayProcedureRows()).items.filter((item: any) => item.kind === "procedure_result" && run.steps.some((step: any) => step.id === item.id))
+      .map((item: any) => item.id), [run.steps[1].id], "accepted step leaves Today while its sibling still waits");
     assert.equal((await request(outcomePath(run.steps[0].id), { method: "POST", headers, body: JSON.stringify(outcomeBody) })).status, 200);
     const parallelBody = { requestId: randomUUID(), decision: "accept", evidence: { summary: "Concurrent owner review was recorded", references: [] } };
     const parallel = await Promise.all([request(outcomePath(run.steps[0].id), { method: "POST", headers, body: JSON.stringify(parallelBody) }),
@@ -270,12 +295,15 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     assert.equal(secondOutcome.status, 201, JSON.stringify(secondOutcome.body));
     const accepted = (await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any;
     assert.equal(accepted.data.status, "owner_accepted");
+    assert.equal((await todayProcedureRows()).items.some((item: any) => item.kind === "procedure_result" && run.steps.some((step: any) => step.id === item.id)), false);
     assert.equal(accepted.data.steps[0].outputEvidence[0].evidence.summary, "Concurrent owner review was recorded");
     assert.ok(accepted.data.steps[0].outcomeHistory.some((item: any) => item.evidence.summary === "Owner checked the fictional packet"));
     const exception = await request(outcomePath(run.steps[0].id), { method: "POST", headers,
       body: JSON.stringify({ requestId: randomUUID(), decision: "exception", evidence: { summary: "Fictional packet needs another review", references: [] }, reason: "The reviewed packet was superseded" }) });
     assert.equal(exception.status, 201, JSON.stringify(exception.body));
     assert.equal(((await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any).data.status, "exception");
+    assert.equal((await todayProcedureRows()).items.some((item: any) => item.id === run.steps[0].id), false,
+      "exception history does not reopen a pending assessment card");
     await prisma.procedure.update({ where: { id: procedure.id }, data: { status: "retired" } });
     const successor = await prisma.procedure.create({ data: { workspaceId, familyId: procedure.familyId,
       name: procedure.name, version: 2, purpose: procedure.purpose, scope: procedure.scope,
@@ -294,5 +322,55 @@ export function registerProcedureLaunchApiTests({ request, registerOwner }: Harn
     const pinned = (await request(`${base}/runs`, { headers })).body as any;
     assert.equal(pinned.data[0].procedureVersion, procedure.version);
     assert.equal(pinned.data[0].steps.length, 2);
+  });
+
+  test("Today pages completed procedure assessments without duplicates and removes an accepted step", async () => {
+    const owner = await registerOwner(`procedure-today-${randomUUID()}@example.test`, "Procedure Today fixture");
+    const workspaceId = owner.workspace.id;
+    const headers = { Authorization: `Bearer ${owner.token}` };
+    const membership = await prisma.workspaceMembership.findFirstOrThrow({ where: { workspaceId, role: "owner" } });
+    const project = await prisma.project.create({ data: { workspaceId, name: "Fictional review project", status: "active" } });
+    const procedure = await prisma.procedure.create({ data: { workspaceId, name: "Fictional manual review", purpose: "Review test outcomes", status: "active" } });
+    const run = await prisma.procedureRun.create({ data: { workspaceId, procedureId: procedure.id, projectId: project.id,
+      requestId: randomUUID(), launchedByUserId: membership.userId, previewDigest: "a".repeat(64),
+      procedureFamilyId: procedure.familyId, procedureVersion: procedure.version, procedureName: procedure.name,
+      procedureUpdatedAt: procedure.updatedAt, projectName: project.name, ownerRoleName: "Workspace owner", inputSnapshot: {} } });
+    const stepIds: string[] = [];
+    for (let order = 1; order <= 27; order++) {
+      const definition = await prisma.procedureStep.create({ data: { procedureId: procedure.id, stepOrder: order,
+        instruction: `Inspect fictional result ${order}`, stepType: "manual", expectedOutput: {}, validationRule: {} } });
+      const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, ownerUserId: membership.userId,
+        title: `Fictional result ${order}`, status: "done", source: "companycore" } });
+      const step = await prisma.procedureRunStep.create({ data: { runId: run.id, procedureStepId: definition.id,
+        taskId: task.id, stepOrder: order, instruction: definition.instruction, stepType: "manual",
+        expectedInput: {}, expectedOutput: {}, validationRule: {} } });
+      stepIds.push(step.id);
+    }
+    const firstResponse = await request("/v1/dashboard/attention", { headers });
+    assert.equal(firstResponse.status, 200, JSON.stringify(firstResponse.body));
+    const first = (firstResponse.body as any).data;
+    assert.equal(first.totalCount, 27);
+    assert.equal(first.items.length, 25);
+    assert.equal(first.hasMore, true);
+    assert.equal(first.nextOffset, 25);
+    const secondResponse = await request(`/v1/dashboard/attention?offset=${first.nextOffset}`, { headers });
+    assert.equal(secondResponse.status, 200, JSON.stringify(secondResponse.body));
+    const second = (secondResponse.body as any).data;
+    assert.equal(second.totalCount, 27);
+    assert.equal(second.items.length, 2);
+    assert.equal(second.hasMore, false);
+    assert.deepEqual(new Set([...first.items, ...second.items].map((item: any) => item.id)), new Set(stepIds));
+    assert.ok([...first.items, ...second.items].every((item: any) => item.kind === "procedure_result"));
+    const acceptedStepId = first.items[0].id;
+    const accepted = await request(`/v1/process-core/procedure-runs/${run.id}/steps/${acceptedStepId}/outcomes`, {
+      method: "POST", headers, body: JSON.stringify({ requestId: randomUUID(), decision: "accept",
+        evidence: { summary: "Fictional result inspected by owner", references: [] } })
+    });
+    assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+    const after = (await request("/v1/dashboard/attention", { headers })).body as any;
+    assert.equal(after.data.totalCount, 26);
+    assert.equal(after.data.items.some((item: any) => item.id === acceptedStepId), false);
+    const history = (await request(`/v1/process-core/procedure-runs/${run.id}`, { headers })).body as any;
+    assert.ok(history.data.steps.find((step: any) => step.id === acceptedStepId)?.outcomeHistory.some((item: any) => item.decision === "accept"));
   });
 }
